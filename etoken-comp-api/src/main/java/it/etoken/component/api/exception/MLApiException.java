@@ -12,7 +12,7 @@ public enum MLApiException implements MLExceptionEnum {
 
 	SUCCESS("0", "success"),
 	PARAM_ERROR("400","参数错误"),
-	SYS_ERROR("500", "系统错误"),
+	SYS_ERROR("500", "网络不给力"),
 	CAPTURE_ERR("505","验证码错误"),
 	KCAPTURE_ERR("505","图形验证码错误"),
 	CODE_EXP("506","输入错误过多，请更换验证码"),
@@ -41,7 +41,8 @@ public enum MLApiException implements MLExceptionEnum {
 	RECEIVE("604","您提取的eos已经发放成功"),
 	POINTNOTENOUGH("605","您的积分暂时没有达到领取标准，多多签到可以新增积分哦"),
 	WAItRECEIVE("606","没有领取记录等待领取"),
-	NOEOST("607","没有奖励可以领取");
+	NOEOST("607","没有奖励可以领取"),
+	NOTDELEGATEBW("608","你还没有抵押记录");
 
 	private MLApiException(String code, String msg) {
 		this.code = code;

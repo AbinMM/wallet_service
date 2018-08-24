@@ -7,4 +7,6 @@ public interface DelegatebwService {
     public void save(Delegatebw delegatebw);
 	
 	public Delegatebw findByAccountName(String account_name);
+
+	public void update(Delegatebw delegatebw);
 }

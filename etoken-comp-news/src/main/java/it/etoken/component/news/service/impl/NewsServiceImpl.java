@@ -54,8 +54,8 @@ public class NewsServiceImpl implements NewsService {
 				
 				NewsStatistics ns = new NewsStatistics();
 				ns.setNid(news.getId());
-				ns.setDown(new Long(MathUtil.random(10)));
-				ns.setUp(new Long(MathUtil.random(100)));
+				ns.setUp(0L);
+				ns.setView(0l);
 				ns.setView(0l);
 				ns.setShare(0l);
 				newsStatisticsService.addNewsStatistics(ns);

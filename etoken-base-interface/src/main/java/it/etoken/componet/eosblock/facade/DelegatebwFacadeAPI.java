@@ -9,5 +9,7 @@ public interface DelegatebwFacadeAPI {
 	public MLResult save(Delegatebw delegatebw);
 	
 	public MLResultObject<Delegatebw> findByAccountName(String account_name);
+	
+	public MLResult update(Delegatebw delegatebw);
 
 }

@@ -2,6 +2,7 @@ package it.etoken.component.api.controller;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import it.etoken.component.api.eosrpc.GetDelegatebw;
 import it.etoken.component.api.eosrpc.GetGlobalInfo;
 import it.etoken.component.api.eosrpc.GetInfo;
 import it.etoken.component.api.eosrpc.GetKeyAccounts;
+import it.etoken.component.api.eosrpc.GetUndelegatebw;
 import it.etoken.component.api.eosrpc.GetUndelegatebwInfo;
 import it.etoken.component.api.eosrpc.GetVotingInfo;
 import it.etoken.component.api.eosrpc.ListProducers;
@@ -731,4 +733,54 @@ public class EosRpcController extends BaseController {
 			return this.error(MLApiException.SYS_ERROR, null);
 	}
 	
+	 @ResponseBody
+	  @RequestMapping(value = "/undelegatebw")
+	  public Object undelegatebw(@RequestBody Map<String, String> requestMap,HttpServletRequest request) {
+	    logger.info("/undelegatebw request map : " + requestMap);
+	      JSONObject jsonObject = new JSONObject();
+	      String username = requestMap.get("username");
+	      if (StringUtils.isEmpty(username) || username.length() != 12) {
+	        return this.error(MLApiException.ACCOUNT_NAME_ERR, "账户名称必须为12位");
+	      }
+	      jsonObject.put("username", username);
+	      MLResultObject<Delegatebw> resultObject=delegatebwFacadeAPI.findByAccountName(requestMap.get("username"));
+         Delegatebw delegatebw=resultObject.getResult();
+         if(delegatebw==null) {
+       	  return this.error(MLApiException.NOTDELEGATEBW, "你还没有抵押记录不能赎回");  
+         }
+	      EosResult resp = null;
+	      try {
+	        resp = new GetUndelegatebw().run(EOS_SERVER_API, jsonObject.toString()); // http://localhost:7001/resource/delegate,需要在本地启动eos-server-api服务
+	        if (resp.isSuccess()) {
+	          delegatebw.setStatus(1L);//0是抵押，1是赎回
+	          delegatebw.setModifydate(new Date());
+	          delegatebwFacadeAPI.update(delegatebw);
+	          return this.success("恭喜您，赎回成功！");
+	        } else {
+	          return this.error(MLApiException.SYS_ERROR, null);  
+	        }
+	      } catch (Exception e) {
+	        logger.error(e.getMessage());
+	      }
+	      return this.error(MLApiException.SYS_ERROR, null);      
+   }
+	
+	  @ResponseBody
+	  @RequestMapping(value = "/delegatebwRecord")
+	  public Object delegatebwRecord(@RequestBody Map<String, String> requestMap,HttpServletRequest request) {
+	    logger.info("/delegatebwRecord request map : " + requestMap);
+	      JSONObject jsonObject = new JSONObject();
+	      String username = requestMap.get("username");
+	      if (StringUtils.isEmpty(username) || username.length() != 12) {
+	        return this.error(MLApiException.ACCOUNT_NAME_ERR, "账户名称必须为12位");
+	      }
+	      jsonObject.put("username", username);
+	      MLResultObject<Delegatebw> resultObject=delegatebwFacadeAPI.findByAccountName(requestMap.get("username"));
+          Delegatebw delegatebw=resultObject.getResult();
+          if(delegatebw!=null) {
+        	  return this.error(MLApiException.DELEGATEBWED, "您已经免费抵押过，把机会留给别人吧");	
+          }else {
+        	  return this.error(MLApiException.NOTDELEGATEBW, "你还没有抵押记录");  
+          }
+    }
 }

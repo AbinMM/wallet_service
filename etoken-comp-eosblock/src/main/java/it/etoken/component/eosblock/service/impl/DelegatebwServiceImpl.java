@@ -44,12 +44,29 @@ public class DelegatebwServiceImpl implements DelegatebwService{
 			DelegatebwExample example=new DelegatebwExample();
 		    Criteria  criteria = example.createCriteria();
 		    criteria.andAccountNameEqualTo(account_name);
+		    criteria.andStatusEqualTo(0L);
 			List<Delegatebw> delegatebws= delegatebwMapper.selectByExample(example);
 			if(delegatebws.size()>0) {
 				return delegatebws.get(0);
 			}else {
 				return null;
 			}
+		} catch (Exception e) {
+			logger.error(e.toString());
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
+
+	@Override
+	public void update(Delegatebw delegatebw) {
+		try {
+			DelegatebwExample example=new DelegatebwExample();
+		    Criteria  criteria = example.createCriteria();
+		    criteria.andAccountNameEqualTo(delegatebw.getAccountName());
+			delegatebwMapper.updateByExampleSelective(delegatebw,example);
+		} catch (MLException ex) {
+			logger.error(ex.toString());
+			throw ex;
 		} catch (Exception e) {
 			logger.error(e.toString());
 			throw new MLException(MLCommonException.system_err);

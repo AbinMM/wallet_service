@@ -41,4 +41,15 @@ public class DelegatebwFacadeAPIImpl implements DelegatebwFacadeAPI{
 		}
 	}
 
+	@Override
+	public MLResult update(Delegatebw delegatebw) {
+		try {
+			delegatebwService.update(delegatebw);
+			return new MLResult(true);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResult(e);
+		}
+	}
+
 }
