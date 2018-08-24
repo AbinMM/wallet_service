@@ -59,6 +59,31 @@ public class HtmlUtils {
 				printStream.close();
 		}
 	}
+	
+	//添加资讯的html模板
+	public static String gemHtmlforAlertsUpdate(String content, String title,String eosprice,String savePath,String template) throws Exception {
+			File f = new File(savePath);
+			if (!f.getParentFile().exists()) {
+				f.getParentFile().mkdirs();
+			}
+			PrintStream printStream = null;
+			try {
+				template = template.replace("&quot;", "\"");
+				if(eosprice==null || "".equals(eosprice)){
+					eosprice="55.7";
+					System.out.println(eosprice);
+		        }
+				content = nr2html(content);
+				printStream = new PrintStream(new FileOutputStream(f));
+				printStream.println(String.format(template, title,content,eosprice));
+				return savePath;
+			} catch (Exception e) {
+				throw e;
+			} finally {
+				if (printStream != null)
+					printStream.close();
+			}
+		}
 	//修改快讯的已经产生的html模板
 	public static void regemHtml(String content,String title,String eosprice,String filePath,String template) throws Exception {
 		File f = new File(filePath);
