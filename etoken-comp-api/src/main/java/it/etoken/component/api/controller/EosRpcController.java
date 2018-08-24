@@ -658,6 +658,7 @@ public class EosRpcController extends BaseController {
 		      jsonObject.put("code", "eosio");
 		      jsonObject.put("scope", requestMap.get("account_name"));
 		      jsonObject.put("table", "delband");
+		      jsonObject.put("limit", 1000);
 		} catch (JSONException e2) {
 			e2.printStackTrace();
 			return this.error(MLApiException.PARAM_ERROR, null);
