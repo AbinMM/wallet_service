@@ -225,7 +225,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 		Date endDate = new Date(timesx);
 		
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("block_id").exists(false));
+		Query query = new Query(Criteria.where("actions.name").in(actionsNames));
 		Criteria createDateCriteria = new Criteria();
 		createDateCriteria.andOperator(
 				Criteria.where("createdAt").exists(true),
@@ -460,7 +460,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 	public List<RamTradeLog> getBigTradeOrders() throws MLException {
 		
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("block_id").exists(false).and("createdAt").exists(true));
+		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true));
 		int page = 1;
 		int pageSize = 1000;
 
