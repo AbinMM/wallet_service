@@ -147,10 +147,17 @@ public class ETExchangePriceController extends BaseController {
 		}
 		
 		try {
+			String cache_key = "ETExchangePriceController_kline_" + code + "_" + dateType + "_" + count;
+			@SuppressWarnings("unchecked")
+			List<JSONObject> cacheData = cacheService.get(cache_key, List.class);
+			if(cacheData != null && !cacheData.isEmpty()) {
+				return this.success(cacheData);
+			}
 			
 			MLResultList<JSONObject> result = eTExchangePriceFacadeAPI.getKLines(code, dateType, count);
 			if(result.isSuccess()) {
 				List<JSONObject> list = result.getList();
+				cacheService.set(cache_key, list, 10);
 				return this.success(list);
 			}else {
 				return this.error(result.getErrorCode(),result.getErrorHint(), null);
@@ -184,10 +191,16 @@ public class ETExchangePriceController extends BaseController {
 		}
 		
 		try {
-			
+			String cache_key = "ETExchangePriceController_kline2_" + code + "_" + dateType + "_" + count;
+			@SuppressWarnings("unchecked")
+			List<JSONObject> cacheData = cacheService.get(cache_key, List.class);
+			if(cacheData != null && !cacheData.isEmpty()) {
+				return this.success(cacheData);
+			}
 			MLResultList<JSONObject> result = eTExchangePriceFacadeAPI.getKLines(code, dateType, count);
 			if(result.isSuccess()) {
 				List<JSONObject> list = result.getList();
+				cacheService.set(cache_key, list, 10);
 				return this.success(list);
 			}else {
 				return this.error(result.getErrorCode(),result.getErrorHint(), null);

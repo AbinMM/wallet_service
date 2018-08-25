@@ -7,6 +7,8 @@ public interface CacheService {
 	public boolean set(MLCacheEnum key, Object value);
 
 	public boolean set(String key, Object value);
+	
+	public boolean set(final String key, Object value, long seconds);
 
 	public <T> T get(MLCacheEnum key, Class<T> clz);
 
