@@ -142,10 +142,16 @@ public class EosRpcController extends BaseController {
 		
 		EosResult resp = null;
 		try {
+			Map<String, String> extr = new HashMap<>();
+			extr.put("url", "transfer://");
+			
+			if(transactionData.equalsIgnoreCase("push")) {
+				pushService.pushByTag(to, to + "收到一笔  " + amount  + " 转账." + "来自：" + from + ". 备注：" + memo, extr);
+				return this.success(true);
+			}
+			
 			resp = new PushTransaction().run(URL_CHAIN, URL_CHAIN_BACKUP, transactionData);
 			if (resp.isSuccess()) {
-				Map<String, String> extr = new HashMap<>();
-				extr.put("url", "transfer://");
 				pushService.pushByTag(to, to + "收到一笔  " + amount  + " 转账." + "来自：" + from + ". 备注：" + memo, extr);
 				return this.success(resp.getData());
 			} else {
