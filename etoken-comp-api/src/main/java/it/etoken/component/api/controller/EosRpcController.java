@@ -717,6 +717,8 @@ public class EosRpcController extends BaseController {
 	        			delegatebw.setNet("0.5 EOS");
 	        			delegatebw.setCpu("2.5 EOS");
 	        			delegatebw.setStatus(0L);
+						delegatebw.setCreatedate(new Date());
+	        			delegatebw.setModifydate(new Date());
 	        			delegatebwFacadeAPI.save(delegatebw);
 	        			EosResult resp1 = null;
 	        			try {
