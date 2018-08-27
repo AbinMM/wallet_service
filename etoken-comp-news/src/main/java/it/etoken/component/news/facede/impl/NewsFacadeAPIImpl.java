@@ -160,4 +160,14 @@ public class NewsFacadeAPIImpl implements NewsFacadeAPI {
 			return new MLResultList<News>(e);
 		}
 	}
+	@Override
+	public MLResultList<News> findByRemark() throws MLException {
+		try {
+			List<News> result = newsService.findByRemark();
+			return new MLResultList<News>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultList<News>(e);
+		}
+	}
 }

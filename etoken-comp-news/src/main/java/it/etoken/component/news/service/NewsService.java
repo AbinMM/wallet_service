@@ -78,4 +78,6 @@ public interface NewsService {
 
 	List<News> findByTitle(String title) throws MLException;
 	
+	public List<News> findByRemark() throws MLException;
+	
 }

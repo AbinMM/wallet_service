@@ -42,6 +42,9 @@ public class News extends BaseEntity{
 	
 	private String otherid;
 	
+	private String remark;
+	
+	
 	public String getTitle() {
 		return title;
 	}
@@ -113,6 +116,12 @@ public class News extends BaseEntity{
 	}
 	public void setOtherid(String otherid) {
 		this.otherid = otherid;
+	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 	
 }

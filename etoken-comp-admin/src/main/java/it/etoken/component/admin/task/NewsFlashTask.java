@@ -89,6 +89,7 @@ public class NewsFlashTask {
 		 this.getNewsFlashFromBishijieKeyword("eos");
 		 this.getNewsFlashFromJinsecaijingKeyword("eos");
 		 this.handleResultList();
+		 this.rehtml();
 	 }
 	 
 
@@ -429,6 +430,10 @@ public class NewsFlashTask {
 						} 
 					} 
 			        newsFlash.setUrl(HtmlServer + tempurl);
+			        File file2=new File(tempurl);  
+					if(!file2.exists())    {
+						newsFlash.setRemark("404");
+					}
 				} catch (Exception e) {
 					e.printStackTrace();		
 				}
@@ -471,6 +476,41 @@ public class NewsFlashTask {
 			} else {
 				System.out.println("保存快讯失败，快讯标题: " + newsFlash.getTitle());
 			}
+		}
+	}
+	
+	//查询所有没有正常生成网页的字段并且重新生成
+	public void rehtml() {
+		try {
+			News n=new News();
+			MLResultList<News> result=newsFacadeAPI.findByRemark();
+			List<News> list=result.getList();
+			if(list.size()>0) {
+				for (News news : list) {
+					MLResultObject<HtmlTemplate> ml=htmlTemplateFacadeAPI.findTemplate();
+					String template=ml.getResult().getTemplate();
+					Double eosprice=findEosPrice();
+					String url=news.getUrl();
+					String[] url_new=url.split("/");
+					String a=url_new[4];
+					String b=url_new[5];
+					String filename=a + "/" + b;
+				    HtmlUtils.gemHtmlforAlertsUpdate(news.getContent(),news.getTitle(),eosprice.toString(),HtmlSave,filename,template);
+				    n=news;
+					n.setUrl(HtmlServer+filename);
+					n.setRemark("normal");
+					MLResult r = newsFacadeAPI.saveUpdate(n);
+					if (r.isSuccess()) {
+						System.out.println(n.getTitle()+"重新生成模板成功");
+					} else {
+						System.out.println(n.getTitle()+"重新生成模板失败 ");
+					}
+				}
+			}else {
+				return;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

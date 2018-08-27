@@ -76,4 +76,5 @@ public interface NewsFacadeAPI {
 
 	MLResultList<News> findByTitle(String title) throws MLException;
 
+	MLResultList<News> findByRemark() throws MLException;
 }

@@ -52,4 +52,7 @@ public interface NewsMapper {
 	
 	@Select("select * FROM news where title like concat('%', #{title}, '%') order by createdate desc ")
 	List<News> findByTitle(@Param("title")String title);
+	
+	@Select("select * from news where remark='404' ")
+	List<News> findByRemark();
 }

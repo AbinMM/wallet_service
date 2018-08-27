@@ -252,4 +252,16 @@ public class NewsServiceImpl implements NewsService {
 			throw new MLException(MLCommonException.system_err);
 		}
 	}
+	@Override
+	public List<News> findByRemark() throws MLException {
+		try{
+			return newsMapper.findByRemark();
+		}catch (MLException ex) {
+			logger.error(ex.toString());
+			throw ex;
+		}catch (Exception e) {
+			logger.error(e.toString());
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
 }

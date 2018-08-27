@@ -37,6 +37,9 @@ public class NewsProvider {
                 if (news.getModifydate() != null) {
                     SET("modifydate = #{modifydate}");
                 }
+                if (news.getRemark() != null) {
+                    SET("remark = #{remark}");
+                }
                 WHERE("id = #{id}");
             }
         }.toString();
