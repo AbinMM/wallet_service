@@ -128,8 +128,13 @@ public class NewsController extends BaseController {
 					MLResultObject<HtmlTemplate> ml=htmlTemplateFacadeAPI.findTemplate();
 					String template=ml.getResult().getTemplate();
 					Double eosprice=findEosPrice();
-				    HtmlUtils.gemHtmlforAlertsUpdate(params.getContent(),params.getTitle(),eosprice.toString(), params.getUrl(),template);
-					params.setUrl(HtmlServer+params.getUrl());
+					String url=params.getUrl();
+					String[] url_new=url.split("/");
+					String a=url_new[4];
+					String b=url_new[5];
+					String filename=a + "/" + b;
+				    HtmlUtils.gemHtmlforAlertsUpdate(params.getContent(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
+					params.setUrl(HtmlServer+filename);
 				}else {
 					String url = HtmlUtils.gemHtml(params.getHtml(), HtmlSave);
 				    params.setUrl(HtmlServer+url);
