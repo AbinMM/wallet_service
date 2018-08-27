@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -64,6 +67,28 @@ public class DelegatebwServiceImpl implements DelegatebwService{
 		    Criteria  criteria = example.createCriteria();
 		    criteria.andAccountNameEqualTo(delegatebw.getAccountName());
 			delegatebwMapper.updateByExampleSelective(delegatebw,example);
+		} catch (MLException ex) {
+			logger.error(ex.toString());
+			throw ex;
+		} catch (Exception e) {
+			logger.error(e.toString());
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
+
+	@Override
+	public List<Delegatebw> findByCreateDate() {
+		try {
+			Calendar calendar1 = Calendar.getInstance();
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			calendar1.add(Calendar.DATE, -3);
+			String three_days_ago = sdf.format(calendar1.getTime());
+			DelegatebwExample example=new DelegatebwExample();
+		    Criteria  criteria = example.createCriteria();
+		    criteria.andStatusEqualTo(0L);
+		    criteria.andCreatedateLessThanOrEqualTo(sdf.parse(three_days_ago));
+		    List<Delegatebw> result=delegatebwMapper.selectByExample(example);
+		    return result;
 		} catch (MLException ex) {
 			logger.error(ex.toString());
 			throw ex;
