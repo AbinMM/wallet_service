@@ -32,6 +32,25 @@ public class HtmlUtils {
 		}
 	}
 	
+	public static String gemHtmlUpdate(String html, String savePath,String filePath) throws Exception {
+		File f = new File(savePath + filePath);
+		if (!f.getParentFile().exists()) {
+			f.getParentFile().mkdirs();
+		}
+		PrintStream printStream = null;
+		try {
+			html = nr2html(html);
+			printStream = new PrintStream(new FileOutputStream(f));
+			printStream.println(template.replace("${content}", html));
+			return filePath;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (printStream != null)
+				printStream.close();
+		}
+	}
+	
 	//添加资讯的html模板
 	public static String gemHtmlforAlerts(String content, String title,String eosprice,String savePath,String template) throws Exception {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");

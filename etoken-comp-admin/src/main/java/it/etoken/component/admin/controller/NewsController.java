@@ -136,8 +136,13 @@ public class NewsController extends BaseController {
 				    HtmlUtils.gemHtmlforAlertsUpdate(params.getContent(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
 					params.setUrl(HtmlServer+filename);
 				}else {
-					String url = HtmlUtils.gemHtml(params.getHtml(), HtmlSave);
-				    params.setUrl(HtmlServer+url);
+					String url=params.getUrl();
+					String[] url_new=url.split("/");
+					String a=url_new[4];
+					String b=url_new[5];
+					String filename=a + "/" + b;
+					HtmlUtils.gemHtmlUpdate(params.getHtml(), HtmlSave,filename);
+				    params.setUrl(HtmlServer+filename);
 				}
 			}
 			MLResult r = newsFacadeAPI.saveUpdate(params);
