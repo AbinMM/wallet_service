@@ -5,12 +5,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.model.user.entity.EostRecord;
+import it.etoken.base.model.user.entity.User;
 import it.etoken.component.user.dao.mapper.EostRecordMapper;
 import it.etoken.component.user.dao.mapper.UserMapper;
 import it.etoken.component.user.service.EostRecordService;
@@ -27,6 +29,9 @@ public class EostRecordServiceImpl implements EostRecordService{
 	@Autowired
 	private UserMapper userMapper;
 	
+	@Value("${receive.point}")
+	String receive_point;
+	
 	@Override
 	public List<EostRecord> findByUid(String uid) {
 		try {
@@ -41,6 +46,13 @@ public class EostRecordServiceImpl implements EostRecordService{
 	@Override
 	public void saveEostRecord(EostRecord eostRecord) {
 		try {
+			User user = userMapper.findById(eostRecord.getUid());
+			if(Integer.parseInt(user.getPoint())<Integer.parseInt(receive_point)) {
+				throw new MLException(MLCommonException.POINTNOTENOUGH);
+			}
+			if(user.getEost()==0 || user.getEost()<0) {
+				throw new MLException(MLCommonException.NOEOST, "没有奖励可以领取。");
+			}
 			eostRecordMapper.insertNew(eostRecord);
 			userMapper.updateEost(eostRecord.getUid(), 0.0);
 		} catch (Exception e) {

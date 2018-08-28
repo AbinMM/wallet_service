@@ -405,7 +405,7 @@ public class UserController extends BaseController {
 				if(Integer.parseInt(point)<Integer.parseInt(receive_point)) {
 					return this.error(MLApiException.POINTNOTENOUGH, "您的积分暂时没有达到领取标准，多多签到可以新增积分哦");
 				}else {
-					if(eost==0) {
+					if(eost==0|| eost<0) {
 						return this.error(MLApiException.NOEOST, "没有奖励可以领取。");
 					}
 					EostRecord eostRecord=new EostRecord();
