@@ -29,9 +29,6 @@ public class EostRecordServiceImpl implements EostRecordService{
 	@Autowired
 	private UserMapper userMapper;
 	
-	@Value("${receive.point}")
-	String receive_point;
-	
 	@Override
 	public List<EostRecord> findByUid(String uid) {
 		try {
@@ -47,9 +44,6 @@ public class EostRecordServiceImpl implements EostRecordService{
 	public void saveEostRecord(EostRecord eostRecord) {
 		try {
 			User user = userMapper.findById(eostRecord.getUid());
-			if(Integer.parseInt(user.getPoint())<Integer.parseInt(receive_point)) {
-				throw new MLException(MLCommonException.POINTNOTENOUGH);
-			}
 			if(user.getEost()==0 || user.getEost()<0) {
 				throw new MLException(MLCommonException.NOEOST, "没有奖励可以领取。");
 			}
