@@ -44,7 +44,7 @@ public class UserController extends BaseController {
 
 	private final static Logger logger = LoggerFactory.getLogger(BaseController.class);
 
-	@Reference(version = "1.0.0", timeout = 10000)
+	@Reference(version = "1.0.0", timeout = 10000,retries=0)
 	UserFacadeAPI userFacadeAPI;
 	
 	@Reference(version = "1.0.0", timeout = 30000, retries=0)
@@ -415,12 +415,7 @@ public class UserController extends BaseController {
 					eostRecord.setEos_account(eos_account);
 					MLResult result=eostRecordFacadeAPI.saveEostRecord(eostRecord);
 					if(result.isSuccess()) {
-						MLResult rs=userFacadeAPI.updateEost(uid);
-						if(rs.isSuccess()) {
 							return this.success(true);
-						}else {
-							return this.error(MLApiException.SYS_ERROR, null);
-						}
 					}else {
 						return this.error(MLApiException.SYS_ERROR, null);
 					}

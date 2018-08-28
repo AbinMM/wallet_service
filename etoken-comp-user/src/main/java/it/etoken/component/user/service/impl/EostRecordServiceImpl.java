@@ -12,6 +12,7 @@ import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.model.user.entity.EostRecord;
 import it.etoken.component.user.dao.mapper.EostRecordMapper;
+import it.etoken.component.user.dao.mapper.UserMapper;
 import it.etoken.component.user.service.EostRecordService;
 
 @Component
@@ -22,6 +23,10 @@ public class EostRecordServiceImpl implements EostRecordService{
 	
 	@Autowired
 	private EostRecordMapper eostRecordMapper;
+	
+	@Autowired
+	private UserMapper userMapper;
+	
 	@Override
 	public List<EostRecord> findByUid(String uid) {
 		try {
@@ -37,6 +42,7 @@ public class EostRecordServiceImpl implements EostRecordService{
 	public void saveEostRecord(EostRecord eostRecord) {
 		try {
 			eostRecordMapper.insertNew(eostRecord);
+			userMapper.updateEost(eostRecord.getUid(), 0.0);
 		} catch (Exception e) {
 			logger.error(e.toString());
 			throw new MLException(MLCommonException.system_err);
