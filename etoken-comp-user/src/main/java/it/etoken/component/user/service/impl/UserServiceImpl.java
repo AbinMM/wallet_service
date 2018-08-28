@@ -495,7 +495,15 @@ public class UserServiceImpl implements UserService {
 				UserSigninLog userSigninLog = new UserSigninLog();
 				userSigninLog.setUid(user.getId());
 				userSigninLog.setNickname(user.getNickname());
-				userSigninLog.setSigndate(new Date());
+				SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+				Date nowDate = new Date();
+				Date signDate = null;
+				try {
+					signDate = sdf.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				userSigninLog.setSigndate(signDate);
 				userSigninLogMapper.insert(userSigninLog);
 				
 				reward = getSignPointReward(uid);
@@ -570,7 +578,7 @@ public class UserServiceImpl implements UserService {
 		ZoneId zoneId = ZoneId.of(zone);
 		LocalDateTime midnight = LocalDateTime.now(zoneId).plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
 		long seconds = ChronoUnit.SECONDS.between(LocalDateTime.now(zoneId), midnight);
-		System.out.println("midnight111111111111111:"+midnight);
+		System.out.println("secondst111111111111111:"+seconds);
 		return seconds;
 	}
 
@@ -668,7 +676,7 @@ public class UserServiceImpl implements UserService {
 		Date nowDate = new Date();
 		Date signDate = null;
 		try {
-			signDate = sdf.parse(sdf.format(nowDate.getTime()));
+			signDate = sdf.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
