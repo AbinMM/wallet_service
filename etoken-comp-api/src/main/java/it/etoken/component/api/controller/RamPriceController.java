@@ -283,10 +283,14 @@ public class RamPriceController extends BaseController {
 			Double total=new Double(a.toString());
 			Double total_new=total*1024*1024*1024;
 			BigDecimal total_ram=new BigDecimal(total_new);
-			MLResultList<RamLargeRank> result =ramLargeRankFacadeAPI.getNewestRank();
+			List<RamLargeRank> listRamLargeRank=cacheService.get("ram_large_user_rank",List.class);
+			if(listRamLargeRank.size()==0) {
+				MLResultList<RamLargeRank> result =ramLargeRankFacadeAPI.getNewestRank();
+				listRamLargeRank=result.getList();
+			}
 			List<JSONObject> list=new ArrayList<>();
 			int i=1;
-			for (BasicDBObject thisBasicDBObject : result.getList()) {
+			for (BasicDBObject thisBasicDBObject : listRamLargeRank) {
 				JSONObject jsonObject=new JSONObject();
 				jsonObject.put("num",i);
 				i=i+1;
