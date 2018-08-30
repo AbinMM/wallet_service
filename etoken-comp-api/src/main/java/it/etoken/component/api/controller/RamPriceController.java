@@ -290,10 +290,11 @@ public class RamPriceController extends BaseController {
 			}
 			List<JSONObject> list=new ArrayList<>();
 			int i=1;
-			for (BasicDBObject thisBasicDBObject : listRamLargeRank) {
+			for (Object  object : listRamLargeRank) {
+				BasicDBObject thisBasicDBObject = (BasicDBObject) com.mongodb.util.JSON.parse(object.toString());
 				JSONObject jsonObject=new JSONObject();
 				jsonObject.put("num",i);
-				i=i+1;
+				i=i+1;       
 				jsonObject.put("account", thisBasicDBObject.get("account"));
 				jsonObject.put("historyAverageCost", thisBasicDBObject.get("historyAverageCost"));
 				String profit=thisBasicDBObject.getString("profit");
@@ -302,7 +303,7 @@ public class RamPriceController extends BaseController {
 					jsonObject.put("profit", "+"+profit_value.toString());
 				}else {
 					jsonObject.put("profit", profit_value.toString());
-				}
+				}   
 				Double ram=thisBasicDBObject.getDouble("ramQuota")/1024/1024/1024;
 				if(ram>1) {
 					Double value =new BigDecimal(ram).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
