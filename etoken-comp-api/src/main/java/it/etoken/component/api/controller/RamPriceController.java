@@ -284,7 +284,7 @@ public class RamPriceController extends BaseController {
 			Double total_new=total*1024*1024*1024;
 			BigDecimal total_ram=new BigDecimal(total_new);
 			List<RamLargeRank> listRamLargeRank=cacheService.get("ram_large_user_rank",List.class);
-			if(listRamLargeRank.size()==0) {
+			if( null==listRamLargeRank||listRamLargeRank.size()==0) {
 				MLResultList<RamLargeRank> result =ramLargeRankFacadeAPI.getNewestRank();
 				listRamLargeRank=result.getList();
 			}
