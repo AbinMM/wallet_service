@@ -1,10 +1,8 @@
 package it.etoken.component.api.controller;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +45,7 @@ import it.etoken.component.api.eosrpc.GetVotingInfo;
 import it.etoken.component.api.eosrpc.ListProducers;
 import it.etoken.component.api.eosrpc.PushTransaction;
 import it.etoken.component.api.exception.MLApiException;
+import it.etoken.component.api.utils.EosNodeUtils;
 import it.etoken.componet.eosblock.facade.DelegatebwFacadeAPI;
 import it.etoken.componet.eosblock.facade.TransactionsFacadeAPI;
 
@@ -58,6 +57,9 @@ public class EosRpcController extends BaseController {
 
 	@Autowired
 	PushService pushService;
+	
+	@Autowired
+	EosNodeUtils eosNodeUtils;
 
 	@Reference(version = "1.0.0", timeout = 120000, retries = 3)
 	TransactionsFacadeAPI transactionsFacadeAPI;
@@ -66,22 +68,23 @@ public class EosRpcController extends BaseController {
 	DelegatebwFacadeAPI delegatebwFacadeAPI;
 
 
-	@Value("${nodeos.path.chain}")
-	String URL_CHAIN;
-	@Value("${nodeos.path.chain.backup}")
-	String URL_CHAIN_BACKUP;
+//	@Value("${nodeos.path.chain}")
+//	String URL_CHAIN;
+//	@Value("${nodeos.path.chain.backup}")
+//	String URL_CHAIN_BACKUP;
 	@Value("${eos.server.api}")
 	String EOS_SERVER_API;
-	@Value("${nodeos.path.history}")
-	String URL_HISTORY;
-	@Value("${nodeos.path.history.backup}")
-	String URL_HISTORY_BACKUP;
+//	@Value("${nodeos.path.history}")
+//	String URL_HISTORY;
+//	@Value("${nodeos.path.history.backup}")
+//	String URL_HISTORY_BACKUP;
+	
 	@ResponseBody
 	@RequestMapping(value = "/getInfo")
 	public Object getInfo(HttpServletRequest request) {
 		EosResult resp = null;
 		try {
-			resp = new GetInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, "");
+			resp = new GetInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), "");
 			if (resp.isSuccess()) {
 				return this.success(resp.getData());
 			} else {
@@ -150,7 +153,7 @@ public class EosRpcController extends BaseController {
 				return this.success(true);
 			}
 			
-			resp = new PushTransaction().run(URL_CHAIN, URL_CHAIN_BACKUP, transactionData);
+			resp = new PushTransaction().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), transactionData);
 			if (resp.isSuccess()) {
 				pushService.pushByTag(to, to + "收到一笔  " + amount  + " 转账." + "来自：" + from + ". 备注：" + memo, extr);
 				return this.success(resp.getData());
@@ -181,7 +184,7 @@ public class EosRpcController extends BaseController {
 		}
 		EosResult resp = null;
 		try {
-			resp = new GetBalance().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+			resp = new GetBalance().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(resp.getData());
 			}else {
@@ -209,7 +212,7 @@ public class EosRpcController extends BaseController {
 		}
 		EosResult resp = null;
 		try {
-			resp = new ListProducers().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+			resp = new ListProducers().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else {
@@ -231,7 +234,7 @@ public class EosRpcController extends BaseController {
 		
 		EosResult resp = null;
 		try {
-			resp = new PushTransaction().run(URL_CHAIN, URL_CHAIN_BACKUP, transactionData);
+			resp = new PushTransaction().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), transactionData);
 			if (resp.isSuccess()) {
 				return this.success(resp.getData());
 			}else {
@@ -260,7 +263,7 @@ public class EosRpcController extends BaseController {
 		}
 		EosResult resp = null;
 		try {
-			resp = new GetAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+			resp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else{
@@ -295,7 +298,7 @@ public class EosRpcController extends BaseController {
 
 		EosResult resp = null;
 		try {
-			resp = new GetVotingInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+			resp = new GetVotingInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else{
@@ -334,7 +337,7 @@ public class EosRpcController extends BaseController {
 
 		EosResult resp = null;
 		try {
-		resp = new GetUndelegatebwInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+		resp = new GetUndelegatebwInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else {
@@ -360,7 +363,7 @@ public class EosRpcController extends BaseController {
 		}
 		EosResult resp = null;
 		try {
-			resp = new GetKeyAccounts().run(URL_HISTORY, URL_HISTORY_BACKUP, jsonObject.toString());
+			resp = new GetKeyAccounts().run(eosNodeUtils.getNodeUrls().get("url_history"), eosNodeUtils.getNodeUrls().get("url_history_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else {
@@ -434,7 +437,7 @@ public class EosRpcController extends BaseController {
 //		JSONObject jsonObject = new JSONObject(requestMap);
 //		EosResult resp = null;
 //		try {
-//			resp = new GetActions().run(URL_HISTORY, URL_HISTORY_BACKUP, jsonObject.toString());
+//			resp = new GetActions().run(eosNodeUtils.getNodeUrls().get("url_history"), eosNodeUtils.getNodeUrls().get("url_history_backup"), jsonObject.toString());
 //			if (resp.isSuccess()) {
 //				return this.success(JSONObject.parseObject(resp.getData()));
 //			}else {
@@ -459,7 +462,7 @@ public class EosRpcController extends BaseController {
 //			}
 //			if (null == requestMap.get("page") || requestMap.get("page").toString().isEmpty()) {
 //				// 兼容之前的接口
-//				resp = new GetActions().run(URL_HISTORY, URL_HISTORY_BACKUP, jsonObject.toString());
+//				resp = new GetActions().run(eosNodeUtils.getNodeUrls().get("url_history"), eosNodeUtils.getNodeUrls().get("url_history_backup"), jsonObject.toString());
 //				if (resp.isSuccess()) {
 //					System.out.println(this.success(JSONObject.parseObject(resp.getData())));
 //					return this.success(JSONObject.parseObject(resp.getData()));
@@ -492,7 +495,7 @@ public class EosRpcController extends BaseController {
 //					jo.put("offset ", offset);
 //					jo.put("account_name", requestMap.get("account_name").toString());
 //
-//					resp = new GetActions4Page().run(URL_HISTORY, URL_HISTORY_BACKUP, jo.toString());
+//					resp = new GetActions4Page().run(eosNodeUtils.getNodeUrls().get("url_history"), eosNodeUtils.getNodeUrls().get("url_history_backup"), jo.toString());
 //					if (resp.isSuccess()) {
 //						JSONObject tempResult = JSONObject.parseObject(resp.getData());
 //						JSONArray actionsArray = tempResult.getJSONArray("actions");
@@ -549,7 +552,7 @@ public class EosRpcController extends BaseController {
 
 		EosResult resp = null;
 		try {
-		resp = new GetGlobalInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+		resp = new GetGlobalInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else {
@@ -591,7 +594,7 @@ public class EosRpcController extends BaseController {
 			JSONObject getAccountJsonObject = new JSONObject();
 			getAccountJsonObject.put("account_name", account_name);
 			
-			EosResult getAccountResp = new GetAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP,
+			EosResult getAccountResp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"),
 					getAccountJsonObject.toString());
 			if (getAccountResp.isSuccess()) {
 				return this.success(true);
@@ -615,7 +618,7 @@ public class EosRpcController extends BaseController {
 			JSONObject getAccountJsonObject = new JSONObject();
 			getAccountJsonObject.put("account_name", account_name);
 			
-			EosResult getAccountResp = new GetAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP,
+			EosResult getAccountResp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"),
 					getAccountJsonObject.toString());
 			if (getAccountResp.isSuccess()) {
 				JSONObject jo = JSONObject.parseObject(getAccountResp.getData());
@@ -671,7 +674,7 @@ public class EosRpcController extends BaseController {
 		}
 		EosResult resp = null;
 		try {
-			resp = new GetAccountDelbandInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+			resp = new GetAccountDelbandInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
 				return this.success(JSONObject.parseObject(resp.getData()));
 			}else{
@@ -699,7 +702,7 @@ public class EosRpcController extends BaseController {
 			}
 			EosResult resp = null;
 			try {
-				resp = new GetAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+				resp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 				if (resp.isSuccess()) {
 					String  data=resp.getData();
 					JSONObject json=JSONObject.parseObject(data);

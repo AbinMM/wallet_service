@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -36,9 +36,8 @@ import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.cache.service.CacheService;
-import it.etoken.component.eosblock.mongo.model.RamPriceInfo;
-import it.etoken.component.eosblock.mongo.model.Transactions;
 import it.etoken.component.eosblock.service.RamPriceService;
+import it.etoken.component.eosblock.utils.EosNodeUtils;
 
 @Component
 @Transactional
@@ -47,13 +46,18 @@ public class RamPriceServiceImpl implements RamPriceService {
 	private final long BIG_BILLS_AMMOUNT = 2000;
 	private final long MID_BILLS_AMMOUNT = 500;
 	
-	@Value("${nodeos.path.chain}")
-	String URL_CHAIN;
-	@Value("${nodeos.path.chain.backup}")
-	String URL_CHAIN_BACKUP;
+//	@Value("${nodeos.path.chain}")
+//	String URL_CHAIN;
+//	@Value("${nodeos.path.chain.backup}")
+//	String URL_CHAIN_BACKUP;
 	
 	@Autowired
+	EosNodeUtils eosNodeUtils;
+	
+	@Autowired
+	@Qualifier(value = "primaryMongoTemplate")
 	MongoOperations mongoTemplate;
+
 
 	@Autowired
 	CacheService cacheService;
@@ -104,7 +108,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 		Query query = new Query(Criteria.where("record_date").is(open_record_date));
 		
-		List<RamPriceInfo> openRamPriceInfos = mongoTemplate.find(query, RamPriceInfo.class);
+		List<BasicDBObject> openRamPriceInfos = mongoTemplate.find(query, BasicDBObject.class, "ram_price");
 		BigDecimal open = BigDecimal.valueOf(0.19147);
 		if(null !=openRamPriceInfos && !openRamPriceInfos.isEmpty()) {
 			BasicDBObject openRamPriceInfo = openRamPriceInfos.get(0);
@@ -129,7 +133,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 		
 		BigDecimal price = new BigDecimal(result.getString("price"));
 		
-		RamPriceInfo ramPriceInfo = new RamPriceInfo();
+		BasicDBObject ramPriceInfo = new BasicDBObject();
 		ramPriceInfo.put("record_date", times);
 		ramPriceInfo.put("price", price.doubleValue());
 		ramPriceInfo.put("total_eos", result.getDouble("total_eos"));
@@ -156,7 +160,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 		Query queryExists = new Query(Criteria.where("record_date").is(times));
 		BasicDBObject existsRamPriceInfo = mongoTemplate.findOne(queryExists, BasicDBObject.class, "ram_price");
 		if(existsRamPriceInfo == null) {
-			mongoTemplate.save(ramPriceInfo);
+			mongoTemplate.save(ramPriceInfo, "ram_price");
 			cacheService.set("ram_price_info", ramPriceInfo);
 		}
 
@@ -173,10 +177,10 @@ public class RamPriceServiceImpl implements RamPriceService {
 			jsonObject.put("code", "eosio");
 			jsonObject.put("scope", "eosio");
 			jsonObject.put("table", "rammarket");
-			String resultStr = HttpClientUtils.doPostJson(URL_CHAIN + "get_table_rows",
+			String resultStr = HttpClientUtils.doPostJson(eosNodeUtils.getNodeUrls().get("url_chain") + "get_table_rows",
 					jsonObject.toString());
 			if(null == resultStr || resultStr.isEmpty()) {
-				resultStr = HttpClientUtils.doPostJson(URL_CHAIN_BACKUP + "get_table_rows",
+				resultStr = HttpClientUtils.doPostJson(eosNodeUtils.getNodeUrls().get("url_chain_backup") + "get_table_rows",
 						jsonObject.toString());
 			}
 
@@ -297,10 +301,10 @@ public class RamPriceServiceImpl implements RamPriceService {
 			jsonObject.put("code", "eosio");
 			jsonObject.put("scope", "eosio");
 			jsonObject.put("table", "global");
-			String resultStr = HttpClientUtils.doPostJson(URL_CHAIN + "get_table_rows",
+			String resultStr = HttpClientUtils.doPostJson(eosNodeUtils.getNodeUrls().get("url_chain") + "get_table_rows",
 					jsonObject.toString());
 			if(null == resultStr || resultStr.isEmpty()) {
-				resultStr = HttpClientUtils.doPostJson(URL_CHAIN_BACKUP + "get_table_rows",
+				resultStr = HttpClientUtils.doPostJson(eosNodeUtils.getNodeUrls().get("url_chain_backup") + "get_table_rows",
 						jsonObject.toString());
 			}
 			result = JSONObject.parseObject(resultStr);
@@ -330,7 +334,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			Query query = new Query(Criteria.where("record_date").gte(start_time));
 			query = query.with(new Sort(new Order(Direction.ASC, "record_date")));
 
-			List<RamPriceInfo> ramPriceInfoList = mongoTemplate.find(query, RamPriceInfo.class);
+			List<BasicDBObject> ramPriceInfoList = mongoTemplate.find(query, BasicDBObject.class, "ram_price");
 
 			cacheService.set("ram_price_hours_" + thisLineHour, ramPriceInfoList);
 		}
@@ -338,7 +342,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 	public BigDecimal getRamPriceByTimes(Long times) {
 		Query query = new Query(Criteria.where("record_date").is(times));
-		List<RamPriceInfo> result = mongoTemplate.find(query, RamPriceInfo.class);
+		List<BasicDBObject> result = mongoTemplate.find(query, BasicDBObject.class, "ram_price");
 
 		BigDecimal price = BigDecimal.ZERO;
 		if (null != result && !result.isEmpty()) {
@@ -359,7 +363,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 		query = query.limit(pageSize);
 		query = query.skip((page - 1) * pageSize);
 
-		List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 		
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
@@ -471,7 +475,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			query = query.limit(pageSize);
 			query = query.skip((page - 1) * pageSize);
 
-			List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
@@ -744,7 +748,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 		query = query.limit(pageSize);
 		query = query.skip((page - 1) * pageSize);
 
-		List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 		
 		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
 		for (BasicDBObject thisBasicDBObject : transactionsList) {
@@ -850,14 +854,14 @@ public class RamPriceServiceImpl implements RamPriceService {
 ////		String xyz = aggregation.toString();
 //		AggregationResults<BasicDBObject> outputTypeCount1 = mongoTemplate.aggregate(aggregation, "pt", BasicDBObject.class);
 		
-		long total = mongoTemplate.count(query, Transactions.class);
+		long total = mongoTemplate.count(query, "transactions");
 		long xcount = 1;
 		BigDecimal totalPage = BigDecimal.valueOf(total).divide(BigDecimal.valueOf(pageSize), 0, BigDecimal.ROUND_CEILING);
 		for(int i = 1; i <= totalPage.intValue(); i++) {
 			query = query.limit(pageSize);
 			query = query.skip((i - 1) * pageSize);
 			
-			List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
 				Object[] thisActions = actions.toArray();

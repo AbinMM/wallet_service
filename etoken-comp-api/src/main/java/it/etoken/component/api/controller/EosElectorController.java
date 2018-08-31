@@ -28,6 +28,7 @@ import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.eosrpc.EosResult;
 import it.etoken.component.api.eosrpc.ListProducers;
 import it.etoken.component.api.exception.MLApiException;
+import it.etoken.component.api.utils.EosNodeUtils;
 import it.etoken.componet.coins.facade.EosElectorFacadeAPI;
 
 
@@ -43,11 +44,14 @@ public class EosElectorController extends BaseController{
 	@Autowired
 	CacheService cacheService;
 	
-	@Value("${nodeos.path.chain}")
-	String URL_CHAIN;
+	@Autowired
+	EosNodeUtils eosNodeUtils;
 	
-	@Value("${nodeos.path.chain.backup}")
-	String URL_CHAIN_BACKUP;
+//	@Value("${nodeos.path.chain}")
+//	String URL_CHAIN;
+//	
+//	@Value("${nodeos.path.chain.backup}")
+//	String URL_CHAIN_BACKUP;
 	/**
 	 * 获取候选人列表
 	 * @param requestMap
@@ -68,7 +72,7 @@ public class EosElectorController extends BaseController{
 				jsonObject.put("json", true);
 				jsonObject.put("lower_bound", "");
 				jsonObject.put("limit", 130);
-				EosResult resp = new ListProducers().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+				EosResult resp = new ListProducers().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 				
 				if (resp.isSuccess()) {
 					JSONObject jso = JSONObject.parseObject(resp.getData());

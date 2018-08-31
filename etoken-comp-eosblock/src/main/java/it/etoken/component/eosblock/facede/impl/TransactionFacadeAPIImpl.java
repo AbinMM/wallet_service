@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.result.MLResultList;
-import it.etoken.component.eosblock.mongo.model.Transactions;
 import it.etoken.component.eosblock.service.TransactionsService;
 import it.etoken.componet.eosblock.facade.TransactionsFacadeAPI;
 
@@ -45,13 +45,13 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 	}
 
 	@Override
-	public MLResultList<Transactions> findAccountCoins(String account, String actor) {
+	public MLResultList<BasicDBObject> findAccountCoins(String account, String actor) {
 		try {
-			List<Transactions> result= transactionsService.findAccountCoins(account,actor);
-			return new MLResultList<Transactions>(result);
+			List<BasicDBObject> result= transactionsService.findAccountCoins(account,actor);
+			return new MLResultList<BasicDBObject>(result);
 		} catch (MLException e) {
 			logger.error(e.toString());
-			return new MLResultList<Transactions>(e);
+			return new MLResultList<BasicDBObject>(e);
 		}
 	}
 }

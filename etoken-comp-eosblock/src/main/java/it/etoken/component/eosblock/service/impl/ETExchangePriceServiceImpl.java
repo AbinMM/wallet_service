@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -36,9 +36,9 @@ import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.cache.service.CacheService;
-import it.etoken.component.eosblock.mongo.model.Transactions;
 import it.etoken.component.eosblock.service.ETExchangePriceService;
 import it.etoken.component.eosblock.utils.EOSUtils;
+import it.etoken.component.eosblock.utils.EosNodeUtils;
 
 @Component
 @Transactional
@@ -47,12 +47,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	private final long BIG_BILLS_AMMOUNT = 2000;
 	private final long MID_BILLS_AMMOUNT = 500;
 
-	@Value("${nodeos.path.chain}")
-	String URL_CHAIN;
-	@Value("${nodeos.path.chain.backup}")
-	String URL_CHAIN_BACKUP;
+//	@Value("${nodeos.path.chain}")
+//	String URL_CHAIN;
+//	@Value("${nodeos.path.chain.backup}")
+//	String URL_CHAIN_BACKUP;
+	
+	@Autowired
+	EosNodeUtils eosNodeUtils;
 
 	@Autowired
+	@Qualifier(value = "primaryMongoTemplate")
 	MongoOperations mongoTemplate;
 
 	@Autowired
@@ -182,9 +186,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			jsonObject.put("code", "etbexchanger");
 			jsonObject.put("scope", "etbexchanger");
 			jsonObject.put("table", "markets");
-			String resultStr = HttpClientUtils.doPostJson(URL_CHAIN + "get_table_rows", jsonObject.toString());
+			String resultStr = HttpClientUtils.doPostJson(eosNodeUtils.getNodeUrls().get("url_chain") + "get_table_rows", jsonObject.toString());
 			if (null == resultStr || resultStr.isEmpty()) {
-				resultStr = HttpClientUtils.doPostJson(URL_CHAIN_BACKUP + "get_table_rows", jsonObject.toString());
+				resultStr = HttpClientUtils.doPostJson(eosNodeUtils.getNodeUrls().get("url_chain_backup") + "get_table_rows", jsonObject.toString());
 			}
 
 			JSONObject jo = JSONObject.parseObject(resultStr);
@@ -380,7 +384,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		query = query.limit(pageSize);
 		query = query.skip((page - 1) * pageSize);
 
-		List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<ETTradeLog> result = new ArrayList<ETTradeLog>();
@@ -508,7 +512,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			query = query.limit(pageSize);
 			query = query.skip((page - 1) * pageSize);
 
-			List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");

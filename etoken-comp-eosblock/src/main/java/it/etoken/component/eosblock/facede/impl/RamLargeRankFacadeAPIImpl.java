@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.result.MLResultList;
-import it.etoken.base.model.eosblock.entity.RamTradeLog;
-import it.etoken.component.eosblock.mongo.model.RamLargeRank;
 import it.etoken.component.eosblock.service.RamLargeRankService;
-import it.etoken.component.eosblock.service.RamPriceService;
 import it.etoken.componet.eosblock.facade.RamLargeRankFacadeAPI;
 @Service(version = "1.0.0")
 public class RamLargeRankFacadeAPIImpl implements RamLargeRankFacadeAPI{
@@ -24,13 +22,13 @@ public class RamLargeRankFacadeAPIImpl implements RamLargeRankFacadeAPI{
 	RamLargeRankService ramLargeRankService;
 
 	@Override
-	public MLResultList<RamLargeRank> getNewestRank() {
+	public MLResultList<BasicDBObject> getNewestRank() {
 		try {
-			List<RamLargeRank> result= ramLargeRankService.getNewestRank();
-			return new MLResultList<RamLargeRank>(result);
+			List<BasicDBObject> result= ramLargeRankService.getNewestRank();
+			return new MLResultList<BasicDBObject>(result);
 		} catch (MLException e) {
 			logger.error(e.toString());
-			return new MLResultList<RamLargeRank>(e);
+			return new MLResultList<BasicDBObject>(e);
 		}
 	}
 	

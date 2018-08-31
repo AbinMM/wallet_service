@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -34,6 +35,7 @@ import it.etoken.component.api.eosrpc.CreateAccount;
 import it.etoken.component.api.eosrpc.EosResult;
 import it.etoken.component.api.eosrpc.GetAccountInfo;
 import it.etoken.component.api.exception.MLApiException;
+import it.etoken.component.api.utils.EosNodeUtils;
 import it.etoken.componet.user.facade.EostRecordFacadeAPI;
 import it.etoken.componet.user.facade.UserFacadeAPI;
 import it.etoken.componet.user.point.UserPointType;
@@ -53,12 +55,15 @@ public class UserController extends BaseController {
 	@Reference(version = "1.0.0", timeout = 30000, retries=0)
 	EostRecordFacadeAPI eostRecordFacadeAPI;
 	
-	@Value("${nodeos.path.chain}")
-	String URL_CHAIN;
+	@Autowired
+	EosNodeUtils eosNodeUtils;
 	
-	@Value("${nodeos.path.chain.backup}")
-	String URL_CHAIN_BACKUP;
-	
+//	@Value("${nodeos.path.chain}")
+//	String URL_CHAIN;
+//	
+//	@Value("${nodeos.path.chain.backup}")
+//	String URL_CHAIN_BACKUP;
+//	
 	@Value("${eos.server.api}")
 	String EOS_SERVER_API;
 	
@@ -232,7 +237,7 @@ public class UserController extends BaseController {
 		try {
 			JSONObject getAccountJsonObject = new JSONObject();
 			getAccountJsonObject.put("account_name", requestMap.get("username"));
-			EosResult getAccountResp = new GetAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP,
+			EosResult getAccountResp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"),
 					getAccountJsonObject.toString());
 			if (getAccountResp.isSuccess()) {
 				JSONObject jo = JSONObject.parseObject(getAccountResp.getData());

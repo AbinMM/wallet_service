@@ -3,6 +3,7 @@ package it.etoken.component.eosblock.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -19,7 +20,6 @@ import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.cache.service.CacheService;
-import it.etoken.component.eosblock.mongo.model.RamLargeRank;
 import it.etoken.component.eosblock.service.RamLargeRankService;
 
 @Component
@@ -27,17 +27,18 @@ import it.etoken.component.eosblock.service.RamLargeRankService;
 public class RamLargeRankServiceImpl implements RamLargeRankService{
 
 	@Autowired
+	@Qualifier(value = "primaryMongoTemplate")
 	MongoOperations mongoTemplate;
 	
 	@Autowired
 	CacheService cacheService;
 	
 	@Override
-	public List<RamLargeRank> getNewestRank() {
+	public List<BasicDBObject> getNewestRank() {
 		Query query = new Query();
 		query = query.with(new Sort(new Order(Direction.DESC, "ramQuota")));
 		query = query.limit(20);
-		List<RamLargeRank> RamLargeRankList = mongoTemplate.find(query, RamLargeRank.class);
+		List<BasicDBObject> RamLargeRankList = mongoTemplate.find(query, BasicDBObject.class, "ram_large_user_rank");
 		return RamLargeRankList;
 	}
 
@@ -52,7 +53,7 @@ public class RamLargeRankServiceImpl implements RamLargeRankService{
 		    	  return;
 		      }
 		      Query query = new Query();
-		      mongoTemplate.remove(query, RamLargeRank.class);
+		      mongoTemplate.remove(query, "ram_large_user_rank");
 		      for(int i=0;i<jsonarray.size();i++){
 		    	  JSONObject user = jsonarray.getJSONObject(i); // 遍历 jsonarray 数组，把每一个对象转成 json 对象
 		    	  Double ramQuota=user.getDouble("ramQuota");
@@ -77,7 +78,7 @@ public class RamLargeRankServiceImpl implements RamLargeRankService{
 		  	Query query2 = new Query();
 			query2 = query2.with(new Sort(new Order(Direction.DESC, "ramQuota")));
 			query2 = query2.limit(20);
-			List<RamLargeRank> RamLargeRankList = mongoTemplate.find(query2, RamLargeRank.class);
+			List<BasicDBObject> RamLargeRankList = mongoTemplate.find(query2, BasicDBObject.class, "ram_large_user_rank");
 			cacheService.set("ram_large_user_rank", RamLargeRankList,65*60);
 		} catch (Exception e) {
 			e.printStackTrace();

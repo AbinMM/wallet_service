@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -26,8 +27,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
-import it.etoken.component.eosblock.mongo.model.RamPriceInfo;
-import it.etoken.component.eosblock.mongo.model.Transactions;
 import it.etoken.component.eosblock.service.TransactionsService;
 
 @Component
@@ -35,13 +34,14 @@ import it.etoken.component.eosblock.service.TransactionsService;
 public class TransactionsServiceImpl implements TransactionsService{
 	
 	@Autowired
+	@Qualifier(value = "primaryMongoTemplate")
 	MongoOperations mongoTemplate;
 	
 	
 	
 	public BigDecimal getRamPriceByTimes(Long times) {
 		Query query = new Query(Criteria.where("record_date").is(times));
-		List<RamPriceInfo> result = mongoTemplate.find(query, RamPriceInfo.class);
+		List<BasicDBObject> result = mongoTemplate.find(query, BasicDBObject.class, "ram_price");
 		
 		if(null != result && !result.isEmpty()) {
 			BasicDBObject temp = result.get(0);
@@ -99,7 +99,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 	    query = query.limit(pageSize);
 	    query = query.skip((page - 1) * pageSize);
 
-	    List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+	    List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 	    
 	    List<JSONObject> list=new ArrayList<JSONObject>();
 		for (BasicDBObject thisBasicDBObject :transactionsList) {
@@ -480,7 +480,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 	}
 
 	@Override
-	public List<Transactions> findAccountCoins(String account, String actor) {
+	public List<BasicDBObject> findAccountCoins(String account, String actor) {
 		try {
 			Criteria  accountCriteria = Criteria.where("actions.account").is(actor);//合约账号
 			Criteria[] actorCriterias = new Criteria[3];
@@ -494,7 +494,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 			System.out.println(criteria);
 			Query query = new Query(criteria);
 		    query = query.limit(1);
-		    List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
+		    List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 		    return transactionsList;
 		} catch (Exception e) {
 			// TODO: handle exception

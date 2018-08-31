@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
@@ -34,7 +34,7 @@ import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.eosrpc.ContractAccountInfo;
 import it.etoken.component.api.eosrpc.EosResult;
 import it.etoken.component.api.exception.MLApiException;
-import it.etoken.component.eosblock.mongo.model.Transactions;
+import it.etoken.component.api.utils.EosNodeUtils;
 import it.etoken.componet.coins.facade.CoinsFacadeAPI;
 import it.etoken.componet.eosblock.facade.TransactionsFacadeAPI;
 import it.etoken.componet.market.facede.MarketFacadeAPI;
@@ -61,10 +61,13 @@ public class CoinsController extends BaseController{
 	@Autowired
 	CacheService cacheService;
 	
-	@Value("${nodeos.path.chain}")
-	String URL_CHAIN;
-	@Value("${nodeos.path.chain.backup}")
-	String URL_CHAIN_BACKUP;
+	@Autowired
+	EosNodeUtils eosNodeUtils;
+	
+//	@Value("${nodeos.path.chain}")
+//	String URL_CHAIN;
+//	@Value("${nodeos.path.chain.backup}")
+//	String URL_CHAIN_BACKUP;
 	
 	/**
 	 * 账号信息
@@ -320,7 +323,7 @@ public class CoinsController extends BaseController{
 			jsonObject.put("scope", name);
 			jsonObject.put("table", "stat");
 			EosResult checkAccountResp = null;
-			checkAccountResp = new ContractAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+			checkAccountResp = new ContractAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (!checkAccountResp.isSuccess()) {
 				return this.error(MLApiException.CONTRACT_NOT_EXIST_ERROR, checkAccountResp.getData());
 			}
@@ -406,7 +409,7 @@ public class CoinsController extends BaseController{
 		      if(contract==null||contract.isEmpty()) {
 		    	  continue;
 		      }
-		      MLResultList<Transactions> result=transactionsFacadeAPI.findAccountCoins(account, contract);
+		      MLResultList<BasicDBObject> result=transactionsFacadeAPI.findAccountCoins(account, contract);
 		      if(result.getList().size()>0) {
 		    	  listCoin.add(coins.getName());
 		      }
@@ -447,7 +450,7 @@ public class CoinsController extends BaseController{
 				
 				EosResult checkAccountResp = null;
 				try {
-					checkAccountResp = new ContractAccountInfo().run(URL_CHAIN, URL_CHAIN_BACKUP, jsonObject.toString());
+					checkAccountResp = new ContractAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 				}catch(Exception ex) {
 					continue;
 				}

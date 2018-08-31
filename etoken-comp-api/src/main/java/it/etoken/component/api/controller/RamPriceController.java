@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,16 +23,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.result.MLResultList;
-import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.exception.MLApiException;
-import it.etoken.component.eosblock.mongo.model.RamLargeRank;
-import it.etoken.component.eosblock.mongo.model.RamPriceInfo;
 import it.etoken.componet.eosblock.facade.RamLargeRankFacadeAPI;
 import it.etoken.componet.eosblock.facade.RamPriceFacadeAPI;
 
@@ -55,7 +50,7 @@ public class RamPriceController extends BaseController {
 	@RequestMapping(value = "/ramPriceInfo")
 	public Object findRamPriceInfo(HttpServletRequest request) {
 		try {
-			RamPriceInfo ram_price_info = cacheService.get("ram_price_info",RamPriceInfo.class);
+			BasicDBObject ram_price_info = cacheService.get("ram_price_info", BasicDBObject.class);
 			 return this.success(ram_price_info);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -278,14 +273,14 @@ public class RamPriceController extends BaseController {
 	@RequestMapping(value = "/getLargeRamRank")
 	public Object getLargeRamRank(HttpServletRequest request) {
 		try {
-			RamPriceInfo ram_price_info = cacheService.get("ram_price_info",RamPriceInfo.class);
+			BasicDBObject ram_price_info = cacheService.get("ram_price_info",BasicDBObject.class);
 			Object a=ram_price_info.get("total_ram");
 			Double total=new Double(a.toString());
 			Double total_new=total*1024*1024*1024;
 			BigDecimal total_ram=new BigDecimal(total_new);
-			List<RamLargeRank> listRamLargeRank=cacheService.get("ram_large_user_rank",List.class);
+			List<BasicDBObject> listRamLargeRank=cacheService.get("ram_large_user_rank",List.class);
 			if( null==listRamLargeRank||listRamLargeRank.size()==0) {
-				MLResultList<RamLargeRank> result =ramLargeRankFacadeAPI.getNewestRank();
+				MLResultList<BasicDBObject> result =ramLargeRankFacadeAPI.getNewestRank();
 				listRamLargeRank=result.getList();
 			}
 			List<JSONObject> list=new ArrayList<>();
