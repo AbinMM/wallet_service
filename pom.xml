@@ -3,14 +3,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.etoken</groupId>
   <artifactId>etoken-parent</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.0</version>
   <packaging>pom</packaging>
   <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.version>1.0</project.version>
-		<springboot.version>1.5.15.RELEASE</springboot.version>
+		<!--  <springboot.version>1.5.15.RELEASE</springboot.version> -->
+		<springboot.version>2.0.4.RELEASE</springboot.version>
 		<springboot.dubbo>1.0.0</springboot.dubbo>
 		<fastjson>1.2.44</fastjson>
 		<mysql.version>5.1.40</mysql.version>
