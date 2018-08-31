@@ -36,6 +36,7 @@ import it.etoken.component.api.eosrpc.GetAccountDelbandInfo;
 import it.etoken.component.api.eosrpc.GetAccountInfo;
 import it.etoken.component.api.eosrpc.GetBalance;
 import it.etoken.component.api.eosrpc.GetDelegatebw;
+import it.etoken.component.api.eosrpc.GetEosTableRows;
 import it.etoken.component.api.eosrpc.GetGlobalInfo;
 import it.etoken.component.api.eosrpc.GetInfo;
 import it.etoken.component.api.eosrpc.GetKeyAccounts;
@@ -795,4 +796,61 @@ public class EosRpcController extends BaseController {
         	  return this.error(MLApiException.NOTDELEGATEBW, "你还没有抵押记录");  
           }
     }
+	  
+	@ResponseBody
+	@RequestMapping(value = "/getEosTableRows")
+	public Object getEosTableRows(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
+		logger.info("/getEosTableRows request map : " + requestMap);
+		
+		Boolean json = true;
+		if(requestMap.get("json")!=null && !requestMap.get("json").isEmpty()) {
+			json = Boolean.valueOf(requestMap.get("json"));
+		}
+		
+		if(requestMap.get("code")==null || requestMap.get("code").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		
+		if(requestMap.get("scope")==null || requestMap.get("scope").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		
+		if(requestMap.get("table")==null || requestMap.get("table").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("json", json);
+		jsonObject.put("code", requestMap.get("code"));
+		jsonObject.put("scope", requestMap.get("scope"));
+		jsonObject.put("table", requestMap.get("table"));
+		
+		if(requestMap.get("table_key") != null && !requestMap.get("table_key").isEmpty()) {
+			jsonObject.put("table_key", requestMap.get("table_key"));
+		}
+		if(requestMap.get("lower_bound") != null && !requestMap.get("lower_bound").isEmpty()) {
+			jsonObject.put("lower_bound", requestMap.get("lower_bound"));
+		}
+		if(requestMap.get("upper_bound") != null && !requestMap.get("upper_bound").isEmpty()) {
+			jsonObject.put("upper_bound", requestMap.get("upper_bound"));
+		}
+		
+		if(requestMap.get("limit") != null && !requestMap.get("limit").isEmpty()) {
+			jsonObject.put("limit", requestMap.get("limit"));
+		}
+
+		EosResult resp = null;
+		try {
+			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
+					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
+			if (resp.isSuccess()) {
+				return this.success(resp.getData());
+			} else {
+				return this.error(resp.getStatus(), resp.getData());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this.error(MLApiException.EOSRPC_FAIL, null);
+	}
 }
