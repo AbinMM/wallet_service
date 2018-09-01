@@ -560,7 +560,8 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	@Override
 	public List<ETTradeLog> getBigTradeOrdersByCode(String code) throws MLException {
 		String[] codes = code.split("_");
-		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]));
+		
+		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]).and("createdAt").exists(true));
 		
 		Criteria buyCriteria = new Criteria();
 		Criteria sellCriteria = new Criteria();
@@ -570,8 +571,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
 		
-		query = query.addCriteria(buysellCriteria);
-		query = query.addCriteria(Criteria.where("createdAt").exists(true));
+		query.addCriteria(buysellCriteria);
 		
 		int page = 1;
 		int pageSize = 1000;
@@ -668,6 +668,11 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 							continue;
 						}
 						
+						BigDecimal eos_qty = BigDecimal.valueOf(Double.valueOf(eos_quants[0].trim()));
+						if(eos_qty.compareTo(BigDecimal.valueOf(1000)) < 0) {
+							continue;
+						}
+						
 						etTradeLog.setAccount(data.getString("payer"));
 						etTradeLog.setToken_contract(data.getString("token_contract"));
 						etTradeLog.setEos_qty(eos_quant);
@@ -682,6 +687,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						BigDecimal eos_qty = qty.multiply(price);
 						eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
 						
+						if(eos_qty.compareTo(BigDecimal.valueOf(1000)) < 0) {
+							continue;
+						}
+						
 						etTradeLog.setAccount(data.getString("receiver"));
 						etTradeLog.setToken_contract(data.getString("token_contract"));
 						etTradeLog.setEos_qty(eos_qty + " EOS");
@@ -693,7 +702,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				}
 			}
 			page++;
-		} while (existMap.size() < count);
+		} while (existMap.size() < count && page < 6);
 		Object[] obj=new Object[existMap.size()];
 		int i=0;
 		for (Map.Entry<String, String> entry : existMap.entrySet()) { 
@@ -706,7 +715,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
 		for (ETTradeLog eTTradeLog : result) {
 			String price=priceMap.get(eTTradeLog.getTrx_id());
-			if(price==null||price.length()==0) {
+			if(null==price||price.isEmpty()) {
 				Object[] obj1=new Object[1];
 				obj1[0]=eTTradeLog.getTrx_id();
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
@@ -911,7 +920,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
 		for (ETTradeLog eTTradeLog : result) {
 			String price=priceMap.get(eTTradeLog.getTrx_id());
-			if(price==null||price.length()==0) {
+			if(null==price||price.isEmpty()) {
 				Object[] obj1=new Object[1];
 				obj1[0]=eTTradeLog.getTrx_id();
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
