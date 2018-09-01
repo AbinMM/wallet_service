@@ -531,7 +531,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				result.add(etTradeLog);
 			}
 		}
-		Object[] obj=new Object[100];
+		Object[] obj=new Object[existMap.size()];
 		int i=0;
 		for (Map.Entry<String, String> entry : existMap.entrySet()) { 
 			if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
