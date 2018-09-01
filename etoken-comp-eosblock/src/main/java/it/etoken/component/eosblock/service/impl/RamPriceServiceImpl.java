@@ -36,8 +36,9 @@ import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.cache.service.CacheService;
-import it.etoken.component.eosblock.service.RamPriceService;
 import it.etoken.component.eosblock.utils.EosNodeUtils;
+import it.etoken.component.eosblock.service.RamPriceService;
+import it.etoken.component.eosblock.service.TransactionsService;
 
 @Component
 @Transactional
@@ -61,6 +62,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 	@Autowired
 	CacheService cacheService;
+	
+	@Autowired
+	TransactionsService transactionsService;
 
 	@Override
 	public JSONObject getRamInfo() throws MLException {
@@ -367,6 +371,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 		
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
+		Object[] obj=new Object[100];
+		int i=0;
 		
 		for (BasicDBObject thisBasicDBObject : transactionsList) {
 			BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
@@ -438,6 +444,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					ramTradeLog.setEos_qty(data.getString("quant"));
 					ramTradeLog.setRam_qty(ram_qty + " KB");
 				} else if (actionName.equalsIgnoreCase("sellram")) {
+					obj[i]=trx_id;
+					i++;
 					Long bytes = data.getLong("bytes");
 					BigDecimal bytesK = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1024l), 2,
 							BigDecimal.ROUND_HALF_UP);
@@ -453,6 +461,15 @@ public class RamPriceServiceImpl implements RamPriceService {
 				result.add(ramTradeLog);
 				
 			}
+		}
+		Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
+		for (RamTradeLog ramTradeLog : result) {
+			String price=priceMap.get(ramTradeLog.getTrx_id());
+			if(null==price) {
+				continue;
+			}
+			ramTradeLog.setPrice(new BigDecimal(price));
+			
 		}
 		existMap.clear();
 		cacheService.set("getNewTradeOrders", result);
@@ -470,6 +487,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
+		Object[] obj=new Object[100];
+		int i=0;
 		do {
 			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
 			query = query.limit(pageSize);
@@ -552,6 +571,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 							continue;
 						}
 					} else if (actionName.equalsIgnoreCase("sellram")) {
+						obj[i]=trx_id;
+						i++;
 						Long bytes = data.getLong("bytes");
 						BigDecimal bytesK = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1024l), 2,
 								BigDecimal.ROUND_HALF_UP);
@@ -573,7 +594,14 @@ public class RamPriceServiceImpl implements RamPriceService {
 			}
 			page++;
 		} while (existMap.size() < 20);
-
+		Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
+		for (RamTradeLog ramTradeLog : result) {
+			String price=priceMap.get(ramTradeLog.getTrx_id());
+			if(null==price) {
+				continue;
+			}
+			ramTradeLog.setPrice(new BigDecimal(price));
+		}
 		existMap.clear();
 		cacheService.set("getBigTradeOrders", result);
 
@@ -609,6 +637,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
 		boolean haveList = true;
 		Map<String, String> existMap = new HashMap<String, String>();
+		Object[] obj=new Object[100];
+		int i=0;
 		int countN = 0;
 		do {
 			Query query = new Query(actorCriteria);
@@ -698,6 +728,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 						ramTradeLog.setEos_qty(data.getString("quant"));
 						ramTradeLog.setRam_qty(ram_qty + " KB");
 					} else if (actionName.equalsIgnoreCase("sellram")) {
+						obj[i]=trx_id;
+						i++;
 						Long bytes = data.getLong("bytes");
 						BigDecimal bytesK = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1024l), 2,
 								BigDecimal.ROUND_HALF_UP);
@@ -711,14 +743,32 @@ public class RamPriceServiceImpl implements RamPriceService {
 					}
 					result.add(ramTradeLog);
 					countN++;
+					existMap.put(trx_id, trx_id);
 					if(countN == pageSize) {
+						Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
+						for (RamTradeLog ramTradeLog1 : result) {
+							String price1=priceMap.get(ramTradeLog1.getTrx_id());
+							if(null==price1) {
+								continue;
+							}
+							System.out.println("修改后价格"+price1+"修改前价格"+ramTradeLog1.getPrice());
+							ramTradeLog1.setPrice(new BigDecimal(price1));
+						}
 						existMap.clear();
 						return result;
 					}
 				}
-				existMap.put(trx_id, trx_id);
 			}
 		} while (haveList);
+		Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
+		for (RamTradeLog ramTradeLog : result) {
+			String price=priceMap.get(ramTradeLog.getTrx_id());
+			if(null==price) {
+				continue;
+			}
+			System.out.println("修改后价格"+price+"修改前价格"+ramTradeLog.getPrice());
+			ramTradeLog.setPrice(new BigDecimal(price));
+		}
 		existMap.clear();
 		return result;
 	}

@@ -40,7 +40,7 @@ public class RamPriceController extends BaseController {
 	@Autowired
 	CacheService cacheService;
 
-	@Reference(version = "1.0.0", timeout = 30000, retries = 3)
+	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
 	RamPriceFacadeAPI ramPriceFacadeAPI;
 	
 	@Reference(version = "1.0.0", timeout = 30000, retries = 3)

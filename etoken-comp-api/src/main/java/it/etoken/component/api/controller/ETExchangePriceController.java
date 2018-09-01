@@ -38,7 +38,7 @@ public class ETExchangePriceController extends BaseController {
 	@Autowired
 	CacheService cacheService;
 
-	@Reference(version = "1.0.0", timeout = 30000, retries = 3)
+	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
 	ETExchangePriceFacadeAPI eTExchangePriceFacadeAPI;
 	
 	@ResponseBody

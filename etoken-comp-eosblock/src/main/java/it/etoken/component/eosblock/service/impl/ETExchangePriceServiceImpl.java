@@ -37,6 +37,7 @@ import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.eosblock.service.ETExchangePriceService;
+import it.etoken.component.eosblock.service.TransactionsService;
 import it.etoken.component.eosblock.utils.EOSUtils;
 import it.etoken.component.eosblock.utils.EosNodeUtils;
 
@@ -61,6 +62,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 
 	@Autowired
 	CacheService cacheService;
+	
+	@Autowired
+	TransactionsService transactionsService;
 	
 	@Autowired
 	EOSUtils  eOSUtils;
@@ -486,8 +490,27 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				
 				existMap.put(trx_id, trx_id);
 				result.add(etTradeLog);
-
 			}
+		}
+		Object[] obj=new Object[100];
+		int i=0;
+		for (Map.Entry<String, String> entry : existMap.entrySet()) { 
+			if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
+				continue;
+			}
+			    obj[i]=entry.getValue();
+			    i++;
+			}
+		Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
+		for (ETTradeLog eTTradeLog : result) {
+			String price=priceMap.get(eTTradeLog.getTrx_id());
+			if(price==null||price.length()==0) {
+				Object[] obj1=new Object[1];
+				obj1[0]=eTTradeLog.getTrx_id();
+				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
+				price=priceMap1.get(eTTradeLog.getTrx_id());
+			}
+			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
 		cacheService.set("et_new_trade_orders_" + code, result);
@@ -615,7 +638,26 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			}
 			page++;
 		} while (existMap.size() < count);
-
+		Object[] obj=new Object[100];
+		int i=0;
+		for (Map.Entry<String, String> entry : existMap.entrySet()) { 
+			if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
+				continue;
+			}
+			    obj[i]=entry.getValue();
+			    i++;
+			}
+		Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
+		for (ETTradeLog eTTradeLog : result) {
+			String price=priceMap.get(eTTradeLog.getTrx_id());
+			if(price==null||price.length()==0) {
+				Object[] obj1=new Object[1];
+				obj1[0]=eTTradeLog.getTrx_id();
+				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
+				price=priceMap1.get(eTTradeLog.getTrx_id());
+			}
+			eTTradeLog.setPrice(price);
+		}
 		existMap.clear();
 		cacheService.set("et_big_trade_orders_" + code, result);
 
@@ -643,6 +685,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		List<ETTradeLog> result = new ArrayList<ETTradeLog>();
 		boolean haveList = true;
 		Map<String, String> existMap = new HashMap<String, String>();
+		Object[] obj=new Object[pageSize];
 		int countN = 0;
 		do {
 			Query query = new Query(actorCriteria);
@@ -759,14 +802,55 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					}
 					result.add(etTradeLog);
 					countN++;
+					existMap.put(trx_id, trx_id);
 					if (countN == pageSize) {
+						int i=0;
+						for (Map.Entry<String, String> entry : existMap.entrySet()) { 
+								if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
+									continue;
+								}
+							    obj[i]=entry.getValue();
+							    i++;
+							}
+						Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
+						for (ETTradeLog eTTradeLog : result) {
+							String price1=priceMap.get(eTTradeLog.getTrx_id());
+							if(price1==null||price1.length()==0) {
+								Object[] obj1=new Object[1];
+								obj1[0]=eTTradeLog.getTrx_id();
+								Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
+							    price1=priceMap1.get(eTTradeLog.getTrx_id());
+							}
+							System.out.println("修改后的价格"+price1+"修改前的价格"+eTTradeLog.getPrice());
+							eTTradeLog.setPrice(price1);
+						}
 						existMap.clear();
 						return result;
 					}
 				}
-				existMap.put(trx_id, trx_id);
+				//existMap.put(trx_id, trx_id);
 			}
 		} while (haveList);
+		int i=0;
+		for (Map.Entry<String, String> entry : existMap.entrySet()) {
+			if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
+				continue;
+			}
+			    obj[i]=entry.getValue();
+			    i++;
+			}
+		Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
+		for (ETTradeLog eTTradeLog : result) {
+			String price=priceMap.get(eTTradeLog.getTrx_id());
+			if(price==null||price.length()==0) {
+				Object[] obj1=new Object[1];
+				obj1[0]=eTTradeLog.getTrx_id();
+				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
+				price=priceMap1.get(eTTradeLog.getTrx_id());
+			}
+			System.out.println("修改后的价格"+price+"修改前的价格"+eTTradeLog.getPrice());
+			eTTradeLog.setPrice(price);
+		}
 		existMap.clear();
 		return result;
 	}

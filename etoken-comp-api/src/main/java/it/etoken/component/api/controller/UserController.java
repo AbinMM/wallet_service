@@ -368,9 +368,11 @@ public class UserController extends BaseController {
 					return this.error(MLApiException.NOEOST, "没有奖励可以领取。");
 				}
 				if(Integer.parseInt(point)<Integer.parseInt(receive_point)) {
-					return this.error(MLApiException.POINTNOTENOUGH, "您的积分暂时没有达到领取标准，多多签到可以新增积分哦");
+					return this.error(MLApiException.NOEOST, "没有奖励可以领取。");
+					//return this.error(MLApiException.POINTNOTENOUGH, "您的积分暂时没有达到领取标准，多多签到可以新增积分哦");
 				}else {
-					return this.success(true);
+					return this.error(MLApiException.NOEOST, "没有奖励可以领取。");
+					//return this.success(true);
 				}
 				
 			}
@@ -413,17 +415,18 @@ public class UserController extends BaseController {
 					if(eost==0|| eost<0) {
 						return this.error(MLApiException.NOEOST, "没有奖励可以领取。");
 					}
-					EostRecord eostRecord=new EostRecord();
-					eostRecord.setType("audit");
-					eostRecord.setUid(Long.parseLong(uid));
-					eostRecord.setEost(-user.getEost());
-					eostRecord.setEos_account(eos_account);
-					MLResult result=eostRecordFacadeAPI.saveEostRecord(eostRecord);
-					if(result.isSuccess()) {
-							return this.success(true);
-					}else {
-						return this.error(MLApiException.SYS_ERROR, null);
-					}
+					return this.error(MLApiException.NOEOST, "没有奖励可以领取。");
+//					EostRecord eostRecord=new EostRecord();
+//					eostRecord.setType("audit");
+//					eostRecord.setUid(Long.parseLong(uid));
+//					eostRecord.setEost(-user.getEost());
+//					eostRecord.setEos_account(eos_account);
+//					MLResult result=eostRecordFacadeAPI.saveEostRecord(eostRecord);
+//					if(result.isSuccess()) {
+//							return this.success(true);
+//					}else {
+//						return this.error(MLApiException.SYS_ERROR, null);
+//					}
 				}
 			}
 		}catch (Exception e) {
