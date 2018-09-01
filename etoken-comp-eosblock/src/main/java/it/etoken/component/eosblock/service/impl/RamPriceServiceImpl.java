@@ -487,7 +487,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
-		Object[] obj=new Object[100];
+		Object[] obj=new Object[pageSize];
 		int i=0;
 		do {
 			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));

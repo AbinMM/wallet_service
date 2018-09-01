@@ -638,7 +638,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			}
 			page++;
 		} while (existMap.size() < count);
-		Object[] obj=new Object[100];
+		Object[] obj=new Object[pageSize];
 		int i=0;
 		for (Map.Entry<String, String> entry : existMap.entrySet()) { 
 			if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
