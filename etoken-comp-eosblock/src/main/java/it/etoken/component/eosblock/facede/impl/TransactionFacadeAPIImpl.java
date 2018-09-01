@@ -54,4 +54,17 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 			return new MLResultList<BasicDBObject>(e);
 		}
 	}
+
+
+	@Override
+	public MLResultList<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort,
+			String token, String contract) {
+		try {
+			List<JSONObject> result= transactionsService.getEosTransactionRecord(start, count,account,sort,token,contract);
+			return new MLResultList<JSONObject>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultList<JSONObject>(e);
+		}
+	}
 }
