@@ -255,12 +255,22 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 
 		String[] codes = code.split("_");
 
-		Object[] actionsNames = new Object[] { "buytoken", "selltoken" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("actions.data.token_contract").is(codes[2]));
+		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]));
 		Criteria createDateCriteria = new Criteria();
-		createDateCriteria.andOperator(Criteria.where("createdAt").exists(true),
+		createDateCriteria=createDateCriteria.andOperator(Criteria.where("createdAt").exists(true),
 				Criteria.where("createdAt").gte(startDate), Criteria.where("createdAt").lt(endDate));
 		query.addCriteria(createDateCriteria);
+		
+		Criteria buyCriteria = new Criteria();
+		Criteria sellCriteria = new Criteria();
+		Criteria buysellCriteria = new Criteria();
+		
+		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
+		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
+		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
+		
+		query.addCriteria(buysellCriteria);
+		
 		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 		Map<String, String> existMap = new HashMap<String, String>();
@@ -282,6 +292,13 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				
 				if (actionName.equalsIgnoreCase("buytoken")) {
 					String eos_quant = data.getString("eos_quant");
+					
+					String token_symbol = data.getString("token_symbol");
+					String[] token_symbols = token_symbol.split(",");
+					if(!token_symbols[1].trim().equalsIgnoreCase(codes[0])) {
+						continue;
+					}
+					
 					String[] eos_quants = eos_quant.split(" ");
 					
 					BigDecimal buyTokenQty = BigDecimal.ZERO;
@@ -293,6 +310,11 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				} else if (actionName.equalsIgnoreCase("selltoken")) {
 					String quant = data.getString("quant");
 					String[] quants = quant.split(" ");
+					
+					if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+						continue;
+					}
+					
 					BigDecimal sellTokenQty = new BigDecimal(quants[0].trim());
 					selltradingVolum = selltradingVolum.add(sellTokenQty);
 				}
@@ -377,9 +399,19 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	@Override
 	public List<ETTradeLog> getNewTradeOrdersByCode(String code) throws MLException {
 		String[] codes = code.split("_");
-		Object[] actionsNames = new Object[] { "buytoken", "selltoken" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("actions.data.token_contract").is(codes[2])
+		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2])
 				.and("createdAt").exists(true));
+		
+		Criteria buyCriteria = new Criteria();
+		Criteria sellCriteria = new Criteria();
+		Criteria buysellCriteria = new Criteria();
+		
+		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
+		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
+		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
+		
+		query.addCriteria(buysellCriteria);
+		
 		int page = 1;
 		int pageSize = 100;
 		int count = 20;
@@ -471,6 +503,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						token_uom = token_symbols[1].trim();
 					}
 					
+					if(!token_uom.equalsIgnoreCase(codes[0])) {
+						continue;
+					}
+					
 					etTradeLog.setAccount(data.getString("payer"));
 					etTradeLog.setToken_contract(data.getString("token_contract"));
 					etTradeLog.setEos_qty(eos_quant);
@@ -478,6 +514,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				} else if (actionName.equalsIgnoreCase("selltoken")) {
 					String quant = data.getString("quant");
 					String[] quants = quant.split(" ");
+					if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+						continue;
+					}
 					BigDecimal qty = new BigDecimal(quants[0].trim());
 					BigDecimal eos_qty = qty.multiply(price);
 					eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
@@ -521,9 +560,19 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	@Override
 	public List<ETTradeLog> getBigTradeOrdersByCode(String code) throws MLException {
 		String[] codes = code.split("_");
-		Object[] actionsNames = new Object[] { "buytoken", "selltoken" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("actions.data.token_contract").is(codes[2])
-				.and("createdAt").exists(true));
+		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]));
+		
+		Criteria buyCriteria = new Criteria();
+		Criteria sellCriteria = new Criteria();
+		Criteria buysellCriteria = new Criteria();
+		
+		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
+		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
+		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
+		
+		query = query.addCriteria(buysellCriteria);
+		query = query.addCriteria(Criteria.where("createdAt").exists(true));
+		
 		int page = 1;
 		int pageSize = 1000;
 		int count = 20;
@@ -615,6 +664,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 							token_uom = token_symbols[1].trim();
 						}
 						
+						if(!token_uom.equalsIgnoreCase(codes[0])) {
+							continue;
+						}
+						
 						etTradeLog.setAccount(data.getString("payer"));
 						etTradeLog.setToken_contract(data.getString("token_contract"));
 						etTradeLog.setEos_qty(eos_quant);
@@ -622,6 +675,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					} else if (actionName.equalsIgnoreCase("selltoken")) {
 						String quant = data.getString("quant");
 						String[] quants = quant.split(" ");
+						if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+							continue;
+						}
 						BigDecimal qty = new BigDecimal(quants[0].trim());
 						BigDecimal eos_qty = qty.multiply(price);
 						eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
@@ -638,7 +694,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			}
 			page++;
 		} while (existMap.size() < count);
-		Object[] obj=new Object[pageSize];
+		Object[] obj=new Object[existMap.size()];
 		int i=0;
 		for (Map.Entry<String, String> entry : existMap.entrySet()) { 
 			if(entry.getValue().isEmpty()||entry.getValue().length()==0) {
@@ -668,8 +724,6 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	public List<ETTradeLog> getNewTradeOrdersByCodeAndAccountName(String code, String accountName, int pageSize, String last_id)
 			throws MLException {
 		String[] codes = code.split("_");
-		Object[] actionsNames = new Object[] { "buytoken", "selltoken" };
-
 		Date startDate = null;
 		if (null != last_id && !last_id.isEmpty()) {
 			Query query = new Query(Criteria.where("_id").is(new ObjectId(last_id)));
@@ -680,7 +734,6 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		}
 		Criteria actorCriteria = Criteria.where("actions.authorization.actor").is(accountName);
 
-		Criteria actionsNameCriteria = Criteria.where("actions.name").in(actionsNames);
 
 		List<ETTradeLog> result = new ArrayList<ETTradeLog>();
 		boolean haveList = true;
@@ -690,8 +743,17 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		do {
 			Query query = new Query(actorCriteria);
 
-			query = query.addCriteria(actionsNameCriteria);
 			query = query.addCriteria(Criteria.where("actions.data.token_contract").is(codes[2]));
+			
+			Criteria buyCriteria = new Criteria();
+			Criteria sellCriteria = new Criteria();
+			Criteria buysellCriteria = new Criteria();
+			
+			buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
+			sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
+			buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
+			
+			query.addCriteria(buysellCriteria);
 
 			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
 			query = query.limit(pageSize);
@@ -783,6 +845,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						if(token_symbols.length==2) {
 							token_uom = token_symbols[1].trim();
 						}
+						
+						if(!token_uom.equalsIgnoreCase(codes[0])) {
+							continue;
+						}
 
 						etTradeLog.setAccount(data.getString("payer"));
 						etTradeLog.setToken_contract(data.getString("token_contract"));
@@ -791,6 +857,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					} else if (actionName.equalsIgnoreCase("selltoken")) {
 						String quant = data.getString("quant");
 						String[] quants = quant.split(" ");
+						if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+							continue;
+						}
 						BigDecimal qty = new BigDecimal(quants[0].trim());
 						BigDecimal eos_qty = qty.multiply(price);
 						eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
