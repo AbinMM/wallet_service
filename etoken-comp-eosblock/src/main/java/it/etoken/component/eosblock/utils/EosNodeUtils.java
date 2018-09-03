@@ -27,7 +27,7 @@ public class EosNodeUtils {
 		List<JSONObject> node_list = cacheService.get("node_list", List.class);
 		String pre_url = "https://node1.eosphere.io";
 		String secondary_url = "http://api.hkeos.com";
-		if(null == node_list || node_list.isEmpty()) {
+		if(null != node_list && !node_list.isEmpty()) {
 			JSONObject pre_node = node_list.get(0);
 			JSONObject secondary_node = node_list.get(1);
 			pre_url = pre_node.getString("url");
