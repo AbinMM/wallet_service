@@ -109,6 +109,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			String base_balance_uom = thisExchage.getString("base_balance_uom");
 			BigDecimal quote_balance_num = thisExchage.getBigDecimal("quote_balance_num");
 			String quote_balance_uom = thisExchage.getString("quote_balance_uom");
+			String precision_number = thisExchage.getString("precision_number");
 
 			String collection_name = "et_price_" + code;
 
@@ -145,6 +146,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			priceInfo.put("quote_balance_num", quote_balance_num.doubleValue());
 			priceInfo.put("quote_balance_uom", quote_balance_uom);
 			priceInfo.put("increase", increase);
+			
+			priceInfo.put("precision_number", precision_number);
+			
 
 			// 获取交易量
 			JSONObject tradingVolumeResult = this.getTradingVolumeByCode(code, price);
@@ -213,6 +217,12 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				String[] quoteBalanceArray = quoteBalanceStr.split(" ");
 				BigDecimal quoteBalanceNum = new BigDecimal(quoteBalanceArray[0].trim());
 				String quoteBalanceUom = quoteBalanceArray[1].trim();
+				
+				int precision_number = 0;
+				if(baseBalanceArray[0].trim().indexOf(".") > 0) {
+					precision_number = baseBalanceArray[0].trim().length() - baseBalanceArray[0].trim().indexOf(".") - 1;
+				}
+				
 
 				BigDecimal price = quoteBalanceNum.divide(baseBalanceNum, 10, BigDecimal.ROUND_HALF_UP);
 				String tradeUom = baseBalanceUom + "/" + quoteBalanceUom;
@@ -226,6 +236,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				newJo.put("base_balance_uom", baseBalanceUom);
 				newJo.put("quote_balance_num", quoteBalanceNum);
 				newJo.put("quote_balance_uom", quoteBalanceUom);
+				newJo.put("precision_number", precision_number);
 
 				result.add(newJo);
 			}
@@ -259,17 +270,19 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		Criteria createDateCriteria = new Criteria();
 		createDateCriteria=createDateCriteria.andOperator(Criteria.where("createdAt").exists(true),
 				Criteria.where("createdAt").gte(startDate), Criteria.where("createdAt").lt(endDate));
-		query.addCriteria(createDateCriteria);
+//		query.addCriteria(createDateCriteria);
 		
 		Criteria buyCriteria = new Criteria();
 		Criteria sellCriteria = new Criteria();
 		Criteria buysellCriteria = new Criteria();
+		Criteria tempCriteria = new Criteria();
 		
 		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
 		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
 		
-		query.addCriteria(buysellCriteria);
+		tempCriteria.andOperator(createDateCriteria, buysellCriteria);
+		query.addCriteria(tempCriteria);
 		
 		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
