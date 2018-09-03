@@ -888,7 +888,7 @@ public class EosRpcController extends BaseController {
 		}
 		
 		String contract="";
-		if(requestMap.get("token")!=null && !requestMap.get("token").isEmpty()) {
+		if(requestMap.get("contract")!=null && !requestMap.get("contract").isEmpty()) {
 			 contract=requestMap.get("contract");//合约账号
 		}
 		
