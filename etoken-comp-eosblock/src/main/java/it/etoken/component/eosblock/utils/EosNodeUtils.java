@@ -25,10 +25,15 @@ public class EosNodeUtils {
 		Map<String, String> result = new HashMap<String, String>();
 		@SuppressWarnings("unchecked")
 		List<JSONObject> node_list = cacheService.get("node_list", List.class);
-		JSONObject pre_node = node_list.get(0);
-		JSONObject secondary_node = node_list.get(1);
-		String pre_url = pre_node.getString("url");
-		String secondary_url = secondary_node.getString("url");
+		String pre_url = "http://18.144.16.89:8001";
+		String secondary_url = "http://34.222.33.131:8001";
+		if(null == node_list || node_list.isEmpty()) {
+			JSONObject pre_node = node_list.get(0);
+			JSONObject secondary_node = node_list.get(1);
+			pre_url = pre_node.getString("url");
+			secondary_url = secondary_node.getString("url");
+		}
+		
 		
 		result.put("url_chain", pre_url + "/v1/chain/");
 		result.put("url_chain_backup", secondary_url + "/v1/chain/");
