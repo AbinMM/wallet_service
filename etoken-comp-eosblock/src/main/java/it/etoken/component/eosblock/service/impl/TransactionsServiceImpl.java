@@ -654,6 +654,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					haveList = false;
 					break;
 				}
+			    start=count+start;
 				for (BasicDBObject thisBasicDBObject :transactionsList) {
 					String transactionId=thisBasicDBObject.getString("trx_id");
 					if (existMap.containsKey(transactionId)) {
