@@ -20,7 +20,7 @@ import it.etoken.base.model.eosblock.entity.EosNode;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.eosblock.service.EosNodeService;
 
-//@Component
+@Component
 public class DecideNodeTask {
 
 	@Autowired
