@@ -19,4 +19,7 @@ public interface TransactionsService {
 
 	Map<String, String> findSellRamExactPrice(Object[] trsationId);
 
+	public List<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort, String token,
+			String contract);
+
 }

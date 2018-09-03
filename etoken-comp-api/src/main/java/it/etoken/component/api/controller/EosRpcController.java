@@ -853,4 +853,55 @@ public class EosRpcController extends BaseController {
 		}
 		return this.error(MLApiException.EOSRPC_FAIL, null);
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/getEosTransactionRecord")
+	public Object getEosTransactionRecord(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
+		logger.info("/getEosTransactionRecord request map : " + requestMap);
+		
+        if(requestMap.get("account")==null || requestMap.get("account").isEmpty()) {
+        	return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		String account=requestMap.get("account");
+		
+		int start=0;
+		if(requestMap.get("start")!=null && !requestMap.get("start").isEmpty()) {
+			start=Integer.parseInt(requestMap.get("start"));
+		}
+		
+		int count=10;
+		if(requestMap.get("count")!=null && !requestMap.get("count").isEmpty()) {
+			count=Integer.parseInt(requestMap.get("count"));
+		}
+		
+		String sort="desc";
+		if(requestMap.get("sort")!=null &&  !requestMap.get("sort").isEmpty()) {
+			sort=requestMap.get("sort");
+			if(!sort.equals("desc")&&!sort.equals("asc")) {
+				return this.error(MLApiException.PARAM_ERROR, null);
+			}
+		}
+		
+		String token="";
+		if(requestMap.get("token")!=null && !requestMap.get("token").isEmpty()) {
+			token=requestMap.get("token");//代币
+		}
+		
+		String contract="";
+		if(requestMap.get("token")!=null && !requestMap.get("token").isEmpty()) {
+			 contract=requestMap.get("contract");//合约账号
+		}
+		
+		MLResultList<JSONObject> result = null;
+		try {
+			result=transactionsFacadeAPI.getEosTransactionRecord(start, count, account, sort,token,contract);
+			if (!result.isSuccess()) {
+				return this.error(result.getErrorCode(),result.getErrorHint(), null);
+			}
+			return this.success(result.getList());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this.error(MLApiException.EOSRPC_FAIL, null);
+	}
 }

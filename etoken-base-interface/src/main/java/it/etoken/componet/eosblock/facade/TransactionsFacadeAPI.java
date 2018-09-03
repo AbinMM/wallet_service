@@ -13,6 +13,9 @@ public interface TransactionsFacadeAPI {
 	public MLResultList<BasicDBObject> findAccountCoins(String account,String actor);
 	
 	public MLResultList<JSONObject> findByAccountAndActor(int page, int pageSize,String account,String actor,String code);
+
+	public MLResultList<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort,
+			String token, String contract);
 	
 
 }
