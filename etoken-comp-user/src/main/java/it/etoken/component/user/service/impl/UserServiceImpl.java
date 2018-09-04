@@ -477,13 +477,14 @@ public class UserServiceImpl implements UserService {
 			User user = userMapper.findById(Long.parseLong(uid));
 			if (type == UserPointType.SIGN_IN) { // 签到积分，日上限一次， 连续三日+1，连续五日+2, 连续七日+3
 				Long hasLogin = cacheService.get("point_has_signin_" + uid, Long.class);
+				System.out.println("hasLogin11111111111111111:"+hasLogin);
 				if (hasLogin != null) {
 					// 当天已经签到过
 					throw new MLException(MLUserException.SIGNIN_ERR);
 				}
 				cacheService.set("point_has_signin_" + uid, uid);
 				cacheService.expire("point_has_signin_" + uid, getLeftTimeOfToday("Asia/Shanghai"));
-
+				System.out.println("getLeftTimeOfToday11111111111111111:"+getLeftTimeOfToday("Asia/Shanghai"));
 				long recordCnt = userPointMapper.countSigninRecordByUid(uid);
 				if (recordCnt >= 1) {
 					// 当天已经签到过
@@ -496,16 +497,21 @@ public class UserServiceImpl implements UserService {
 				userSigninLog.setUid(user.getId());
 				userSigninLog.setNickname(user.getNickname());
 				SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+				SimpleDateFormat sdf1= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				Date nowDate = new Date();
 				Date signDate = null;
+				Date createdate = null;
 				try {
 					signDate = sdf.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
+					createdate=sdf1.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
 				userSigninLog.setSigndate(signDate);
+				userSigninLog.setCreatedate(createdate);
 				userSigninLogMapper.insert(userSigninLog);
-				
+				System.out.println("signDate11111111111111111:"+signDate);
+				System.out.println("createdate11111111111111111:"+createdate);
 				reward = getSignPointReward(uid);
 				points.setSignin(reward);
 			} else if (type == UserPointType.UP) { // 点赞
@@ -578,6 +584,8 @@ public class UserServiceImpl implements UserService {
 		ZoneId zoneId = ZoneId.of(zone);
 		LocalDateTime midnight = LocalDateTime.now(zoneId).plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
 		long seconds = ChronoUnit.SECONDS.between(LocalDateTime.now(zoneId), midnight);
+		System.out.println("LocalDateTime.now(zoneId):"+LocalDateTime.now(zoneId));
+		System.out.println("midnight111111111111111:"+midnight);
 		System.out.println("secondst111111111111111:"+seconds);
 		return seconds;
 	}
