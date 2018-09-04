@@ -681,7 +681,8 @@ public class UserServiceImpl implements UserService {
 		Date nowDate = new Date();
 		Date signDate = null;
 		try {
-			signDate = sdf.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
+			sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+			signDate = sdf.parse(sdf.format(nowDate.getTime()));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
