@@ -497,21 +497,16 @@ public class UserServiceImpl implements UserService {
 				userSigninLog.setUid(user.getId());
 				userSigninLog.setNickname(user.getNickname());
 				SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
-				SimpleDateFormat sdf1= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				Date nowDate = new Date();
 				Date signDate = null;
-				Date createdate = null;
 				try {
 					signDate = sdf.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
-					createdate=sdf1.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
 				userSigninLog.setSigndate(signDate);
-				userSigninLog.setCreatedate(createdate);
 				userSigninLogMapper.insert(userSigninLog);
 				System.out.println("signDate11111111111111111:"+signDate);
-				System.out.println("createdate11111111111111111:"+createdate);
 				reward = getSignPointReward(uid);
 				points.setSignin(reward);
 			} else if (type == UserPointType.UP) { // 点赞
