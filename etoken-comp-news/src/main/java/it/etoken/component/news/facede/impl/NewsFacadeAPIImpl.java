@@ -74,7 +74,7 @@ public class NewsFacadeAPIImpl implements NewsFacadeAPI {
 	public MLResultObject<MLPage<News>> findAll(int page,String title) {
 		try {
 			MLPage<News> result =null;
-			if(title.isEmpty()||title==null) {
+			if(null==title || title.isEmpty()) {
 				 result = newsService.findAll(page,"");
 			}else {
 				 result = newsService.findAll(page,title);
