@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -476,16 +477,23 @@ public class UserServiceImpl implements UserService {
 		try {
 			long reward = 0;
 			User user = userMapper.findById(Long.parseLong(uid));
+			SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
+			sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+			Date nowDate = new Date();
+			Date signDate = null;
+			try {
+				signDate = sdf.parse(sdf.format(nowDate.getTime()));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 			if (type == UserPointType.SIGN_IN) { // 签到积分，日上限一次， 连续三日+1，连续五日+2, 连续七日+3
-				Long hasLogin = cacheService.get("point_has_signin_" + uid, Long.class);
+				Date hasLogin = cacheService.get("point_has_signin_" + uid, Date.class);
 				System.out.println("hasLogin11111111111111111:"+hasLogin);
-				if (hasLogin != null) {
+				if (null!=hasLogin && isSameDay(hasLogin,signDate)) {
 					// 当天已经签到过
 					throw new MLException(MLUserException.SIGNIN_ERR);
 				}
-				cacheService.set("point_has_signin_" + uid, uid);
-				cacheService.expire("point_has_signin_" + uid, getLeftTimeOfToday("Asia/Shanghai"));
-				System.out.println("getLeftTimeOfToday11111111111111111:"+getLeftTimeOfToday("Asia/Shanghai"));
+				cacheService.set("point_has_signin_" + uid, signDate);
 				long recordCnt = userPointMapper.countSigninRecordByUid(uid);
 				if (recordCnt >= 1) {
 					// 当天已经签到过
@@ -497,15 +505,6 @@ public class UserServiceImpl implements UserService {
 				UserSigninLog userSigninLog = new UserSigninLog();
 				userSigninLog.setUid(user.getId());
 				userSigninLog.setNickname(user.getNickname());
-				SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
-				Date nowDate = new Date();
-				Date signDate = null;
-				try {
-					sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-					signDate = sdf.parse(sdf.format(nowDate.getTime()));
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
 				userSigninLog.setSigndate(signDate);
 				userSigninLogMapper.insert(userSigninLog);
 				System.out.println("signDate11111111111111111:"+signDate);
@@ -668,15 +667,6 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public Boolean isSigned(String uid) throws MLException {
-		Long hasLogin = cacheService.get("point_has_signin_" + uid, Long.class);
-		if (hasLogin != null) {
-			// 当天已经签到过
-			return true;
-		}
-		UserSigninLogExample usle = new UserSigninLogExample();
-		Criteria criteria = usle.createCriteria();
-		criteria.andUidEqualTo(Long.valueOf(uid));
-		
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		Date nowDate = new Date();
 		Date signDate = null;
@@ -686,8 +676,15 @@ public class UserServiceImpl implements UserService {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
+		Date hasLogin = cacheService.get("point_has_signin_" + uid, Date.class);
+		if (null!=hasLogin&&isSameDay(hasLogin,signDate)) {
+			// 当天已经签到过
+			return true;
+		}
+		UserSigninLogExample usle = new UserSigninLogExample();
+		Criteria criteria = usle.createCriteria();
+		criteria.andUidEqualTo(Long.valueOf(uid));
 		criteria.andSigndateEqualTo(signDate);
-	        
 		long signCount = userSigninLogMapper.countByExample(usle);
 		if(signCount>=1) {
 			return true;
@@ -824,10 +821,12 @@ public class UserServiceImpl implements UserService {
 			UserSigninLogExample example  = new UserSigninLogExample();
 			it.etoken.base.model.user.entity.UserSigninLogExample.Criteria  criteria = example.createCriteria();
 			criteria.andUidEqualTo(user.getId());
-			Date signdate = new Date();
+			Date nowDate = new Date();
+			Date signdate =null;
 			try {
 				SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
-				signdate = sdf.parse(sdf.format(signdate));
+				sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+				signdate = sdf.parse(sdf.format(nowDate.getTime()));
 				criteria.andSigndateEqualTo(signdate);
 			} catch (ParseException e) {
 				e.printStackTrace();
@@ -917,4 +916,24 @@ public class UserServiceImpl implements UserService {
 			throw new MLException(MLCommonException.system_err);
 		}
 	}
+	
+	public static boolean isSameDay(Date date1, Date date2) {
+        if(date1 != null && date2 != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(date1);
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(date2);
+            return isSameDay(cal1, cal2);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameDay(Calendar cal1, Calendar cal2) {
+        if(cal1 != null && cal2 != null) {
+            return cal1.get(0) == cal2.get(0) && cal1.get(1) == cal2.get(1) && cal1.get(6) == cal2.get(6);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
 }
