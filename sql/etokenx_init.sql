@@ -373,6 +373,9 @@ CREATE TABLE `news` (
   KEY `idx_content` (`content`(768))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+
+ALTER TABLE `news` ADD  remark   VARCHAR(50);
+
 /*Data for the table `news` */
 
 /*Table structure for table `news_statistics` */

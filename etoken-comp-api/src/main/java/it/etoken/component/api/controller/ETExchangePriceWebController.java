@@ -179,6 +179,7 @@ public class ETExchangePriceWebController extends BaseController {
 				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getNewTradeOrdersByCode(code);
 				if(result.isSuccess()) {
 					list = result.getList();
+					return this.success(list);
 				}else {
 					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 				}
@@ -206,6 +207,7 @@ public class ETExchangePriceWebController extends BaseController {
 				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getBigTradeOrdersByCode(code);
 				if(result.isSuccess()) {
 					list = result.getList();
+					return this.success(list);
 				}else {
 					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 				}

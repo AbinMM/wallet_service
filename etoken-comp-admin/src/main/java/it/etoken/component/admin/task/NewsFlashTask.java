@@ -417,12 +417,12 @@ public class NewsFlashTask {
 				Double eosprice=findEosPrice();
 				try {
 					String tempurl= HtmlUtils.gemHtmlforAlerts(content,newsFlash.getTitle(),eosprice.toString(), HtmlSave,template);
-					File file=new File(tempurl);  
+					File file=new File(HtmlSave + tempurl);  
 					if(!file.exists())    
 					{  
 						for (int i=0; i<3 ;i++) {
 							tempurl= HtmlUtils.gemHtmlforAlerts(content,newsFlash.getTitle(),eosprice.toString(), HtmlSave,template);
-							File file1=new File(tempurl);    
+							File file1=new File(HtmlSave + tempurl);    
 							if(!file1.exists())    
 							{  
 								continue;
@@ -430,7 +430,7 @@ public class NewsFlashTask {
 						} 
 					} 
 			        newsFlash.setUrl(HtmlServer + tempurl);
-			        File file2=new File(tempurl);  
+			        File file2=new File(HtmlSave + tempurl);  
 					if(!file2.exists())    {
 						newsFlash.setRemark("404");
 					}
