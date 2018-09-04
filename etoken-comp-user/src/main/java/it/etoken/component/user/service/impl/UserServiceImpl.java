@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -500,7 +501,8 @@ public class UserServiceImpl implements UserService {
 				Date nowDate = new Date();
 				Date signDate = null;
 				try {
-					signDate = sdf.parse(sdf.format(nowDate.getTime()+8*60*60*1000));
+					sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+					signDate = sdf.parse(sdf.format(nowDate.getTime()));
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
