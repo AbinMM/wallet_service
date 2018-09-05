@@ -11,7 +11,7 @@ import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
 import it.etoken.component.eosblock.service.RamPriceSecondaryService;
 
-@Component
+//@Component
 public class RamSecondaryTask {
 
 	@Autowired

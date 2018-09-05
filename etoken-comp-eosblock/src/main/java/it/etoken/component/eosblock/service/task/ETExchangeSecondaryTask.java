@@ -1,7 +1,5 @@
 package it.etoken.component.eosblock.service.task;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,10 +10,9 @@ import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
-import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.component.eosblock.service.ETExchangePriceSecondaryService;
 
-@Component
+//@Component
 public class ETExchangeSecondaryTask {
 
 	@Autowired
