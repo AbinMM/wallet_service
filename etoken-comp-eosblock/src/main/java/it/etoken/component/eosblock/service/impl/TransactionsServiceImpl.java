@@ -286,15 +286,22 @@ public class TransactionsServiceImpl implements TransactionsService{
 		Criteria buyselltokenCriteria = new Criteria();
 		Criteria buytokenCriteria = new Criteria();
 		Criteria selltokenCriteria = new Criteria();
-		buytokenCriteria.andOperator(
-				Criteria.where("actions.name").is("buytoken"),
-				Criteria.where("actions.data.token_symbol").regex(".*"+code)
-				);
-		
-		selltokenCriteria.andOperator(
-				Criteria.where("actions.name").is("selltoken"),
-				Criteria.where("actions.data.quant").regex(".*"+code)
-				);
+		if(code.equalsIgnoreCase("eos")){
+			buytokenCriteria.andOperator(
+					Criteria.where("actions.name").is("buytoken"),
+					Criteria.where("actions.data.eos_quant").regex(".*"+code)
+					);
+			selltokenCriteria=Criteria.where("actions.name").is("selltoken");
+		}else {
+			buytokenCriteria.andOperator(
+					Criteria.where("actions.name").is("buytoken"),
+					Criteria.where("actions.data.token_symbol").regex(".*"+code)
+					);
+			selltokenCriteria.andOperator(
+					Criteria.where("actions.name").is("selltoken"),
+					Criteria.where("actions.data.quant").regex(".*"+code)
+					);
+		}
 		buyselltokenCriteria.orOperator(buytokenCriteria, selltokenCriteria);
 		if(null==account|| "".equals(account)) {
 			etCriteria.andOperator(
@@ -324,7 +331,7 @@ public class TransactionsServiceImpl implements TransactionsService{
         
 		Criteria criteria = new Criteria();
 		if(code.equalsIgnoreCase("eos")){
-			criteria=eosCriteria;
+		criteria.orOperator(eosCriteria, etCriteria);
 			System.out.println(criteria.getCriteriaObject());
 		}else {
 			criteria.orOperator(otherCriteria, etCriteria);
@@ -500,12 +507,19 @@ public class TransactionsServiceImpl implements TransactionsService{
 			            	type="转入";
 			            	to=data.getString("payer").trim();
 			            	from="";
-			            	objs[i]=transactionId;
-							i++;
-//			            	quantity=findbuyETExchangeExactQuant(transactionId);
-//			            	String[] quantity_arra= quantity.split(" ");
-//			             	quantity=quantity_arra[0];
-//			             	code_new=quantity_arra[1];
+							if(code.equalsIgnoreCase("eos")){
+								quantity=data.getString("eos_quant").trim();
+				            	String[] quantity_arra= quantity.split(" ");
+				             	quantity=quantity_arra[0];
+				             	code_new=quantity_arra[1];
+				             	String quant=data.getString("token_symbol").trim();
+				            	String[] quant_arra= quant.split(",");
+				             	description="购买"+quant_arra[1];
+				              	type="转出";
+							}else {
+								objs[i]=transactionId;
+								i++;
+							}
 			            	code_new=code;
 			            }else if(actionName.equalsIgnoreCase("selltoken")) {
 			            	description="出售";
@@ -513,10 +527,21 @@ public class TransactionsServiceImpl implements TransactionsService{
 			            	type="转出";
 			            	to="";
 			            	from=data.getString("receiver").trim();
-			            	quantity=data.getString("quant");
-			            	String[] quantity_arra= quantity.split(" ");
-			             	quantity=quantity_arra[0];
-			             	code_new=quantity_arra[1];
+                            if(!code.equalsIgnoreCase("eos")){
+                            	quantity=data.getString("quant");
+    			            	String[] quantity_arra= quantity.split(" ");
+    			             	quantity=quantity_arra[0];
+    			             	code_new=quantity_arra[1];
+							}else {
+								String quant=data.getString("quant");
+    			            	String[] quantity_arra= quant.split(" ");
+    			             	code_new=quantity_arra[1];
+								description="出售"+code_new;
+								type="转入";
+								objs[i]=transactionId;
+								i++;
+							}
+			            
 			            }else {
 			            	continue;
 						}
