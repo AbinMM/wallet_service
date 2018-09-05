@@ -252,13 +252,16 @@ public class TransactionsServiceImpl implements TransactionsService{
 				startDate = existTransactionsList.get(0).getDate("createdAt");
 			}
 		}
-		Criteria accountCriteria = null;
+		Criteria[] accountCriterias = new Criteria[2];
 		if(code.equalsIgnoreCase("eos")){
-			Object[] accountNames = new Object[] { "eosio", "eosio.token"};
-			accountCriteria = Criteria.where("actions.account").in(accountNames);
-		}else if(null != actor || !"".equals(actor)){
-			accountCriteria = Criteria.where("actions.account").is(account);
+			accountCriterias[0] = Criteria.where("actions.account").is("eosio");
+			accountCriterias[1] = Criteria.where("actions.account").in("eosio.token");
+		}else if(null != actor && !"".equals(actor)){
+			accountCriterias[0] = Criteria.where("actions.account").is(account);
+			accountCriterias[1] = Criteria.where("actions.data.token_contract").is(account);
 		}
+		Criteria accountCriteria = new Criteria();
+		accountCriteria.orOperator(accountCriterias);
 		
 		Criteria[] actorCriterias = new Criteria[3];
 		actorCriterias[0] = Criteria.where("actions.authorization.actor").is(actor);
@@ -273,8 +276,14 @@ public class TransactionsServiceImpl implements TransactionsService{
 		Pattern pattern=Pattern.compile("^.*"+code+".*$", Pattern.CASE_INSENSITIVE);
 		codeCriteria.orOperator(Criteria.where("actions.data.quantity").regex(pattern),
 				Criteria.where("actions.name").is("delegatebw"),
+				Criteria.where("actions.name").is("buyram"),
 				Criteria.where("actions.name").is("sellram"),
-				Criteria.where("actions.name").is("undelegatebw")
+				Criteria.where("actions.name").is("transfer"),
+				Criteria.where("actions.name").is("issue"),
+				Criteria.where("actions.name").is("newaccount"),
+				Criteria.where("actions.name").is("undelegatebw"),
+				Criteria.where("actions.name").is("buytoken"),
+				Criteria.where("actions.name").is("selltoken")
 //				Criteria.where("actions.name").is("newaccount")
 //                Criteria.where("actions.data.stake_cpu_quantit").regex(pattern),
 //                Criteria.where("actions.data.quant").regex(pattern),
@@ -284,12 +293,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 		
 		
 		Criteria criteria = new Criteria();
-		if(accountCriteria!=null) {
-		   criteria.andOperator(accountCriteria,actorCriteria,codeCriteria);
-		   System.out.println(criteria.getCriteriaObject());
+        if(null==account||"".equals(account)) {
+        	criteria.andOperator(actorCriteria,codeCriteria);
+        	System.out.println(criteria.getCriteriaObject());
 		}else {
-		   criteria.andOperator(actorCriteria,codeCriteria);
-		   System.out.println(criteria.getCriteriaObject());
+			criteria.andOperator(accountCriteria,actorCriteria,codeCriteria);
+			System.out.println(criteria.getCriteriaObject());
 		}
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<JSONObject> list=new ArrayList<JSONObject>();
@@ -314,7 +323,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 			}
 			startDate = transactionsList.get(transactionsList.size()-1).getDate("createdAt");
 			for (BasicDBObject thisBasicDBObject :transactionsList) {
-				String transactionId=thisBasicDBObject.getString("trx_id");
+ 				String transactionId=thisBasicDBObject.getString("trx_id");
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
@@ -450,6 +459,26 @@ public class TransactionsServiceImpl implements TransactionsService{
 			            	}
 			            	from="";
 			            	quantity=data.getString("quantity");
+			            	String[] quantity_arra= quantity.split(" ");
+			             	quantity=quantity_arra[0];
+			             	code_new=quantity_arra[1];
+			            }else if(actionName.equalsIgnoreCase("buytoken")) {
+			            	description="购买";
+			            	memo="";
+			            	type="转出";
+			            	to=data.getString("payer").trim();
+			            	from="";
+			            	quantity=data.getString("eos_quant");
+			            	String[] quantity_arra= quantity.split(" ");
+			             	quantity=quantity_arra[0];
+			             	code_new=quantity_arra[1];
+			            }else if(actionName.equalsIgnoreCase("selltoken")) {
+			            	description="出售";
+			            	memo="";
+			            	type="转入";
+			            	to="";
+			            	from=data.getString("receiver").trim();
+			            	quantity=data.getString("quant");
 			            	String[] quantity_arra= quantity.split(" ");
 			             	quantity=quantity_arra[0];
 			             	code_new=quantity_arra[1];
