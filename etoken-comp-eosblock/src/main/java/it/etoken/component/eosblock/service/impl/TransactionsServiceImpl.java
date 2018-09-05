@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
+import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.component.eosblock.service.TransactionsService;
 
 @Component
@@ -252,16 +253,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 				startDate = existTransactionsList.get(0).getDate("createdAt");
 			}
 		}
-		Criteria[] accountCriterias = new Criteria[2];
-		if(code.equalsIgnoreCase("eos")){
-			accountCriterias[0] = Criteria.where("actions.account").is("eosio");
-			accountCriterias[1] = Criteria.where("actions.account").in("eosio.token");
-		}else if(null != actor && !"".equals(actor)){
-			accountCriterias[0] = Criteria.where("actions.account").is(account);
-			accountCriterias[1] = Criteria.where("actions.data.token_contract").is(account);
-		}
-		Criteria accountCriteria = new Criteria();
-		accountCriteria.orOperator(accountCriterias);
+		
+		Pattern pattern=Pattern.compile("^.*"+code+".*$", Pattern.CASE_INSENSITIVE);
 		
 		Criteria[] actorCriterias = new Criteria[3];
 		actorCriterias[0] = Criteria.where("actions.authorization.actor").is(actor);
@@ -271,39 +264,78 @@ public class TransactionsServiceImpl implements TransactionsService{
 		Criteria actorCriteria = new Criteria();
 		actorCriteria.orOperator(actorCriterias);
 		
-		Criteria codeCriteria = new Criteria();
-//		Object[] actionstNames = new Object[] { "delegatebw", "sellram","undelegatebw"};
-		Pattern pattern=Pattern.compile("^.*"+code+".*$", Pattern.CASE_INSENSITIVE);
-		codeCriteria.orOperator(Criteria.where("actions.data.quantity").regex(pattern),
+		//eos
+		Criteria eosCriteria = new Criteria();
+		Criteria actions_name_eos_criteria = new Criteria();
+		actions_name_eos_criteria.orOperator(
+				Criteria.where("actions.data.quantity").regex(pattern),
 				Criteria.where("actions.name").is("delegatebw"),
 				Criteria.where("actions.name").is("buyram"),
 				Criteria.where("actions.name").is("sellram"),
 				Criteria.where("actions.name").is("transfer"),
-				Criteria.where("actions.name").is("issue"),
-				Criteria.where("actions.name").is("newaccount"),
-				Criteria.where("actions.name").is("undelegatebw"),
+				Criteria.where("actions.name").is("undelegatebw"));
+		
+		eosCriteria.andOperator(
+				actorCriteria,
+				Criteria.where("actions.account").in("eosio.token","eosio"),
+				actions_name_eos_criteria
+				);
+		
+		//ET
+		Criteria etCriteria = new Criteria();
+		Criteria buyselltokenCriteria = new Criteria();
+		Criteria buytokenCriteria = new Criteria();
+		Criteria selltokenCriteria = new Criteria();
+		buytokenCriteria.andOperator(
 				Criteria.where("actions.name").is("buytoken"),
-				Criteria.where("actions.name").is("selltoken")
-//				Criteria.where("actions.name").is("newaccount")
-//                Criteria.where("actions.data.stake_cpu_quantit").regex(pattern),
-//                Criteria.where("actions.data.quant").regex(pattern),
-               );
+				Criteria.where("actions.data.token_symbol").regex(".*"+code)
+				);
 		
-		//Criteria blockIdCriteria =Criteria.where("block_id").exists(true);
-		
-		
-		Criteria criteria = new Criteria();
-        if(null==account||"".equals(account)) {
-        	criteria.andOperator(actorCriteria,codeCriteria);
-        	System.out.println(criteria.getCriteriaObject());
+		selltokenCriteria.andOperator(
+				Criteria.where("actions.name").is("selltoken"),
+				Criteria.where("actions.data.quant").regex(".*"+code)
+				);
+		buyselltokenCriteria.orOperator(buytokenCriteria, selltokenCriteria);
+		if(null==account|| "".equals(account)) {
+			etCriteria.andOperator(
+					Criteria.where("actions.account").is("etbexchanger"),
+					actorCriteria,
+					buyselltokenCriteria);
 		}else {
-			criteria.andOperator(accountCriteria,actorCriteria,codeCriteria);
+			etCriteria.andOperator(
+					Criteria.where("actions.account").is("etbexchanger"),
+					actorCriteria,
+					Criteria.where("actions.data.token_contract").is(account),
+					buyselltokenCriteria);
+		}
+		//Other
+		Criteria otherCriteria = new Criteria();
+		Criteria actions_name_other_criteria = new Criteria();
+		actions_name_other_criteria.orOperator(
+				Criteria.where("actions.data.quantity").regex(pattern),
+				Criteria.where("actions.name").is("transfer"),
+				Criteria.where("actions.name").is("issue"),
+				Criteria.where("actions.name").is("newaccount"));
+        if(null==account|| "".equals(account)) {
+        	otherCriteria.andOperator(actions_name_other_criteria,actorCriteria, Criteria.where("actions.account").is(account));
+		}else {
+			otherCriteria.andOperator(actions_name_other_criteria,actorCriteria);
+		}
+        
+		Criteria criteria = new Criteria();
+		if(code.equalsIgnoreCase("eos")){
+			criteria=eosCriteria;
+			System.out.println(criteria.getCriteriaObject());
+		}else {
+			criteria.orOperator(otherCriteria, etCriteria);
 			System.out.println(criteria.getCriteriaObject());
 		}
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<JSONObject> list=new ArrayList<JSONObject>();
 		boolean haveList = true;
 		int countN = 0;
+		Object[] objs=new Object[100];
+		int i=0;
 		do {
 		    Query query = new Query(criteria);
 		    query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
@@ -465,17 +497,20 @@ public class TransactionsServiceImpl implements TransactionsService{
 			            }else if(actionName.equalsIgnoreCase("buytoken")) {
 			            	description="购买";
 			            	memo="";
-			            	type="转出";
+			            	type="转入";
 			            	to=data.getString("payer").trim();
 			            	from="";
-			            	quantity=data.getString("eos_quant");
-			            	String[] quantity_arra= quantity.split(" ");
-			             	quantity=quantity_arra[0];
-			             	code_new=quantity_arra[1];
+			            	objs[i]=transactionId;
+							i++;
+//			            	quantity=findbuyETExchangeExactQuant(transactionId);
+//			            	String[] quantity_arra= quantity.split(" ");
+//			             	quantity=quantity_arra[0];
+//			             	code_new=quantity_arra[1];
+			            	code_new=code;
 			            }else if(actionName.equalsIgnoreCase("selltoken")) {
 			            	description="出售";
 			            	memo="";
-			            	type="转入";
+			            	type="转出";
 			            	to="";
 			            	from=data.getString("receiver").trim();
 			            	quantity=data.getString("quant");
@@ -487,7 +522,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 						}
 						    JSONObject jsonObjects = new JSONObject();
 						    jsonObjects.put("_id", _id);
-						    jsonObjects.put("quantity", quantity+code_new);//code_new是单位如EOS,MSP	
+						    jsonObjects.put("quantity", quantity+" "+code_new);//code_new是单位如EOS,MSP	
 							jsonObjects.put("description", description);
 							jsonObjects.put("memo",memo);
 							jsonObjects.put("from", from);
@@ -505,12 +540,34 @@ public class TransactionsServiceImpl implements TransactionsService{
 					        list.add(jsonObjects);
 					    	countN++;
 							if(countN == pageSize) {
+								if(null!=objs) {
+									Map<String, String> quateMap=findbuyETExchangeExactQuant(objs);
+								    for (JSONObject jsonObject : list) {
+								    	String transactionId1=jsonObject.getString("transactionId");
+								    	String quantity1=quateMap.get(transactionId1);
+								    	if(null==quantity1) {
+											continue;
+										}
+								    	jsonObject.put("quantity", quantity1);
+									}
+								}
 								existMap.clear();
 								return list;
-							}
+					}
 				}
 		    }
         } while (haveList);
+		if(null!=objs) {
+			Map<String, String> quateMap=findbuyETExchangeExactQuant(objs);
+		    for (JSONObject jsonObject : list) {
+		    	String transactionId=jsonObject.getString("transactionId");
+		    	String quantity=quateMap.get(transactionId);
+		    	if(null==quantity) {
+					continue;
+				}
+		    	jsonObject.put("quantity", quantity);
+			}
+		}
 		existMap.clear();
 		return list;
 	}
@@ -581,6 +638,35 @@ public class TransactionsServiceImpl implements TransactionsService{
 				}
 		    }
 		return pricetMap;
+	}
+	
+	
+	
+	public Map<String, String> findbuyETExchangeExactQuant(Object[] trsationId) {
+		Criteria actorCriteria = Criteria.where("id").in(trsationId);
+		Query query = new Query(actorCriteria);
+		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
+		 Map<String, String> quantMap = new HashMap<String, String>();
+		 for (BasicDBObject thisBasicDBObject :list) {
+			 String id=(String) thisBasicDBObject.get("id");
+			 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
+				Object[] thisActionsTraces = action_traces.toArray();
+				for (Object object : thisActionsTraces) {
+					BasicDBObject actionTraces = (BasicDBObject)object;
+					BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
+					Object[] thisInlineTraces = inline_traces.toArray();
+					if(null == thisInlineTraces || thisInlineTraces.length==0) {
+						continue;
+					}
+					BasicDBObject inlineTraces1= (BasicDBObject)thisInlineTraces[1];
+					BasicDBObject act1=(BasicDBObject) inlineTraces1.get("act");
+					BasicDBObject data1=(BasicDBObject)act1.get("data");
+					String quantity=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
+					quantMap.put(id,quantity);
+				}
+		    }
+		return quantMap;
 	}
 	
 	@Override
