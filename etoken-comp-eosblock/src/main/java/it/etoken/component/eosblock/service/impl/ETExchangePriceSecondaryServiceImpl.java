@@ -1207,12 +1207,12 @@ public class ETExchangePriceSecondaryServiceImpl implements ETExchangePriceSecon
 	@Override
 	public List<JSONObject> getKLines(String code, String dateType, int count) {
 //		String collection_name = "et_price_kline_"+ code + "_" + dateType;
-		if(dateType.equals("1d")||dateType.equals("7d")||dateType.equals("1w")) {
-			dateType="1h";
-		}
-		if(dateType.equals("1M")){
-			dateType="2h";
-		}
+//		if(dateType.equals("1d")||dateType.equals("7d")||dateType.equals("1w")) {
+//			dateType="1h";
+//		}
+//		if(dateType.equals("1M")){
+//			dateType="2h";
+//		}
 		String collection_name = this.getKlineCollection(code, dateType);
 		Query query = new Query();
 		
