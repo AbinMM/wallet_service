@@ -317,9 +317,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				Criteria.where("actions.name").is("issue"),
 				Criteria.where("actions.name").is("newaccount"));
         if(null==account|| "".equals(account)) {
-        	otherCriteria.andOperator(actions_name_other_criteria,actorCriteria, Criteria.where("actions.account").is(account));
-		}else {
 			otherCriteria.andOperator(actions_name_other_criteria,actorCriteria);
+   		}else {
+			otherCriteria.andOperator(actions_name_other_criteria,actorCriteria, Criteria.where("actions.account").is(account));	
 		}
         
 		Criteria criteria = new Criteria();
