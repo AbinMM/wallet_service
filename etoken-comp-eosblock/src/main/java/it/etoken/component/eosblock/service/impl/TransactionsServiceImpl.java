@@ -721,7 +721,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BasicDBObject actionact=(BasicDBObject)actionTraces.get("act");
 						BasicDBObject actiondata=(BasicDBObject)actionact.get("data");
 						Integer bytes= (Integer) actiondata.get("bytes");
-						if(null==bytes.toString()) {
+						if(null==bytes) {
 							continue;
 						}
 						BigDecimal bytes1=new BigDecimal(bytes.toString());
