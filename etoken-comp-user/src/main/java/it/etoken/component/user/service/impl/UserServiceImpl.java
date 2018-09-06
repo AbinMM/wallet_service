@@ -479,33 +479,44 @@ public class UserServiceImpl implements UserService {
 			User user = userMapper.findById(Long.parseLong(uid));
 			SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 			sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+			
+			SimpleDateFormat sdfd= new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			sdfd.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+			
 			Date nowDate = new Date();
+			
+			String xxx = sdfd.format(nowDate);
+			System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxx"+xxx);
+			
 			Date signDate = null;
+			String signDateStr = "";
 			try {
 				signDate = sdf.parse(sdf.format(nowDate.getTime()));
+				signDateStr = sdf.format(nowDate.getTime());
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 			if (type == UserPointType.SIGN_IN) { // 签到积分，日上限一次， 连续三日+1，连续五日+2, 连续七日+3
-				Date hasLogin = cacheService.get("point_has_signin_" + uid, Date.class);
-				System.out.println("hasLogin11111111111111111:"+hasLogin);
-				if (null!=hasLogin && isSameDay(hasLogin,signDate)) {
+//				Date hasLogin = cacheService.get("point_has_signin_" + uid, Date.class);
+				String hasLoginStr = cacheService.get("point_has_signin_" + uid, String.class);
+				System.out.println("hasLogin11111111111111111:"+hasLoginStr);
+				if (null!=hasLoginStr && hasLoginStr.equalsIgnoreCase(signDateStr)) {
 					// 当天已经签到过
 					throw new MLException(MLUserException.SIGNIN_ERR);
 				}
-				cacheService.set("point_has_signin_" + uid, signDate);
-				long recordCnt = userPointMapper.countSigninRecordByUid(uid);
-				if (recordCnt >= 1) {
-					// 当天已经签到过
-					logger.error("signin exception --- uid=" + uid);
-					throw new MLException(MLUserException.SIGNIN_ERR);
-				}
+				cacheService.set("point_has_signin_" + uid, signDateStr);
+//				long recordCnt = userPointMapper.countSigninRecordByUid(uid);
+//				if (recordCnt >= 1) {
+//					// 当天已经签到过
+//					logger.error("signin exception --- uid=" + uid);
+//					throw new MLException(MLUserException.SIGNIN_ERR);
+//				}
 				
 				//添加签到记录 ，防止刷签到。add by abill
 				UserSigninLog userSigninLog = new UserSigninLog();
 				userSigninLog.setUid(user.getId());
 				userSigninLog.setNickname(user.getNickname());
-				userSigninLog.setSigndate(signDate);
+				userSigninLog.setSigndate(signDateStr);
 				userSigninLogMapper.insert(userSigninLog);
 				System.out.println("signDate11111111111111111:"+signDate);
 				reward = getSignPointReward(uid);
@@ -669,15 +680,15 @@ public class UserServiceImpl implements UserService {
 	public Boolean isSigned(String uid) throws MLException {
 		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 		Date nowDate = new Date();
-		Date signDate = null;
+		String signDate = null;
 		try {
 			sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-			signDate = sdf.parse(sdf.format(nowDate.getTime()));
-		} catch (ParseException e) {
+			signDate = sdf.format(nowDate.getTime());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		Date hasLogin = cacheService.get("point_has_signin_" + uid, Date.class);
-		if (null!=hasLogin&&isSameDay(hasLogin,signDate)) {
+		String hasLogin = cacheService.get("point_has_signin_" + uid, String.class);
+		if (null!=hasLogin&& hasLogin.equalsIgnoreCase(signDate)) {
 			// 当天已经签到过
 			return true;
 		}
@@ -822,13 +833,13 @@ public class UserServiceImpl implements UserService {
 			it.etoken.base.model.user.entity.UserSigninLogExample.Criteria  criteria = example.createCriteria();
 			criteria.andUidEqualTo(user.getId());
 			Date nowDate = new Date();
-			Date signdate =null;
+			String signdate =null;
 			try {
 				SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
 				sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
-				signdate = sdf.parse(sdf.format(nowDate.getTime()));
+				signdate = sdf.format(nowDate.getTime());
 				criteria.andSigndateEqualTo(signdate);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			
