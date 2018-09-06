@@ -622,117 +622,135 @@ public class TransactionsServiceImpl implements TransactionsService{
 	
 	@Override
 	public  Map<String, String> findETExchangeExactPrice(Object[] trsationId) {
-		Criteria actorCriteria = Criteria.where("id").in(trsationId);
-		Query query = new Query(actorCriteria);
-		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
-		 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
-		 Map<String, String> pricetMap = new HashMap<String, String>();
-		 for (BasicDBObject thisBasicDBObject :list) {
-			 String id=(String) thisBasicDBObject.get("id");
-			 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
-				Object[] thisActionsTraces = action_traces.toArray();
-				for (Object object : thisActionsTraces) {
-					BasicDBObject actionTraces = (BasicDBObject)object;
-					BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
-					Object[] thisInlineTraces = inline_traces.toArray();
-					if(null == thisInlineTraces || thisInlineTraces.length==0) {
-						continue;
+		try {
+			Criteria actorCriteria = Criteria.where("id").in(trsationId);
+			Query query = new Query(actorCriteria);
+			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
+			 Map<String, String> pricetMap = new HashMap<String, String>();
+			 for (BasicDBObject thisBasicDBObject :list) {
+				 String id=(String) thisBasicDBObject.get("id");
+				 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
+					Object[] thisActionsTraces = action_traces.toArray();
+					for (Object object : thisActionsTraces) {
+						BasicDBObject actionTraces = (BasicDBObject)object;
+						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
+						Object[] thisInlineTraces = inline_traces.toArray();
+						if(null == thisInlineTraces || thisInlineTraces.length==0) {
+							continue;
+						}
+						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+						BasicDBObject inlineTraces2= (BasicDBObject)thisInlineTraces[1];
+						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
+						BasicDBObject data=(BasicDBObject)act.get("data");
+						String quantity1=(String)data.get("quantity");//如果是sell就是买的币的数量如果是buy就是eos的数量
+						BasicDBObject act1=(BasicDBObject) inlineTraces2.get("act");
+						BasicDBObject data1=(BasicDBObject)act1.get("data");
+						String quantity2=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
+		            	String[] quantity1_array= quantity1.split(" ");
+		            	String[] quantity2_array= quantity2.split(" ");
+		            	BigDecimal quantityarr1= new  BigDecimal(quantity1_array[0]);
+		            	String code1=quantity1_array[1];
+		            	BigDecimal quantityarr2= new  BigDecimal(quantity2_array[0]);
+		            	String code2=quantity2_array[1];
+		                if(code1.equals("EOS")) {
+		                	BigDecimal price= quantityarr1.divide(quantityarr2, 10, BigDecimal.ROUND_HALF_UP);
+		                	pricetMap.put(id,price.toPlainString());
+		                }
+		            	if(code2.equals("EOS")) {
+		            		BigDecimal price= quantityarr2.divide(quantityarr1, 10, BigDecimal.ROUND_HALF_UP);
+		            		pricetMap.put(id,price.toPlainString());
+		            	}
 					}
-					BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
-					BasicDBObject inlineTraces2= (BasicDBObject)thisInlineTraces[1];
-					BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-					BasicDBObject data=(BasicDBObject)act.get("data");
-					String quantity1=(String)data.get("quantity");//如果是sell就是买的币的数量如果是buy就是eos的数量
-					BasicDBObject act1=(BasicDBObject) inlineTraces2.get("act");
-					BasicDBObject data1=(BasicDBObject)act1.get("data");
-					String quantity2=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
-	            	String[] quantity1_array= quantity1.split(" ");
-	            	String[] quantity2_array= quantity2.split(" ");
-	            	BigDecimal quantityarr1= new  BigDecimal(quantity1_array[0]);
-	            	String code1=quantity1_array[1];
-	            	BigDecimal quantityarr2= new  BigDecimal(quantity2_array[0]);
-	            	String code2=quantity2_array[1];
-	                if(code1.equals("EOS")) {
-	                	BigDecimal price= quantityarr1.divide(quantityarr2, 10, BigDecimal.ROUND_HALF_UP);
-	                	pricetMap.put(id,price.toPlainString());
-	                }
-	            	if(code2.equals("EOS")) {
-	            		BigDecimal price= quantityarr2.divide(quantityarr1, 10, BigDecimal.ROUND_HALF_UP);
-	            		pricetMap.put(id,price.toPlainString());
-	            	}
-				}
-		    }
-		return pricetMap;
+			    }
+			return pricetMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	
 	
 	public Map<String, String> findbuyETExchangeExactQuant(Object[] trsationId) {
-		Criteria actorCriteria = Criteria.where("id").in(trsationId);
-		Query query = new Query(actorCriteria);
-		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
-		 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
-		 Map<String, String> quantMap = new HashMap<String, String>();
-		 for (BasicDBObject thisBasicDBObject :list) {
-			 String id=(String) thisBasicDBObject.get("id");
-			 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
-				Object[] thisActionsTraces = action_traces.toArray();
-				for (Object object : thisActionsTraces) {
-					BasicDBObject actionTraces = (BasicDBObject)object;
-					BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
-					Object[] thisInlineTraces = inline_traces.toArray();
-					if(null == thisInlineTraces || thisInlineTraces.length==0) {
-						continue;
+		try {
+			Criteria actorCriteria = Criteria.where("id").in(trsationId);
+			Query query = new Query(actorCriteria);
+			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
+			 Map<String, String> quantMap = new HashMap<String, String>();
+			 for (BasicDBObject thisBasicDBObject :list) {
+				 String id=(String) thisBasicDBObject.get("id");
+				 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
+					Object[] thisActionsTraces = action_traces.toArray();
+					for (Object object : thisActionsTraces) {
+						BasicDBObject actionTraces = (BasicDBObject)object;
+						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
+						Object[] thisInlineTraces = inline_traces.toArray();
+						if(null == thisInlineTraces || thisInlineTraces.length==0) {
+							continue;
+						}
+						BasicDBObject inlineTraces1= (BasicDBObject)thisInlineTraces[1];
+						BasicDBObject act1=(BasicDBObject) inlineTraces1.get("act");
+						BasicDBObject data1=(BasicDBObject)act1.get("data");
+						String quantity=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
+						quantMap.put(id,quantity);
 					}
-					BasicDBObject inlineTraces1= (BasicDBObject)thisInlineTraces[1];
-					BasicDBObject act1=(BasicDBObject) inlineTraces1.get("act");
-					BasicDBObject data1=(BasicDBObject)act1.get("data");
-					String quantity=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
-					quantMap.put(id,quantity);
-				}
-		    }
-		return quantMap;
+			    }
+			return quantMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	@Override
 	public  Map<String, String> findSellRamExactPrice(Object[] trsationId) {
-		Criteria actorCriteria = Criteria.where("id").in(trsationId);
-		Query query = new Query(actorCriteria);
-		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
-		 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
-		 Map<String, String> pricetMap = new HashMap<String, String>();
-		 for (BasicDBObject thisBasicDBObject :list) {
-			 String id=(String) thisBasicDBObject.get("id");
-			 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
-				Object[] thisActionsTraces = action_traces.toArray();
-				for (Object object : thisActionsTraces) {
-					BasicDBObject actionTraces = (BasicDBObject)object;
-					BasicDBObject actionact=(BasicDBObject)actionTraces.get("act");
-					BasicDBObject actiondata=(BasicDBObject)actionact.get("data");
-					Integer bytes= (Integer) actiondata.get("bytes");
-					BigDecimal bytes1=new BigDecimal(bytes.toString());
-					BigDecimal kb= bytes1.divide(new BigDecimal(1024), 10, BigDecimal.ROUND_HALF_UP);
-					BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
-					Object[] thisInlineTraces = inline_traces.toArray();
-					BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
-					BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
-					BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-					BasicDBObject data=(BasicDBObject)act.get("data");
-					String quantityEos=(String)data.get("quantity");
-					BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
-					BasicDBObject data2=(BasicDBObject)act2.get("data");
-					String quantityFeeEos2=(String)data2.get("quantity");
-	            	String[] quantity_eos_array= quantityEos.split(" ");
-	            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
-	            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
-	            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
-	            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
-	            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
-	            	BigDecimal price= sellRamEos.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
-	            	pricetMap.put(id,price.toPlainString());
-				}
-		    }
-		return pricetMap;
+		try {
+			Criteria actorCriteria = Criteria.where("id").in(trsationId);
+			Query query = new Query(actorCriteria);
+			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
+			 Map<String, String> pricetMap = new HashMap<String, String>();
+			 for (BasicDBObject thisBasicDBObject :list) {
+				 String id=(String) thisBasicDBObject.get("id");
+				 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
+					Object[] thisActionsTraces = action_traces.toArray();
+					for (Object object : thisActionsTraces) {
+						BasicDBObject actionTraces = (BasicDBObject)object;
+						BasicDBObject actionact=(BasicDBObject)actionTraces.get("act");
+						BasicDBObject actiondata=(BasicDBObject)actionact.get("data");
+						Integer bytes= (Integer) actiondata.get("bytes");
+						if(null==bytes.toString()) {
+							continue;
+						}
+						BigDecimal bytes1=new BigDecimal(bytes.toString());
+						BigDecimal kb= bytes1.divide(new BigDecimal(1024), 10, BigDecimal.ROUND_HALF_UP);
+						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
+						Object[] thisInlineTraces = inline_traces.toArray();
+						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+						BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
+						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
+						BasicDBObject data=(BasicDBObject)act.get("data");
+						String quantityEos=(String)data.get("quantity");
+						BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
+						BasicDBObject data2=(BasicDBObject)act2.get("data");
+						String quantityFeeEos2=(String)data2.get("quantity");
+		            	String[] quantity_eos_array= quantityEos.split(" ");
+		            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
+		            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
+		            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
+		            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
+		            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
+		            	BigDecimal price= sellRamEos.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
+		            	pricetMap.put(id,price.toPlainString());
+					}
+			    }
+			return pricetMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
