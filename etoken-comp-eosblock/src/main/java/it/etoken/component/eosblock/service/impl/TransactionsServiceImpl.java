@@ -303,7 +303,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					);
 		}
 		buyselltokenCriteria.orOperator(buytokenCriteria, selltokenCriteria);
-		if(null==account|| "".equals(account)) {
+		if(null==account|| "".equals(account)||code.equalsIgnoreCase("eos")) {
 			etCriteria.andOperator(
 					Criteria.where("actions.account").is("etbexchanger"),
 					actorCriteria,
