@@ -473,10 +473,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 			             	quantity=quantity_arra[0];
 			             	code_new=quantity_arra[1];
 			            }else if(actionName.equalsIgnoreCase("sellram")) {
-			            	Object[] obj=new Object[1];
-			            	obj[0]=transactionId;
-			            	Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
-			        		price=new BigDecimal(priceMap.get(transactionId));
+//			            	Object[] obj=new Object[1];
+//			            	obj[0]=transactionId;
+//			            	Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
+//			        		price=new BigDecimal(priceMap.get(transactionId));
 			            	description="内存出售";
 			            	memo="";
 			            	type="转入";
