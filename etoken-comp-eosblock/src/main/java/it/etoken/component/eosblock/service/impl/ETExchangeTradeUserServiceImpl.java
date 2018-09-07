@@ -50,11 +50,11 @@ public class ETExchangeTradeUserServiceImpl implements ETExchangeTradeUserServic
 	EosNodeUtils eosNodeUtils;
 
 	@Override
-	public List<BasicDBObject> getNewestRank() {
-		Query query = new Query();
-		query = query.with(new Sort(new Order(Direction.DESC, "ramQuota")));
+	public List<JSONObject> getNewRankByCode(String code) {
+		Query query = new Query(Criteria.where("code").is(code));
+		query = query.with(new Sort(new Order(Direction.DESC, "qty")));
 		query = query.limit(20);
-		List<BasicDBObject> RamLargeRankList = mongoTemplate.find(query, BasicDBObject.class, "ram_large_user_rank");
+		List<JSONObject> RamLargeRankList = mongoTemplate.find(query, JSONObject.class, "et_price_trade_user");
 		return RamLargeRankList;
 	}
 
