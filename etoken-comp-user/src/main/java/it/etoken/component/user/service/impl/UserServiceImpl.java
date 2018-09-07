@@ -517,6 +517,7 @@ public class UserServiceImpl implements UserService {
 				userSigninLog.setUid(user.getId());
 				userSigninLog.setNickname(user.getNickname());
 				userSigninLog.setSigndate(signDateStr);
+				userSigninLog.setCreatedate(sdf.parse(xxx));
 				userSigninLogMapper.insert(userSigninLog);
 				System.out.println("signDate11111111111111111:"+signDate);
 				reward = getSignPointReward(uid);
