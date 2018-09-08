@@ -158,6 +158,21 @@ public class ETExchangePriceSecondaryServiceImpl implements ETExchangePriceSecon
 			
 			BigDecimal todayVolum = this.getTodayVolum(code);
 			priceInfo.put("today_volum", todayVolum.doubleValue());
+			
+			//创建索引
+			BasicDBObject record_date_keys = new BasicDBObject();
+			record_date_keys.put("record_date", -1);
+			BasicDBObject record_date_options = new BasicDBObject();
+			record_date_options.put("background", true);
+			record_date_options.put("unique", true);
+			mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
+			
+			BasicDBObject code_keys = new BasicDBObject();
+			code_keys.put("code", "hashed");
+			
+			BasicDBObject code_options = new BasicDBObject();
+			code_options.put("background", true);
+			mongoTemplate.getCollection(collection_name).createIndex(code_keys, code_options);
 
 			Query queryExists = new Query(Criteria.where("record_date").is(times));
 			BasicDBObject existsEtPriceInfo = mongoTemplate.findOne(queryExists, BasicDBObject.class, collection_name);
@@ -1193,6 +1208,14 @@ public class ETExchangePriceSecondaryServiceImpl implements ETExchangePriceSecon
 
 		result.put("increase", increase);
 		result.put("amplitude", amplitude);
+		
+		//创建索引
+		BasicDBObject record_date_keys = new BasicDBObject();
+		record_date_keys.put("record_date", -1);
+		BasicDBObject record_date_options = new BasicDBObject();
+		record_date_options.put("background", true);
+		record_date_options.put("unique", true);
+		mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
 
 		Query queryExists = new Query(Criteria.where("record_date").is(startTimes));
 		BasicDBObject existsKline = mongoTemplate.findOne(queryExists, BasicDBObject.class,
