@@ -19,7 +19,6 @@ import it.etoken.base.model.market.entity.Coins;
 import it.etoken.base.model.market.entity.CoinsExample;
 import it.etoken.base.model.market.entity.CoinsExample.Criteria;
 import it.etoken.component.market.dao.mapper.CoinsMapper;
-import it.etoken.component.market.dao.mapper.CoinsNewMapper;
 import it.etoken.component.market.service.CoinsService;
 
 @Component
@@ -31,18 +30,15 @@ public class CoinsServiceImpl implements CoinsService {
 	@Autowired
 	private CoinsMapper coinsMapper;
 	
-	@Autowired
-	private CoinsNewMapper coinsNewMapper;
-	
 	@Override
 	@CacheEvict(value="coinsCache",allEntries=true)
 	public Coins saveUpdate(Coins coins) throws MLException {
 		try{
 			if(coins.getId()==null){
 //				coinsMapper.insert(coins);
-				coinsNewMapper.insertSelective(coins);
+				coinsMapper.insertSelective(coins);
 			}else{
-				coinsNewMapper.updateByPrimaryKeySelective(coins);
+				coinsMapper.updateByPrimaryKeySelective(coins);
 //				coinsMapper.update(coins);
 			}
 			return coins;
@@ -59,7 +55,7 @@ public class CoinsServiceImpl implements CoinsService {
 	@CacheEvict(value="coinsCache",allEntries=true)
 	public void delete(Long id) throws MLException {
 		try{
-			coinsNewMapper.deleteByPrimaryKey(id);
+			coinsMapper.deleteByPrimaryKey(id);
 		}catch (MLException ex) {
 			logger.error(ex.toString());
 			throw ex;
@@ -75,7 +71,7 @@ public class CoinsServiceImpl implements CoinsService {
 		try{
 			Page<Coins> result = PageHelper.startPage(1,100);  
 			CoinsExample example = new CoinsExample();
-			coinsNewMapper.selectByExample(example);
+			coinsMapper.selectByExample(example);
 			return result;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
@@ -90,7 +86,7 @@ public class CoinsServiceImpl implements CoinsService {
 	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
 	public Coins findById(Long id) throws MLException {
 		try{
-			return coinsNewMapper.selectByPrimaryKey(id);
+			return coinsMapper.selectByPrimaryKey(id);
 		}catch (MLException ex) {
 			logger.error(ex.toString());
 			throw ex;
@@ -110,7 +106,7 @@ public class CoinsServiceImpl implements CoinsService {
 			if(null != code && !code.isEmpty()) {
 				criteria.andCodeEqualTo(code);
 			}
-			coinsNewMapper.selectByExample(example);
+			coinsMapper.selectByExample(example);
 			return result;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
@@ -129,7 +125,7 @@ public class CoinsServiceImpl implements CoinsService {
 			Criteria criteria = example.createCriteria();
 			criteria.andNameEqualTo(name);
 			
-			List<Coins> coins =  coinsNewMapper.selectByExample(example);
+			List<Coins> coins =  coinsMapper.selectByExample(example);
 			if(coins.isEmpty()) {
 				return null;
 			}
@@ -153,7 +149,7 @@ public class CoinsServiceImpl implements CoinsService {
 			
 			Page<Coins> result = PageHelper.startPage(1,1000); 
 			
-			coinsNewMapper.selectByExample(example);
+			coinsMapper.selectByExample(example);
 			return result;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
@@ -168,7 +164,7 @@ public class CoinsServiceImpl implements CoinsService {
 	public List<Coins> findAllCoins() {
 		try{
 			CoinsExample example = new CoinsExample();
-			List<Coins> list=coinsNewMapper.selectByExample(example);
+			List<Coins> list=coinsMapper.selectByExample(example);
 			return list;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
