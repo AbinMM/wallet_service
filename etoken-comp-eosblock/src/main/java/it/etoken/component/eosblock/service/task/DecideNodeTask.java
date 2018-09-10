@@ -29,7 +29,7 @@ public class DecideNodeTask {
 	CacheService cacheService;
 
 	// 获取当前内存价格表的数据
-	@Scheduled(cron = "0 */10 * * * ?")
+	@Scheduled(cron = "*/2 * * * * ?")
 	public void getRamPrice() {
 		try {
 			System.out.println("开始获取节点信息...");
