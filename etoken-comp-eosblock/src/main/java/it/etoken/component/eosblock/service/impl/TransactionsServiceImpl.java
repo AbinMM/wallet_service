@@ -618,9 +618,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 		    List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 		    return transactionsList;
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
+			 return null;
 		}
-		return null;
 	}
 	
 	@Override
