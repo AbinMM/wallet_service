@@ -52,8 +52,6 @@ public class DappInfoServiceImpl implements DappInfoService{
 	@Override 
 	public List<DappInfo> findAllRecommend() throws MLException {
 	try {
-			
-			
 			DappInfoExample example=new DappInfoExample();
 			Criteria criteria=example.createCriteria();
 			criteria.andIsRecommendEqualTo("y");
