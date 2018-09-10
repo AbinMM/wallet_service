@@ -31,7 +31,6 @@ public class DappInfoServiceImpl implements DappInfoService{
 	DappInfoMapper dappInfoMapper;
 
 	@Override
-	//@Cacheable(value="DappInfoCache",keyGenerator="wiselyKeyGenerator") 
 	public Page<DappInfo> findAll(int page,int pageSize) {
 		try {
 			Page<DappInfo> result = PageHelper.startPage(page,pageSize);  
@@ -50,8 +49,7 @@ public class DappInfoServiceImpl implements DappInfoService{
 		
 	}
 
-	@Override
-	//@Cacheable(value="DappInfoCache",keyGenerator="wiselyKeyGenerator") 
+	@Override 
 	public List<DappInfo> findAllRecommend() throws MLException {
 	try {
 			
@@ -72,7 +70,6 @@ public class DappInfoServiceImpl implements DappInfoService{
 	}
 
 	@Override
-	//@Cacheable(value="DappInfoCache",keyGenerator="wiselyKeyGenerator") 
 	public List<DappInfo> findByName(String name) throws MLException {
 	try {
 
