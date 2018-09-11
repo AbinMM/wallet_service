@@ -24,12 +24,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.jpush.PushService;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.Delegatebw;
+import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.eosrpc.CreateAccount;
 import it.etoken.component.api.eosrpc.EosResult;
 import it.etoken.component.api.eosrpc.GetAccountDelbandInfo;
@@ -61,6 +63,10 @@ public class EosRpcController extends BaseController {
 	
 	@Autowired
 	EosNodeUtils eosNodeUtils;
+	
+	@Autowired
+	CacheService cacheService;
+	
 
 	@Reference(version = "1.0.0", timeout = 120000, retries = 3)
 	TransactionsFacadeAPI transactionsFacadeAPI;
@@ -570,16 +576,18 @@ public class EosRpcController extends BaseController {
 	public Object queryRamPrice(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
 		logger.info("/queryRamPrice request map : " + requestMap);
 		try {
-			String url = "https://tbeospre.mytokenpocket.vip/v1/ram_price";
-			String result = HttpClientUtils.doGet(url);
-			GsonBuilder gb = new GsonBuilder();
-		    Gson g = gb.create();
-		    Map<String, String> map = g.fromJson(result, new TypeToken<Map<String, String>>() {}.getType());
-		    Double data= Double.parseDouble(map.get("data"));
-		    Double realPrice = 1 * 1024 / data;
-		    BigDecimal b = new BigDecimal(realPrice);
-		    realPrice = b.setScale(5, BigDecimal.ROUND_HALF_UP).doubleValue(); 
-		    return this.success(realPrice);
+//			String url = "https://tbeospre.mytokenpocket.vip/v1/ram_price";
+//			String result = HttpClientUtils.doGet(url);
+//			GsonBuilder gb = new GsonBuilder();
+//		    Gson g = gb.create();
+//		    Map<String, String> map = g.fromJson(result, new TypeToken<Map<String, String>>() {}.getType());
+//		    Double data= Double.parseDouble(map.get("data"));
+//		    Double realPrice = 1 * 1024 / data;
+//		    BigDecimal b = new BigDecimal(realPrice);
+//		    realPrice = b.setScale(5, BigDecimal.ROUND_HALF_UP).doubleValue(); 
+		    BasicDBObject ram_price_info=cacheService.get("ram_price_info",BasicDBObject.class);
+		    Double price=ram_price_info.getDouble("price");
+		    return this.success(price);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}	
