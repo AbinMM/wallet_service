@@ -377,7 +377,7 @@ public class ETExchangePriceController extends BaseController {
 				Boolean isOpenET = result.getResult();
 				JSONObject jo = new JSONObject();
 				jo.put("open", isOpenET);
-				return this.success(isOpenET);
+				return this.success(jo);
 			}else {
 				return this.error(result.getErrorCode(),result.getErrorHint(), null);
 			}
