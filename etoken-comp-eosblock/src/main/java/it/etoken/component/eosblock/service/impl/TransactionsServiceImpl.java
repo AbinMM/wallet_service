@@ -731,11 +731,14 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BigDecimal kb= bytes1.divide(new BigDecimal(1024), 10, BigDecimal.ROUND_HALF_UP);
 						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
 						Object[] thisInlineTraces = inline_traces.toArray();
-						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
-						BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
-						if(null==inlineTraces1||null==inlineTraces2) {
+						if(null == thisInlineTraces || thisInlineTraces.length==0) {
 							continue;
 						}
+						if(null==thisInlineTraces[0]||null==thisInlineTraces[1]) {
+							continue;
+						}
+						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+						BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
 						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
 						BasicDBObject data=(BasicDBObject)act.get("data");
 						String quantityEos=(String)data.get("quantity");
