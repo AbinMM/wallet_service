@@ -734,25 +734,37 @@ public class TransactionsServiceImpl implements TransactionsService{
 						if(null == thisInlineTraces || thisInlineTraces.length==0) {
 							continue;
 						}
-						if(null==thisInlineTraces[0]||null==thisInlineTraces[1]) {
+						if(thisInlineTraces.length<1) {
 							continue;
 						}
-						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
-						BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
-						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-						BasicDBObject data=(BasicDBObject)act.get("data");
-						String quantityEos=(String)data.get("quantity");
-						BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
-						BasicDBObject data2=(BasicDBObject)act2.get("data");
-						String quantityFeeEos2=(String)data2.get("quantity");
-		            	String[] quantity_eos_array= quantityEos.split(" ");
-		            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
-		            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
-		            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
-		            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
-		            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
-		            	BigDecimal price= sellRamEos.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
-		            	pricetMap.put(id,price.toPlainString());
+						if(thisInlineTraces.length==1) {
+							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
+							BasicDBObject data=(BasicDBObject)act.get("data");
+							String quantityEos=(String)data.get("quantity");
+			            	String[] quantity_eos_array= quantityEos.split(" ");
+			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
+			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
+			            	BigDecimal price= eosQuantity.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
+			            	pricetMap.put(id,price.toPlainString());
+						}else {
+							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+							BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
+							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
+							BasicDBObject data=(BasicDBObject)act.get("data");
+							String quantityEos=(String)data.get("quantity");
+							BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
+							BasicDBObject data2=(BasicDBObject)act2.get("data");
+							String quantityFeeEos2=(String)data2.get("quantity");
+			            	String[] quantity_eos_array= quantityEos.split(" ");
+			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
+			            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
+			            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
+			            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
+			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
+			            	BigDecimal price= sellRamEos.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
+			            	pricetMap.put(id,price.toPlainString());
+						}
 					}
 			    }
 			return pricetMap;
