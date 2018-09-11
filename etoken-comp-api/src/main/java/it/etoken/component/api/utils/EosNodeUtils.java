@@ -25,10 +25,20 @@ public class EosNodeUtils {
 		Map<String, String> result = new HashMap<String, String>();
 		@SuppressWarnings("unchecked")
 		List<JSONObject> node_list = cacheService.get("node_list", List.class);
-		JSONObject pre_node = node_list.get(0);
-		JSONObject secondary_node = node_list.get(1);
-		String pre_url = pre_node.getString("url");
-		String secondary_url = secondary_node.getString("url");
+		String pre_url = "http://api.cypherglass.com:8888";
+		String secondary_url = "http://api1.eosdublin.io";
+		if(null != node_list && !node_list.isEmpty()) {
+			if(node_list.size()>0) {
+				JSONObject pre_node = node_list.get(0);
+				pre_url = pre_node.getString("url");
+			}
+			
+			if(node_list.size()>1) {
+				JSONObject secondary_node = node_list.get(1);
+				secondary_url = secondary_node.getString("url");
+			}
+		}
+		
 		
 		result.put("url_chain", pre_url + "/v1/chain/");
 		result.put("url_chain_backup", secondary_url + "/v1/chain/");
