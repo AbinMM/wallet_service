@@ -36,14 +36,14 @@ import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.cache.service.CacheService;
-import it.etoken.component.eosblock.service.ETExchangePriceService;
+import it.etoken.component.eosblock.service.ETExchangePriceSecondaryService;
 import it.etoken.component.eosblock.service.TransactionsService;
 import it.etoken.component.eosblock.utils.EOSUtils;
 import it.etoken.component.eosblock.utils.EosNodeUtils;
 
 @Component
 @Transactional
-public class ETExchangePriceServiceImpl implements ETExchangePriceService {
+public class ETExchangePriceSecondaryServiceImpl implements ETExchangePriceSecondaryService {
 	private final int[] lines_hour = new int[] { 1, 2, 6, 24, 48 };
 	private final long BIG_BILLS_AMMOUNT = 2000;
 	private final long MID_BILLS_AMMOUNT = 500;
@@ -57,7 +57,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	EosNodeUtils eosNodeUtils;
 
 	@Autowired
-	@Qualifier(value = "primaryMongoTemplate")
+	@Qualifier(value = "secondaryMongoTemplate")
 	MongoOperations mongoTemplate;
 
 	@Autowired
@@ -173,7 +173,6 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			BasicDBObject code_options = new BasicDBObject();
 			code_options.put("background", true);
 			mongoTemplate.getCollection(collection_name).createIndex(code_keys, code_options);
-			
 
 			Query queryExists = new Query(Criteria.where("record_date").is(times));
 			BasicDBObject existsEtPriceInfo = mongoTemplate.findOne(queryExists, BasicDBObject.class, collection_name);
@@ -195,9 +194,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			
 			result.add(priceInfo);
 			
-			cacheService.set("et_price_info_"+code, priceInfo);
+//			cacheService.set("et_price_info_"+code, priceInfo);
 		}
-		cacheService.set("et_price_list", result);
+//		cacheService.set("et_price_list", result);
 		return result;
 	}
 
@@ -419,7 +418,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					tempPriceInfoList.add(thisEtPriceInfo);
 				}
 
-				cacheService.set("et_price_hours_" + code + "_" + thisLineHour, tempPriceInfoList);
+//				cacheService.set("et_price_hours_" + code + "_" + thisLineHour, tempPriceInfoList);
 			}
 		}
 		
@@ -581,7 +580,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
-		cacheService.set("et_new_trade_orders_" + code, result);
+//		cacheService.set("et_new_trade_orders_" + code, result);
 
 		return result;
 	}
@@ -590,39 +589,20 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	public List<ETTradeLog> getBigTradeOrdersByCode(String code) throws MLException {
 		String[] codes = code.split("_");
 		
-		BigDecimal big_order_qty = BigDecimal.valueOf(10);
-		Query settingsQuery = new Query(Criteria.where("code").is(code));
-		BasicDBObject bigOrderSettings = mongoTemplate.findOne(settingsQuery, BasicDBObject.class, "et_price_big_order_settings");
-		if(null != bigOrderSettings) {
-			big_order_qty = BigDecimal.valueOf(bigOrderSettings.getDouble("value"));
-		}
-		
-		
 		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]).and("createdAt").exists(true));
 		
 		Criteria buyCriteria = new Criteria();
 		Criteria sellCriteria = new Criteria();
 		Criteria buysellCriteria = new Criteria();
-		Criteria createdAtCriteria = new Criteria();
-		
-		Date endDate = new Date(); 
-		Date startDate = new Date(endDate.getTime()-24*60*60*1000);
 		
 		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
 		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
 		
-		createdAtCriteria.andOperator(
-				Criteria.where("createdAt").gte(startDate),
-				Criteria.where("createdAt").lt(endDate)
-				);
-		Criteria criteria = new Criteria();
-		criteria.andOperator(buysellCriteria, createdAtCriteria);
-		
-		query.addCriteria(criteria);
+		query.addCriteria(buysellCriteria);
 		
 		int page = 1;
-		int pageSize = 200;
+		int pageSize = 1000;
 		int count = 20;
 
 		Map<String, String> existMap = new HashMap<String, String>();
@@ -717,7 +697,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						}
 						
 						BigDecimal eos_qty = BigDecimal.valueOf(Double.valueOf(eos_quants[0].trim()));
-						if(eos_qty.compareTo(big_order_qty) < 0) {
+						if(eos_qty.compareTo(BigDecimal.valueOf(1000)) < 0) {
 							continue;
 						}
 						
@@ -735,7 +715,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						BigDecimal eos_qty = qty.multiply(price);
 						eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
 						
-						if(eos_qty.compareTo(big_order_qty) < 0) {
+						if(eos_qty.compareTo(BigDecimal.valueOf(1000)) < 0) {
 							continue;
 						}
 						
@@ -772,7 +752,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
-		cacheService.set("et_big_trade_orders_" + code, result);
+//		cacheService.set("et_big_trade_orders_" + code, result);
 
 		return result;
 

@@ -179,6 +179,7 @@ public class ETExchangePriceWebController extends BaseController {
 				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getNewTradeOrdersByCode(code);
 				if(result.isSuccess()) {
 					list = result.getList();
+					return this.success(list);
 				}else {
 					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 				}
@@ -202,14 +203,15 @@ public class ETExchangePriceWebController extends BaseController {
 		try {
 			@SuppressWarnings("unchecked")
 			List<ETTradeLog> list = cacheService.get("et_big_trade_orders_"+code, List.class);
-			if(null == list || list.isEmpty()) {
-				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getBigTradeOrdersByCode(code);
-				if(result.isSuccess()) {
-					list = result.getList();
-				}else {
-					return this.error(result.getErrorCode(),result.getErrorHint(), null);
-				}
-			}
+//			if(null == list || list.isEmpty()) {
+//				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getBigTradeOrdersByCode(code);
+//				if(result.isSuccess()) {
+//					list = result.getList();
+//					return this.success(list);
+//				}else {
+//					return this.error(result.getErrorCode(),result.getErrorHint(), null);
+//				}
+//			}
 			if(null != list && !list.isEmpty()) {
 				return this.success(list);
 			}else {

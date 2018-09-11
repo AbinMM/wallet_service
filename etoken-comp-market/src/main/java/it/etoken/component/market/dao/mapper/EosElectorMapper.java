@@ -1,10 +1,7 @@
 package it.etoken.component.market.dao.mapper;
 
-import it.etoken.base.model.market.entity.EosElector;
-import it.etoken.base.model.market.entity.EosElectorExample;
-import it.etoken.component.market.dao.provider.EosElectorSqlProvider;
-
 import java.util.List;
+
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.DeleteProvider;
 import org.apache.ibatis.annotations.Insert;
@@ -19,6 +16,9 @@ import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.annotations.UpdateProvider;
 import org.apache.ibatis.type.JdbcType;
+
+import it.etoken.base.model.market.entity.EosElector;
+import it.etoken.base.model.market.entity.EosElectorExample;
 
 @Mapper
 public interface EosElectorMapper {

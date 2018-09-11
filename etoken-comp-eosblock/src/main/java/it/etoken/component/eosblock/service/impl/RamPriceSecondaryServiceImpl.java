@@ -36,13 +36,13 @@ import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.cache.service.CacheService;
-import it.etoken.component.eosblock.utils.EosNodeUtils;
-import it.etoken.component.eosblock.service.RamPriceService;
+import it.etoken.component.eosblock.service.RamPriceSecondaryService;
 import it.etoken.component.eosblock.service.TransactionsService;
+import it.etoken.component.eosblock.utils.EosNodeUtils;
 
 @Component
 @Transactional
-public class RamPriceServiceImpl implements RamPriceService {
+public class RamPriceSecondaryServiceImpl implements RamPriceSecondaryService {
 	private final int[] lines_hour = new int[] {1, 2, 6, 24, 48};
 	private final long BIG_BILLS_AMMOUNT = 2000;
 	private final long MID_BILLS_AMMOUNT = 500;
@@ -56,7 +56,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 	EosNodeUtils eosNodeUtils;
 	
 	@Autowired
-	@Qualifier(value = "primaryMongoTemplate")
+	@Qualifier(value = "secondaryMongoTemplate")
 	MongoOperations mongoTemplate;
 
 
@@ -167,12 +167,12 @@ public class RamPriceServiceImpl implements RamPriceService {
 		record_date_options.put("background", true);
 		record_date_options.put("unique", true);
 		mongoTemplate.getCollection("ram_price").createIndex(record_date_keys, record_date_options);
-		
+				
 		Query queryExists = new Query(Criteria.where("record_date").is(times));
 		BasicDBObject existsRamPriceInfo = mongoTemplate.findOne(queryExists, BasicDBObject.class, "ram_price");
 		if(existsRamPriceInfo == null) {
 			mongoTemplate.save(ramPriceInfo, "ram_price");
-			cacheService.set("ram_price_info", ramPriceInfo);
+//			cacheService.set("ram_price_info", ramPriceInfo);
 		}
 
 		return result;
@@ -479,7 +479,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			
 		}
 		existMap.clear();
-		cacheService.set("getNewTradeOrders", result);
+//		cacheService.set("getNewTradeOrders", result);
 
 		return result;
 	}
@@ -610,7 +610,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			ramTradeLog.setPrice(new BigDecimal(price));
 		}
 		existMap.clear();
-		cacheService.set("getBigTradeOrders", result);
+//		cacheService.set("getBigTradeOrders", result);
 
 		return result;
 
@@ -1011,7 +1011,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 		result.put("mid_amount_desc", "中单 " + MID_BILLS_AMMOUNT + "-" + BIG_BILLS_AMMOUNT);
 		result.put("small_amount_desc", "小单<" + MID_BILLS_AMMOUNT);
 		
-		cacheService.set("calculateAmountStatistics", result);
+//		cacheService.set("calculateAmountStatistics", result);
 		
 		return result;
 	}

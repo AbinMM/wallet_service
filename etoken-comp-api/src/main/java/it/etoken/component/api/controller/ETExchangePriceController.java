@@ -29,6 +29,7 @@ import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.exception.MLApiException;
 import it.etoken.componet.eosblock.facade.ETExchangePriceFacadeAPI;
+import it.etoken.componet.eosblock.facade.ETExchangeTradeUserFacadeAPI;
 
 @Controller
 @RequestMapping(value = "/etExchangePrice")
@@ -40,6 +41,9 @@ public class ETExchangePriceController extends BaseController {
 
 	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
 	ETExchangePriceFacadeAPI eTExchangePriceFacadeAPI;
+	
+	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
+	ETExchangeTradeUserFacadeAPI eTExchangeTradeUserFacadeAPI;
 	
 	@ResponseBody
 	@RequestMapping(value = "/list")
@@ -223,6 +227,7 @@ public class ETExchangePriceController extends BaseController {
 				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getNewTradeOrdersByCode(code);
 				if(result.isSuccess()) {
 					list = result.getList();
+					return this.success(list);
 				}else {
 					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 				}
@@ -246,14 +251,15 @@ public class ETExchangePriceController extends BaseController {
 		try {
 			@SuppressWarnings("unchecked")
 			List<ETTradeLog> list = cacheService.get("et_big_trade_orders_"+code, List.class);
-			if(null == list || list.isEmpty()) {
-				MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getBigTradeOrdersByCode(code);
-				if(result.isSuccess()) {
-					list = result.getList();
-				}else {
-					return this.error(result.getErrorCode(),result.getErrorHint(), null);
-				}
-			}
+//			if(null == list || list.isEmpty()) {
+//				//MLResultList<ETTradeLog> result = eTExchangePriceFacadeAPI.getBigTradeOrdersByCode(code);
+//				if(result.isSuccess()) {
+//					list = result.getList();
+//					return this.success(list);
+//				}else {
+//					return this.error(result.getErrorCode(),result.getErrorHint(), null);
+//				}
+//			}
 			if(null != list && !list.isEmpty()) {
 				return this.success(list);
 			}else {
@@ -334,7 +340,26 @@ public class ETExchangePriceController extends BaseController {
 		}
 	}
 	
-	public Object getTodayInfo() {
-		return null;
+	@ResponseBody
+	@RequestMapping(value = "/getLargeRankByCode/{code}")
+	public Object getLargeRankByCode(@PathVariable String code, HttpServletRequest request) {
+		logger.info("getNewTradeOrdersByAccountName");
+		if(null == code || code.isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		
+		try {
+			MLResultList<JSONObject> result = eTExchangeTradeUserFacadeAPI.getNewRankByCode(code);
+			if(result.isSuccess()) {
+				List<JSONObject> list = result.getList();
+				return this.success(list);
+			}else {
+				return this.error(result.getErrorCode(),result.getErrorHint(), null);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return this.error(MLApiException.SYS_ERROR, null);
+		}
 	}
+	
 }

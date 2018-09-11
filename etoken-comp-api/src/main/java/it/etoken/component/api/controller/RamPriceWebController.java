@@ -133,6 +133,7 @@ public class RamPriceWebController extends BaseController {
 				MLResultList<RamTradeLog> result = ramPriceFacadeAPI.getNewTradeOrders();
 				if(result.isSuccess()) {
 					list = result.getList();
+					return this.success(list);
 				}else {
 					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 				}
@@ -156,14 +157,15 @@ public class RamPriceWebController extends BaseController {
 		try {
 			@SuppressWarnings("unchecked")
 			List<RamTradeLog> list = cacheService.get("getBigTradeOrders", List.class);
-			if(null == list || list.isEmpty()) {
-				MLResultList<RamTradeLog> result = ramPriceFacadeAPI.getBigTradeOrders();
-				if(result.isSuccess()) {
-					list = result.getList();
-				}else {
-					return this.error(result.getErrorCode(),result.getErrorHint(), null);
-				}
-			}
+//			if(null == list || list.isEmpty()) {
+//				MLResultList<RamTradeLog> result = ramPriceFacadeAPI.getBigTradeOrders();
+//				if(result.isSuccess()) {
+//					list = result.getList();
+//					return this.success(list);
+//				}else {
+//					return this.error(result.getErrorCode(),result.getErrorHint(), null);
+//				}
+//			}
 			if(null != list && !list.isEmpty()) {
 				return this.success(list);
 			}else {
