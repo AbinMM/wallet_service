@@ -948,4 +948,13 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("The date must not be null");
         }
     }
+    
+    @Override
+    public Boolean isOpenET() throws MLException {
+    	SysConfig etOpenSysConfig = sysConfigMaper.findByName("et_open");
+    	if(null != etOpenSysConfig && etOpenSysConfig.getValue().equalsIgnoreCase("0")) {
+    		return false;
+    	}
+    	return true;
+    }
 }
