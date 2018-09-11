@@ -733,6 +733,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						Object[] thisInlineTraces = inline_traces.toArray();
 						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 						BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
+						if(null==inlineTraces1||null==inlineTraces2) {
+							continue;
+						}
 						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
 						BasicDBObject data=(BasicDBObject)act.get("data");
 						String quantityEos=(String)data.get("quantity");
@@ -863,5 +866,5 @@ public class TransactionsServiceImpl implements TransactionsService{
 				}	
 			}
 			return list;
-	}    
+	} 
 }
