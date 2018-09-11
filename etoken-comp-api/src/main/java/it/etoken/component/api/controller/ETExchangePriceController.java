@@ -375,6 +375,8 @@ public class ETExchangePriceController extends BaseController {
 			MLResultObject<Boolean> result = userFacadeAPI.isOpenET();
 			if(result.isSuccess()) {
 				Boolean isOpenET = result.getResult();
+				JSONObject jo = new JSONObject();
+				jo.put("open", isOpenET);
 				return this.success(isOpenET);
 			}else {
 				return this.error(result.getErrorCode(),result.getErrorHint(), null);
