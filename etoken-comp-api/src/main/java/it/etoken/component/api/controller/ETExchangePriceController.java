@@ -265,12 +265,12 @@ public class ETExchangePriceController extends BaseController {
 //					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 //				}
 //			}
-			if(null != list && !list.isEmpty()) {
-				return this.success(list);
-			}else {
-				return this.error(MLApiException.SYS_ERROR, null);
-			}
-			
+//			if(null != list && !list.isEmpty()) {
+//				return this.success(list);
+//			}else {
+//				return this.error(MLApiException.SYS_ERROR, null);
+//			}
+			return this.success(list);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return this.error(MLApiException.SYS_ERROR, null);
