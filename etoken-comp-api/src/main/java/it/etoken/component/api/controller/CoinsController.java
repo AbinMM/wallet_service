@@ -504,4 +504,25 @@ public class CoinsController extends BaseController{
 		}
 	}
 
+	@ResponseBody
+	@RequestMapping(value = "getInfo/{name}")
+	public Object getInfo(@PathVariable String name, @RequestParam Map<String, String> requestMap, HttpServletRequest request)
+	{
+		logger.info("/getInfo/"+name+" request map : " + requestMap);
+		try {
+			if(null == name || name.isEmpty()) {
+				return this.error(MLApiException.PARAM_ERROR,null);
+			}
+			MLResultObject<Coins> result = coinsFacadeAPI.findByName(name);
+			if(!result.isSuccess()) {
+				return this.error(result.getErrorCode(), result.getErrorHint(), result.getResult());
+			}
+			Coins info = result.getResult();
+			
+			return this.success(info);
+		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			return this.error(MLApiException.SYS_ERROR,null);
+		}
+	}
 }
