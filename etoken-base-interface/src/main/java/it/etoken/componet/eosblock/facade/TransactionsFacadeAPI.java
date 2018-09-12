@@ -17,5 +17,5 @@ public interface TransactionsFacadeAPI {
 	public MLResultList<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort,
 			String token, String contract);
 	
-
+	public MLResultList<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount);
 }

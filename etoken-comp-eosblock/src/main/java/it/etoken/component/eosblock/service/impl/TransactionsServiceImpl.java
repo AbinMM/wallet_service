@@ -2,7 +2,6 @@ package it.etoken.component.eosblock.service.impl;
 
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import java.util.regex.Pattern;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -28,7 +28,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
-import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.component.eosblock.service.TransactionsService;
 
 @Component
@@ -882,4 +881,24 @@ public class TransactionsServiceImpl implements TransactionsService{
 			}
 			return list;
 	} 
+	
+	@Override
+	public List<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount) {
+		Query query = new Query();
+		
+		Criteria criteria = new Criteria();
+		criteria.andOperator(
+				Criteria.where("actions.account").is(account),
+				Criteria.where("actions.name").in("transfer"),
+				Criteria.where("actions.data.to").is(to),
+				Criteria.where("actions.data.quantity").regex(".*" + tokenName)
+				);
+		query.addCriteria(criteria);
+		query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		query.limit(pageCount);
+		query.skip((page-1)*pageCount);
+		
+		List<JSONObject> result = mongoTemplate.find(query, JSONObject.class, "transactions");
+		return result;
+	}
 }

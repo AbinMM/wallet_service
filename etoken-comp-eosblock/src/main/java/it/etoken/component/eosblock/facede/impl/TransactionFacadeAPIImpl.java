@@ -67,4 +67,15 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 			return new MLResultList<JSONObject>(e);
 		}
 	}
+	
+	@Override
+	public MLResultList<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount){
+		try {
+			List<JSONObject> result= transactionsService.findAllTransferInByAccountAndTokenName(account, tokenName, to, page, pageCount);
+			return new MLResultList<JSONObject>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultList<JSONObject>(e);
+		}
+	}
 }

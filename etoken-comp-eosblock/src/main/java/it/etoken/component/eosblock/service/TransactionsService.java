@@ -21,5 +21,15 @@ public interface TransactionsService {
 
 	public List<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort, String token,
 			String contract);
-
+	
+	/**
+	 * 根据发币账号和币名，查询最新转入记录
+	 * @param account 发币账号
+	 * @param tokenName 币名
+	 * @param to 转入账号
+	 * @param page 第几页
+	 * @param pageCount 每页条数
+	 * @return
+	 */
+	public List<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount);
 }
