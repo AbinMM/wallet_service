@@ -11,3 +11,8 @@ CREATE TABLE `user_eos_account` (
   KEY `create_date` (`create_date`),
   KEY `update_date` (`update_date`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+ALTER TABLE coins ADD recommend_level INT DEFAULT 1 COMMENT '推荐指数';
+ALTER TABLE coins ADD project_creative VARCHAR(100) DEFAULT NULL COMMENT '项目创新';
+ALTER TABLE coins ADD investment_value VARCHAR(100) DEFAULT NULL COMMENT '投资价值';
+ALTER TABLE coins ADD crowdfunding_date VARCHAR(100) DEFAULT NULL COMMENT '众筹日期';
