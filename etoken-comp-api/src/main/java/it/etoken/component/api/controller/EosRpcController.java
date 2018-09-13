@@ -1,6 +1,5 @@
 package it.etoken.component.api.controller;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +30,7 @@ import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.Delegatebw;
+import it.etoken.base.model.eosblock.entity.UserEosAccount;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.eosrpc.CreateAccount;
 import it.etoken.component.api.eosrpc.EosResult;
@@ -51,6 +51,7 @@ import it.etoken.component.api.exception.MLApiException;
 import it.etoken.component.api.utils.EosNodeUtils;
 import it.etoken.componet.eosblock.facade.DelegatebwFacadeAPI;
 import it.etoken.componet.eosblock.facade.TransactionsFacadeAPI;
+import it.etoken.componet.eosblock.facade.UserEosAccountFacadeAPI;
 
 @Controller
 @RequestMapping(value = "/eosrpc")
@@ -73,6 +74,9 @@ public class EosRpcController extends BaseController {
 	
 	@Reference(version = "1.0.0")
 	DelegatebwFacadeAPI delegatebwFacadeAPI;
+	
+	@Reference(version = "1.0.0", timeout = 120000, retries = 3)
+	UserEosAccountFacadeAPI userEosAccountFacadeAPI;
 
 
 //	@Value("${nodeos.path.chain}")
@@ -182,6 +186,24 @@ public class EosRpcController extends BaseController {
 
 		JSONObject jsonObject = new JSONObject();
 		try {
+			String uid = request.getHeader("uid");
+			MLResultObject<UserEosAccount> result=userEosAccountFacadeAPI.findbyUidAndAccount(uid, requestMap.get("account"));
+			if(result.isSuccess()) {
+				if(result.getResult()!=null) {
+					UserEosAccount uea=result.getResult();
+					uea.setUpdateDate(new Date());
+					userEosAccountFacadeAPI.update(uea);
+				}else {
+					UserEosAccount userEosAccount=new UserEosAccount();
+					if(null!=uid) {
+						userEosAccount.setUid(Long.parseLong(uid));	
+					}
+					userEosAccount.setEosAccount(requestMap.get("account"));
+					userEosAccount.setCreateDate(new Date());
+					userEosAccount.setUpdateDate(new Date());
+					userEosAccountFacadeAPI.save(userEosAccount);
+				}
+			}
 			jsonObject.put("code", requestMap.get("contract"));
 			jsonObject.put("account", requestMap.get("account"));
 			jsonObject.put("symbol", requestMap.get("symbol"));
