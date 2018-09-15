@@ -31,11 +31,15 @@ public class DappInfoServiceImpl implements DappInfoService{
 	DappInfoMapper dappInfoMapper;
 
 	@Override
-	public Page<DappInfo> findAll(int page,int pageSize) {
+	public Page<DappInfo> findAll(int page,int pageSize,String name) {
 		try {
 			Page<DappInfo> result = PageHelper.startPage(page,pageSize);  
 			DappInfoExample example=new DappInfoExample();
 			example.setOrderByClause("seq desc");
+			if(!name.equals("")&&null!=name) {
+				DappInfoExample.Criteria criteria=example.createCriteria();
+				criteria.andNameLike(name);
+			}
 		    dappInfoMapper.selectByExample(example);
 		    
 		    return result;

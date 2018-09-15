@@ -23,9 +23,9 @@ public class DappInfoFacadeAPIImpl implements DappInfoFacadeAPI{
 	DappInfoService dappInfoService;
 	
 	@Override
-	public MLResultList<DappInfo> findAll(int page,int pageSize) {
+	public MLResultList<DappInfo> findAll(int page,int pageSize,String name) {
 		try {
-			Page<DappInfo>  result= dappInfoService.findAll(page,pageSize);
+			Page<DappInfo>  result= dappInfoService.findAll(page,pageSize,name);
 			return new MLResultList<DappInfo>(result.getResult());
 		} catch (MLException e) {
 			logger.error(e.toString());

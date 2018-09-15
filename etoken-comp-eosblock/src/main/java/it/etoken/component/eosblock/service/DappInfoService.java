@@ -10,7 +10,7 @@ import it.etoken.base.model.eosblock.entity.DappInfo;
 
 public interface DappInfoService {
 
-	Page<DappInfo> findAll(int page,int pageSize) throws  MLException;
+	Page<DappInfo> findAll(int page,int pageSize,String name) throws  MLException;
 
 	List<DappInfo> findAllRecommend() throws  MLException;
 
