@@ -105,6 +105,8 @@ public class CoinsServiceImpl implements CoinsService {
 			CoinsExample.Criteria criteria = example.createCriteria();
 			if(null != code && !code.isEmpty()) {
 				criteria.andCodeEqualTo(code);
+			}else {
+				example.setOrderByClause("name asc");
 			}
 			coinsMapper.selectByExample(example);
 			return result;
