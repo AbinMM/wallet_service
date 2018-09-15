@@ -519,6 +519,27 @@ public class CoinsController extends BaseController{
 			}
 			Coins info = result.getResult();
 			
+			String code = info.getName() + "_EOS_" + info.getContractAccount();
+			BasicDBObject priceInfo = cacheService.get("et_price_info_"+code, BasicDBObject.class);
+			BigDecimal price_rmb = BigDecimal.ZERO;
+			if(null != priceInfo) {
+				price_rmb = BigDecimal.valueOf(priceInfo.getDouble("price_rmb", 0));
+			}
+			
+			JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info));
+			
+			long total = info.getTotal();
+			long totalYi = total/100000000;
+			BigDecimal marketValue = BigDecimal.valueOf(total).multiply(price_rmb);
+			marketValue.setScale(0, BigDecimal.ROUND_FLOOR);
+			
+			BigDecimal marketValueYi = marketValue.divide(BigDecimal.valueOf(100000000), 0, BigDecimal.ROUND_FLOOR);
+			
+			String total_desc = "￥" + total + "(" + totalYi + "亿)";
+			String marketValueDesc = marketValue + "(" + marketValueYi + "亿) "+info.getName();
+			resultData.put("totalDesc", total_desc);
+			resultData.put("marketValueDesc", marketValueDesc);
+			
 			return this.success(info);
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
