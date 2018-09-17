@@ -523,7 +523,8 @@ public class CoinsController extends BaseController{
 			BasicDBObject priceInfo = cacheService.get("et_price_info_"+code, BasicDBObject.class);
 			BigDecimal price_rmb = BigDecimal.ZERO;
 			if(null != priceInfo) {
-				price_rmb = BigDecimal.valueOf(priceInfo.getDouble("price_rmb", 0));
+				
+				price_rmb = new BigDecimal(priceInfo.getString("price_rmb"));
 			}
 			
 			JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info));
