@@ -68,13 +68,15 @@ public class GateioServiceImpl implements MarketService {
 			logger.info("==============================");
 			String symble = coins.getSymble().toLowerCase();
 			String[] symbleArray = symble.split("-");
-			String result = httpClientService.doGet(server+symbleArray[0]+"_"+symbleArray[1]);
-			
-			JSONObject jo = JSON.parseObject(result);
-			cacheService.set("gateio_ticker_"+coins.getCode(),jo);
-			
-			//保存k线
-			this.line(coins);
+			if(symbleArray.length>=2) {
+				String result = httpClientService.doGet(server+symbleArray[0]+"_"+symbleArray[1]);
+				
+				JSONObject jo = JSON.parseObject(result);
+				cacheService.set("gateio_ticker_"+coins.getCode(),jo);
+				
+				//保存k线
+				this.line(coins);
+			}
 		}catch (Exception e) {
 			logger.error("ticker",e);
 		}

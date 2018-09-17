@@ -541,7 +541,7 @@ public class CoinsController extends BaseController{
 			resultData.put("totalDesc", total_desc);
 			resultData.put("marketValueDesc", marketValueDesc);
 			
-			return this.success(info);
+			return this.success(resultData);
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 			return this.error(MLApiException.SYS_ERROR,null);
