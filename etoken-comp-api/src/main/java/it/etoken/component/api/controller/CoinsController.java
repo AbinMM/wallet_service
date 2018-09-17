@@ -531,10 +531,9 @@ public class CoinsController extends BaseController{
 			
 			long total = info.getTotal();
 			long totalYi = total/100000000;
-			BigDecimal marketValue = BigDecimal.valueOf(total).multiply(price_rmb);
-			marketValue.setScale(0, BigDecimal.ROUND_FLOOR);
+			BigDecimal marketValue = BigDecimal.valueOf(total).multiply(price_rmb).setScale(0, BigDecimal.ROUND_DOWN);
 			
-			BigDecimal marketValueYi = marketValue.divide(BigDecimal.valueOf(100000000), 0, BigDecimal.ROUND_FLOOR);
+			BigDecimal marketValueYi = marketValue.divide(BigDecimal.valueOf(100000000), 0, BigDecimal.ROUND_DOWN);
 			
 			String total_desc = "￥" + total + "(" + totalYi + "亿)";
 			String marketValueDesc = marketValue + "(" + marketValueYi + "亿) "+info.getName();
