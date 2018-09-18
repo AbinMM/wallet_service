@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -26,10 +27,11 @@ import it.etoken.base.model.market.entity.Coins;
 import it.etoken.base.model.market.vo.CoinTicker;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.market.service.CoinsService;
+import it.etoken.component.market.service.GateioService;
 import it.etoken.component.market.service.MarketService;
 
 @Component
-public class GateioServiceImpl implements MarketService {
+public class GateioServiceImpl implements GateioService {
 
 	private final static Logger logger = LoggerFactory.getLogger(GateioServiceImpl.class);
 	
@@ -56,6 +58,9 @@ public class GateioServiceImpl implements MarketService {
 	
 	@Autowired
 	CoinsService coinsService;
+	
+	@Value("${gate.exchange}")
+	String gateExchange;
 
 	@Override
 	@Async
@@ -148,7 +153,10 @@ public class GateioServiceImpl implements MarketService {
 	public List<CoinTicker> getTicker() throws MLException {
 		List<CoinTicker> tikes = new ArrayList<CoinTicker>();
 		try {
-			Page<Coins> coins = coinsService.findAllBy4Market();
+			Page<Coins> coins = coinsService.findAllBy4MarketByExchange(gateExchange);
+			if(coins.getResult().size()<=0){
+				return null;
+			}
 			for (Coins c : coins.getResult()) {
 				String symble = c.getSymble().toLowerCase();
 				String[] symbleArray = symble.split("-");

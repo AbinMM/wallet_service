@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -27,9 +28,10 @@ import it.etoken.base.model.market.vo.CoinTicker;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.market.service.CoinsService;
 import it.etoken.component.market.service.MarketService;
+import it.etoken.component.market.service.OkexService;
 
-//@Component
-public class OkexServiceImpl implements MarketService {
+@Component
+public class OkexServiceImpl implements OkexService {
 
 	private final static Logger logger = LoggerFactory.getLogger(OkexServiceImpl.class);
 	
@@ -55,6 +57,9 @@ public class OkexServiceImpl implements MarketService {
 	
 	@Autowired
 	CoinsService coinsService;
+	
+	@Value("${okex.exchange}")
+	String okexExchange;
 
 	@Override
 	@Async
@@ -128,7 +133,10 @@ public class OkexServiceImpl implements MarketService {
 				rate = br.doubleValue();
 			}
 			List<CoinTicker> tikes = new ArrayList<>();
-			Page<Coins> coins = coinsService.findAllBy4Market();
+			Page<Coins> coins = coinsService.findAllBy4MarketByExchange(okexExchange);
+			if(coins.getResult().size()<=0){
+				return null;
+			}
 			for(Coins c : coins.getResult()){
 				CoinTicker t = new CoinTicker();
 				t.setId(c.getId());

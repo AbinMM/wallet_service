@@ -45,6 +45,7 @@ import it.etoken.component.eosblock.utils.EosNodeUtils;
 @Transactional
 public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	private final int[] lines_hour = new int[] { 1, 2, 6, 24, 48 };
+	private final int[] lines_second = new int[] {300,3600,21600,86400};
 	private final long BIG_BILLS_AMMOUNT = 2000;
 	private final long MID_BILLS_AMMOUNT = 500;
 
@@ -418,12 +419,67 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					
 					tempPriceInfoList.add(thisEtPriceInfo);
 				}
+				
 
 				cacheService.set("et_price_hours_" + code + "_" + thisLineHour, tempPriceInfoList);
 			}
 		}
 		
 	}
+	
+	@Override
+	public void buildLineDataSecond() throws MLException {
+		long utcTimes = DateUtils.getUtcTimes();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		long times = 0;
+		try {
+			times = sdf.parse(sdf.format(new Date(utcTimes))).getTime();
+		} catch (Exception e) {
+
+		}
+
+		
+		JSONArray etExchangeMarketInfoAndPriceResult = this.getEtExchangeMarketInfoAndPrice();
+		for (Object o : etExchangeMarketInfoAndPriceResult) {
+			JSONObject thisExchage = (JSONObject) o;
+			String code = thisExchage.getString("code");
+			String collection_name = "et_price_" + code;
+			
+			for (int thisLineHour : this.lines_second) {
+				long start_time = 0;
+				start_time = times - thisLineHour * 1000;
+
+				Query query = new Query(Criteria.where("record_date").gte(start_time));
+				query = query.with(new Sort(new Order(Direction.ASC, "record_date")));
+
+				List<JSONObject> etPriceInfoList = mongoTemplate.find(query, JSONObject.class, collection_name);
+				List<JSONObject> tempPriceInfoList = new ArrayList<JSONObject>();
+				
+				for(JSONObject thisEtPriceInfo : etPriceInfoList) {
+					thisEtPriceInfo.put("price", thisEtPriceInfo.getBigDecimal("price").toPlainString());
+					thisEtPriceInfo.put("price_rmb", thisEtPriceInfo.getBigDecimal("price_rmb").toPlainString());
+					thisEtPriceInfo.put("open", thisEtPriceInfo.getBigDecimal("open").toPlainString());
+					
+					thisEtPriceInfo.put("base_balance_num", thisEtPriceInfo.getBigDecimal("base_balance_num").toPlainString());
+					thisEtPriceInfo.put("quote_balance_num", thisEtPriceInfo.getBigDecimal("quote_balance_num").toPlainString());
+					thisEtPriceInfo.put("trading_volum", thisEtPriceInfo.getBigDecimal("trading_volum").toPlainString());
+					thisEtPriceInfo.put("buy_volum", thisEtPriceInfo.getBigDecimal("buy_volum").toPlainString());
+					thisEtPriceInfo.put("sell_volum", thisEtPriceInfo.getBigDecimal("sell_volum").toPlainString());
+					thisEtPriceInfo.put("today_volum", thisEtPriceInfo.getBigDecimal("today_volum").toPlainString());
+					
+					tempPriceInfoList.add(thisEtPriceInfo);
+				}
+				
+				String [] codes=code.split("_");
+				System.out.println("code" + codes[0]);
+				cacheService.set("code" + codes[0], code);
+				cacheService.set("et_price_second_" + codes[0] + "_" + thisLineHour, tempPriceInfoList);
+			}
+		}
+		
+	}
+	
 	
 	@Override
 	public List<ETTradeLog> getNewTradeOrdersByCode(String code) throws MLException {

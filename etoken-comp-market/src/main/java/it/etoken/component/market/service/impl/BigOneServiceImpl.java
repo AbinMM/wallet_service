@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -24,11 +25,11 @@ import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.model.market.entity.Coins;
 import it.etoken.base.model.market.vo.CoinTicker;
 import it.etoken.cache.service.CacheService;
+import it.etoken.component.market.service.BigOneService;
 import it.etoken.component.market.service.CoinsService;
-import it.etoken.component.market.service.MarketService;
 
-//@Component
-public class BigOneServiceImpl implements MarketService {
+@Component
+public class BigOneServiceImpl implements BigOneService {
 
 	private final static Logger logger = LoggerFactory.getLogger(BigOneServiceImpl.class);
 	
@@ -52,6 +53,9 @@ public class BigOneServiceImpl implements MarketService {
 	
 	@Autowired
 	CoinsService coinsService;
+	
+	@Value("${bigone.exchange}")
+	String bigOneExchange;
 
 	@Override
 	@Async
@@ -155,7 +159,10 @@ public class BigOneServiceImpl implements MarketService {
 	public List<CoinTicker> getTicker() throws MLException {
 		try{
 			List<CoinTicker> tikes = new ArrayList<>();
-			Page<Coins> coins = coinsService.findAllBy4Market();
+			Page<Coins> coins = coinsService.findAllBy4MarketByExchange(bigOneExchange);
+			if(coins.getResult().size()<=0){
+				return null;
+			}
 			for(Coins c : coins.getResult()){
 				BigDecimal rate = new BigDecimal(0);
 				try {

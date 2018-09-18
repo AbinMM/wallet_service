@@ -7,8 +7,7 @@ import it.etoken.base.common.exception.MLException;
 import it.etoken.base.model.market.entity.Coins;
 import it.etoken.base.model.market.vo.CoinTicker;
 
-public interface MarketService {
-	
+public interface OkexService {
 	/**
 	 * 获取价格信息
 	 * @param coins
@@ -36,9 +35,10 @@ public interface MarketService {
 	 * @throws MLException
 	 */
 	public Map getLine(String coin,String type)throws MLException;
-
-	public void morningPrice(Coins c)throws MLException;
 	
-
-
+	/**
+	 * 获取0时价格
+	 * @param coins
+	 */
+	public void morningPrice(Coins coins) throws MLException;
 }

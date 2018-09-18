@@ -18,4 +18,6 @@ public interface ETExchangePriceFacadeAPI {
 	public MLResultObject<JSONArray> getTimeLines(String code, int count);
 	
 	public MLResultList<JSONObject> getKLines(String code, String dateType, int count);
+	
+	public MLResultObject<JSONObject> getTodayKInfo(String code);
 }

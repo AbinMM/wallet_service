@@ -25,7 +25,7 @@ public class DeepJob {
 	CoinsService coinsService;
 	
 	@Autowired
-	MarketService bigOneService;
+	MarketService MarketService;
 	
 	@Autowired
 	PushService pushService;
@@ -40,7 +40,7 @@ public class DeepJob {
 	 */
 	@Scheduled(fixedDelay=30*60*1000)
     public void exchange(){
-		bigOneService.exchange();
+		MarketService.exchange();
 	}
 	
 	/**
@@ -51,7 +51,7 @@ public class DeepJob {
     public void ticker(){
 		Page<Coins> coins = coinsService.findAllBy4Market();
 		for(Coins c : coins.getResult()){
-			bigOneService.ticker(c);
+			MarketService.ticker(c);
 		}
 	}
 	
@@ -60,7 +60,7 @@ public class DeepJob {
 	 */
 	@Scheduled(cron="0 15 10 * * ?")
     public void push(){
-		List<CoinTicker> ts = bigOneService.getTicker();
+		List<CoinTicker> ts = MarketService.getTicker();
 		for(CoinTicker t : ts) {
 			if(t.getName().toLowerCase()=="eos") {
 				Map<String,String> extr = new HashMap<>();
@@ -77,7 +77,7 @@ public class DeepJob {
     public void getMorningPrice(){
 		Page<Coins> coins = coinsService.findAllBy4Market();
 		for(Coins c : coins.getResult()){
-			bigOneService.morningPrice(c);
+			MarketService.morningPrice(c);
 		}
 	}
 }

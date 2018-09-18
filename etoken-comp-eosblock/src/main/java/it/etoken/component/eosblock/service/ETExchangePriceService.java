@@ -107,4 +107,10 @@ public interface ETExchangePriceService {
 	 * @return
 	 */
 	public JSONObject getTodayKInfo(String code);
+	
+	/**
+	 * 构建行情分时图
+	 * @throws MLException
+	 */
+	void buildLineDataSecond() throws MLException;
 }

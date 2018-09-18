@@ -42,6 +42,7 @@ public class ETExchangeTask {
 		try {
 			System.out.println("开始构建ET价格曲线数据...");
 			eTExchangePriceService.buildLineData();
+        	eTExchangePriceService.buildLineDataSecond();
 			System.out.println("构建ET价格曲线数据完成");
 		} catch (Exception e) {
 			e.printStackTrace();

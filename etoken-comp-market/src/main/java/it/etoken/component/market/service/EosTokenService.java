@@ -7,21 +7,8 @@ import it.etoken.base.common.exception.MLException;
 import it.etoken.base.model.market.entity.Coins;
 import it.etoken.base.model.market.vo.CoinTicker;
 
-public interface MarketService {
+public interface EosTokenService {
 	
-	/**
-	 * 获取价格信息
-	 * @param coins
-	 * @return
-	 */
-	public void ticker(Coins coins)throws MLException;
-	
-	/**
-	 * 获取美元汇率
-	 * @param coins
-	 * @return
-	 */
-	public void exchange()throws MLException;
 	
 	/**
 	 * 查詢币
@@ -37,8 +24,7 @@ public interface MarketService {
 	 */
 	public Map getLine(String coin,String type)throws MLException;
 
-	public void morningPrice(Coins c)throws MLException;
+	public void ticker(Coins coins)throws MLException;
 	
-
 
 }
