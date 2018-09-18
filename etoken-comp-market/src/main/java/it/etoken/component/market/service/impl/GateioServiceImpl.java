@@ -77,8 +77,10 @@ public class GateioServiceImpl implements GateioService {
 				String result = httpClientService.doGet(server+symbleArray[0]+"_"+symbleArray[1]);
 				
 				JSONObject jo = JSON.parseObject(result);
-				cacheService.set("gateio_ticker_"+coins.getCode(),jo);
-				
+				BigDecimal rate= cacheService.get("CNY_USDT",BigDecimal.class);
+				Double last_rmb=Double.parseDouble(formatter2.format(jo.getDoubleValue("last") * rate.doubleValue()));
+				jo.put("last_rmb", last_rmb);
+				cacheService.set("ticker_"+coins.getCode(),jo);
 				//保存k线
 				this.line(coins);
 			}

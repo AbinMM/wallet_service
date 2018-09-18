@@ -68,6 +68,30 @@ public class EosTokenServiceImpl  implements EosTokenService{
 	@Async
 	public void ticker(Coins coins) throws MLException {
 		try{
+			String symble = coins.getSymble();
+			String[] symbleArray = symble.split("-");
+			exchangeRate(symbleArray[1]);
+			BigDecimal bdRate = cacheService.get("CNY_"+symbleArray[1],BigDecimal.class);
+			double rate = bdRate.doubleValue();
+			
+			BigDecimal bdRateUSD = cacheService.get("USDT_"+symbleArray[1],BigDecimal.class);
+			double rateUSD = bdRateUSD.doubleValue();
+			String code =cacheService.get("code" +coins.getCode().toUpperCase(),String.class );
+			MLResultObject<JSONObject> result=eTExchangePriceFacadeAPI.getTodayKInfo(code);
+			JSONObject obj=result.getResult();
+			System.out.println(obj.toString());
+			Double last_rmb=Double.parseDouble(formatter2.format(obj.getBigDecimal("min").doubleValue()* rate));
+			Double last=Double.parseDouble(formatter.format(obj.getBigDecimal("min").doubleValue()* rateUSD));
+			//兼容gate.io的格式。
+			JSONObject jo=new JSONObject();
+			jo.put("quoteVolume", obj.getBigDecimal("volum"));
+			jo.put("baseVolume",obj.getBigDecimal("volum").doubleValue());
+			jo.put("percentChange", obj.getBigDecimal("increase"));
+			jo.put("high24hr", obj.getBigDecimal("max").doubleValue()* rateUSD);
+			jo.put("low24hr", obj.getBigDecimal("min").doubleValue()* rateUSD);
+			jo.put("last", last);
+			jo.put("last_rmb", last_rmb);
+			cacheService.set("ticker_"+coins.getCode(),jo);	
 			//保存k线
 			this.line(coins);
 		}catch (Exception e) {
@@ -89,8 +113,8 @@ public class EosTokenServiceImpl  implements EosTokenService{
 			cacheService.set("USDT_"+code,price_usd);
 			cacheService.set("CNY_"+code,price);
 		}catch (Exception e) {
-			cacheService.set("USDT_ETH",541.40);
-			cacheService.set("CNY_ETH",3520.00);
+			cacheService.set("USDT_EOS",5.39);
+			cacheService.set("CNY_EOS",36);
 			logger.error("exchange",e);
 		}
 	}
@@ -101,12 +125,12 @@ public class EosTokenServiceImpl  implements EosTokenService{
 			Page<Coins> coins = coinsService.findAllBy4MarketByExchange(eosTokenExchange);
 			for (Coins c : coins.getResult()) {
 				String symble = c.getSymble().toLowerCase();
-				System.out.println("symble:"+symble);
-				exchangeRate(c.getCode().toUpperCase());
-				BigDecimal bdRate = cacheService.get("CNY_"+c.getCode().toUpperCase(),BigDecimal.class);
+				String[] symbleArray = symble.split("-");
+				exchangeRate(symbleArray[1]);
+				BigDecimal bdRate = cacheService.get("CNY_"+symbleArray[1],BigDecimal.class);
 				double rate = bdRate.doubleValue();
 				
-				BigDecimal bdRateUSD = cacheService.get("USDT_"+c.getCode().toUpperCase(),BigDecimal.class);
+				BigDecimal bdRateUSD = cacheService.get("USDT_"+symbleArray[1],BigDecimal.class);
 				double rateUSD = bdRateUSD.doubleValue();
 				CoinTicker t = new CoinTicker();
 				t.setId(c.getId());
@@ -116,6 +140,7 @@ public class EosTokenServiceImpl  implements EosTokenService{
 			    String code =cacheService.get("code" +c.getCode().toUpperCase(),String.class );
 				MLResultObject<JSONObject> result=eTExchangePriceFacadeAPI.getTodayKInfo(code);
 				JSONObject obj=result.getResult();
+				
 				if(obj != null) {
 					t.setStart(Double.parseDouble(formatter.format(obj.getBigDecimal("open").doubleValue()* rate)));
 					t.setMax(Double.parseDouble(formatter.format(obj.getBigDecimal("max").doubleValue()* rate)));
