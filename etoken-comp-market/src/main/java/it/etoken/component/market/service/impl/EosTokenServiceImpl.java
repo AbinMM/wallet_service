@@ -70,6 +70,9 @@ public class EosTokenServiceImpl  implements EosTokenService{
 		try{
 			String symble = coins.getSymble();
 			String[] symbleArray = symble.split("-");
+			if(symbleArray.length<2) {
+				return ;
+			}
 			exchangeRate(symbleArray[1]);
 			BigDecimal bdRate = cacheService.get("CNY_"+symbleArray[1],BigDecimal.class);
 			double rate = bdRate.doubleValue();
@@ -126,6 +129,9 @@ public class EosTokenServiceImpl  implements EosTokenService{
 			for (Coins c : coins.getResult()) {
 				String symble = c.getSymble().toLowerCase();
 				String[] symbleArray = symble.split("-");
+				if(symbleArray.length<2) {
+					continue;
+				}
 				exchangeRate(symbleArray[1]);
 				BigDecimal bdRate = cacheService.get("CNY_"+symbleArray[1],BigDecimal.class);
 				double rate = bdRate.doubleValue();
