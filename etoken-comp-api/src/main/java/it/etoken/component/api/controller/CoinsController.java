@@ -81,27 +81,11 @@ public class CoinsController extends BaseController{
 	{
 		logger.info("/coins/address request map : " + requestMap);
 		try {
-			
-			double eosrate = 0;
-			BigDecimal eosrateB = cacheService.get("CNY_USDT",BigDecimal.class);
-			if(null != eosrateB) {
-				eosrate = eosrateB.doubleValue();
-			}
-			
 			double peos = 0;
-			double peosD = 0;
-			DecimalFormat formatter2 =new DecimalFormat("#.00");
-			JSONObject geteEos = cacheService.get("gateio_ticker_eos",JSONObject.class);
-			if(null != geteEos) {
-				peosD = geteEos.getDoubleValue("last");
-			}else{
-				JSONObject okEos = cacheService.get("ok_ticker_eos",JSONObject.class);
-				if(null != okEos) {
-					peosD = okEos.getDoubleValue("last");
-				}
+			JSONObject eosTicker = cacheService.get("ticker_eos",JSONObject.class);
+			if(null != eosTicker) {
+				peos = eosTicker.getDoubleValue("last_rmb");
 			}
-			peos = Double.parseDouble(formatter2.format(peosD*eosrate));
-//			double total = peos;
 			
 			Map<String, Object> data = new HashMap<String,Object>();
 			data.put("name","xxx地址");
@@ -241,46 +225,25 @@ public class CoinsController extends BaseController{
 				code = requestMap.get("code").toLowerCase();
 			}
 
-			MLResultList<Coins> result = coinsFacadeAPI.findAllByPage(pageN, code);
+			MLResultList<JSONObject> result = coinsFacadeAPI.findAllByPage(pageN, code);
 			
 			if (result.isSuccess()) {
-				List<Coins> myList = result.getList();
+				List<JSONObject> myList = result.getList();
 				JSONArray mytResult = new JSONArray();
-				for(Coins thisCoins : myList) {
-					if(null == thisCoins.getContractAccount() || thisCoins.getContractAccount().isEmpty()) {
+				for(JSONObject thisCoins : myList) {
+					if(null == thisCoins.getString("contractAccount") || thisCoins.getString("contractAccount").isEmpty()) {
 						continue;
 					}
 					JSONObject jo = new JSONObject();
-					jo.put("id", thisCoins.getId());
-					jo.put("name", thisCoins.getName());
-					jo.put("contractAccount", thisCoins.getContractAccount());
-					jo.put("icon", thisCoins.getImg());
-					jo.put("precisionNumber", thisCoins.getPrecisionNumber());
-					jo.put("detail", thisCoins.getIntr());
-					jo.put("createDate", thisCoins.getCreatedate());
-					jo.put("updateDate", thisCoins.getModifydate());
-					
-					double eosrate = 0;
-					BigDecimal eosrateB = cacheService.get("CNY_USDT",BigDecimal.class);
-					if(null != eosrateB) {
-						eosrate = eosrateB.doubleValue();
-					}
-					double peos = 0;
-					double peosD = 0;
-					DecimalFormat formatter2 =new DecimalFormat("#.00");
-					if(null != thisCoins.getCode() && !thisCoins.getCode().isEmpty()) {
-						JSONObject geteEos = cacheService.get("gateio_ticker_" + thisCoins.getCode(),JSONObject.class);
-						if(null != geteEos) {
-							peosD = geteEos.getDoubleValue("last");
-						}else{
-							JSONObject okEos = cacheService.get("ok_ticker_"+ thisCoins.getCode(),JSONObject.class);
-							if(null != okEos) {
-								peosD = okEos.getDoubleValue("last");
-							}
-						}
-					}
-					peos = Double.parseDouble(formatter2.format(peosD*eosrate));
-					jo.put("value", peos);
+					jo.put("id", thisCoins.getLong("id"));
+					jo.put("name", thisCoins.getString("name"));
+					jo.put("contractAccount", thisCoins.getString("contractAccount"));
+					jo.put("icon", thisCoins.getString("img"));
+					jo.put("precisionNumber", thisCoins.getInteger("precisionNumber"));
+					jo.put("detail", thisCoins.getString("intr"));
+					jo.put("createDate", thisCoins.getDate("createdate"));
+					jo.put("updateDate", thisCoins.getDate("modifydate"));
+					jo.put("value", thisCoins.getDouble("value"));
 					
 					mytResult.add(jo);
 				}
