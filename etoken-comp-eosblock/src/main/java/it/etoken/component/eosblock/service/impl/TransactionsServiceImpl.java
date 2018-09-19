@@ -721,7 +721,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 					for (Object object : thisActionsTraces) {
 						BasicDBObject actionTraces = (BasicDBObject)object;
 						BasicDBObject actionact=(BasicDBObject)actionTraces.get("act");
-						BasicDBObject actiondata=(BasicDBObject)actionact.get("data");
+					    JSONObject actiondata=JSONObject.parseObject(actionact.get("data").toString());
+						//BasicDBObject actiondata=new BasicDBObject(jo);
 						Integer bytes= (Integer) actiondata.get("bytes");
 						if(null==bytes) {
 							continue;
@@ -739,7 +740,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 						if(thisInlineTraces.length==1) {
 							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-							BasicDBObject data=(BasicDBObject)act.get("data");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data=JSONObject.parseObject(actionact.get("data").toString());
 							String quantityEos=(String)data.get("quantity");
 			            	String[] quantity_eos_array= quantityEos.split(" ");
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
@@ -750,10 +752,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 							BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
 							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-							BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data=JSONObject.parseObject(actionact.get("data").toString());
+							//BasicDBObject data=(BasicDBObject)act.get("data");
 							String quantityEos=(String)data.get("quantity");
 							BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
-							BasicDBObject data2=(BasicDBObject)act2.get("data");
+							//BasicDBObject data2=(BasicDBObject)act2.get("data");
+							JSONObject data2=JSONObject.parseObject(actionact.get("data2").toString());
 							String quantityFeeEos2=(String)data2.get("quantity");
 			            	String[] quantity_eos_array= quantityEos.split(" ");
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
