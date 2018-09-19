@@ -1332,13 +1332,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		result.put("increase", increase);
 		result.put("amplitude", amplitude);
 		
-		//创建索引
-		BasicDBObject record_date_keys = new BasicDBObject();
-		record_date_keys.put("record_date", -1);
-		BasicDBObject record_date_options = new BasicDBObject();
-		record_date_options.put("background", true);
-		record_date_options.put("unique", true);
-		mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
+		if(!mongoTemplate.collectionExists(collection_name)) {
+			//创建索引
+			BasicDBObject record_date_keys = new BasicDBObject();
+			record_date_keys.put("record_date", -1);
+			BasicDBObject record_date_options = new BasicDBObject();
+			record_date_options.put("background", true);
+			record_date_options.put("unique", true);
+			mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
+		}
+		
 
 		Query queryExists = new Query(Criteria.where("record_date").is(startTimes));
 		BasicDBObject existsKline = mongoTemplate.findOne(queryExists, BasicDBObject.class,
