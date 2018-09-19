@@ -719,9 +719,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 				 BasicDBList action_traces = (BasicDBList) thisBasicDBObject.get("action_traces");
 					Object[] thisActionsTraces = action_traces.toArray();
 					for (Object object : thisActionsTraces) {
-						BasicDBObject actionTraces = (BasicDBObject)object;
-						BasicDBObject actionact=(BasicDBObject)actionTraces.get("act");
-					    JSONObject actiondata=JSONObject.parseObject(actionact.get("data").toString());
+						JSONObject actionTraces = JSONObject.parseObject(JSONObject.toJSONString(object), JSONObject.class);
+						//BasicDBObject actionTraces = (BasicDBObject)object;		
+						JSONObject actionact=JSONObject.parseObject(JSONObject.toJSONString(actionTraces.get("act")), JSONObject.class);
+						JSONObject actiondata=JSONObject.parseObject(JSONObject.toJSONString(actionact.get("data")), JSONObject.class);
 						//BasicDBObject actiondata=new BasicDBObject(jo);
 						Integer bytes= (Integer) actiondata.get("bytes");
 						if(null==bytes) {
