@@ -1,8 +1,6 @@
 package it.etoken.component.admin.task;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -357,26 +355,13 @@ public class NewsFlashTask {
 
 	//获取当前eos价格
 	public Double findEosPrice() {
-		   double eosrate = 0;
 		   double peos = 0;
-		   double peosD = 0;
 			try {
-				   BigDecimal eosrateB = cacheService.get("CNY_USDT",BigDecimal.class);
-				      if(null != eosrateB) {
-				        eosrate = eosrateB.doubleValue();
-				      }
-				      DecimalFormat formatter2 =new DecimalFormat("#.00");
-				      JSONObject geteEos = cacheService.get("gateio_ticker_eos",JSONObject.class);
-				      if(null != geteEos) {
-				        peosD = geteEos.getDoubleValue("last");
-				      }else{
-				        JSONObject okEos = cacheService.get("ok_ticker_eos",JSONObject.class);
-				        if(null != okEos) {
-				          peosD = okEos.getDoubleValue("last");
-				        }
-				      }
-				      peos = Double.parseDouble(formatter2.format(peosD*eosrate));
-				      System.out.println("peos值"+peos);
+				JSONObject eosTicker = cacheService.get("ticker_eos",JSONObject.class);
+				if(null != eosTicker) {
+					peos = eosTicker.getDoubleValue("last_rmb");
+				}
+		      System.out.println("peos值"+peos); 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
