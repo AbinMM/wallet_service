@@ -160,13 +160,15 @@ public class RamPriceServiceImpl implements RamPriceService {
 		ramPriceInfo.put("buy_eos", tradingVolumeResult.getDouble("buy_eos"));
 		ramPriceInfo.put("sell_eos", tradingVolumeResult.getDouble("sell_eos"));
 
-		//创建索引
-		BasicDBObject record_date_keys = new BasicDBObject();
-		record_date_keys.put("record_date", -1);
-		BasicDBObject record_date_options = new BasicDBObject();
-		record_date_options.put("background", true);
-		record_date_options.put("unique", true);
-		mongoTemplate.getCollection("ram_price").createIndex(record_date_keys, record_date_options);
+		if(!mongoTemplate.collectionExists("ram_price")) {
+			//创建索引
+			BasicDBObject record_date_keys = new BasicDBObject();
+			record_date_keys.put("record_date", -1);
+			BasicDBObject record_date_options = new BasicDBObject();
+			record_date_options.put("background", true);
+			record_date_options.put("unique", true);
+			mongoTemplate.getCollection("ram_price").createIndex(record_date_keys, record_date_options);
+		}
 		
 		Query queryExists = new Query(Criteria.where("record_date").is(times));
 		BasicDBObject existsRamPriceInfo = mongoTemplate.findOne(queryExists, BasicDBObject.class, "ram_price");
