@@ -53,6 +53,6 @@ public interface NewsMapper {
 	@Select("select * FROM news where title like concat('%', #{title}, '%') order by createdate desc ")
 	List<News> findByTitle(@Param("title")String title);
 	
-	@Select("SELECT * FROM news WHERE remark IS NULL ORDER BY createdate DESC LIMIT 100 ")
+	@Select("SELECT * FROM news WHERE remark IS NULL AND tid=12 ORDER BY createdate DESC LIMIT 100  ")
 	List<News> findByRemark();
 }
