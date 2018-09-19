@@ -634,6 +634,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 				price=priceMap1.get(eTTradeLog.getTrx_id());
 			}
+			String quant = eTTradeLog.getToken_qty();
+			String[] quants = quant.split(" ");
+			if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+				continue;
+			}
+			BigDecimal price1=new BigDecimal(price);
+			BigDecimal qty = new BigDecimal(quants[0].trim());
+			BigDecimal eos_qty = qty.multiply(price1);
+			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+			eTTradeLog.setEos_qty(eos_qty + " EOS");
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
@@ -825,6 +835,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 				price=priceMap1.get(eTTradeLog.getTrx_id());
 			}
+			String quant = eTTradeLog.getToken_qty();
+			String[] quants = quant.split(" ");
+			if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+				continue;
+			}
+			BigDecimal price1=new BigDecimal(price);
+			BigDecimal qty = new BigDecimal(quants[0].trim());
+			BigDecimal eos_qty = qty.multiply(price1);
+			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+			eTTradeLog.setEos_qty(eos_qty + " EOS");
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
@@ -1003,7 +1023,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 								Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 							    price1=priceMap1.get(eTTradeLog.getTrx_id());
 							}
-							System.out.println("修改后的价格"+price1+"修改前的价格"+eTTradeLog.getPrice());
+							String quant = eTTradeLog.getToken_qty();
+							String[] quants = quant.split(" ");
+							if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+								continue;
+							}
+							BigDecimal price2=new BigDecimal(price1);
+							BigDecimal qty = new BigDecimal(quants[0].trim());
+							BigDecimal eos_qty = qty.multiply(price2);
+							eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+							eTTradeLog.setEos_qty(eos_qty + " EOS");
 							eTTradeLog.setPrice(price1);
 						}
 						existMap.clear();
@@ -1030,7 +1059,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 				price=priceMap1.get(eTTradeLog.getTrx_id());
 			}
-			System.out.println("修改后的价格"+price+"修改前的价格"+eTTradeLog.getPrice());
+			String quant = eTTradeLog.getToken_qty();
+			String[] quants = quant.split(" ");
+			if(!quants[1].trim().equalsIgnoreCase(codes[0])) {
+				continue;
+			}
+			BigDecimal price1=new BigDecimal(price);
+			BigDecimal qty = new BigDecimal(quants[0].trim());
+			BigDecimal eos_qty = qty.multiply(price1);
+			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+			eTTradeLog.setEos_qty(eos_qty + " EOS");
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
