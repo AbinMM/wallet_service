@@ -286,7 +286,7 @@ public class GateioServiceImpl implements GateioService {
 					ps.add(Double.parseDouble(formatter.format(Double.parseDouble(String.valueOf(a.get(2))))));
 					
 					double xx = a.getDouble(0);
-					long temp = (long) xx/1000;
+					long temp = (long) xx;
 					if(i==0 || i==1){
 						x.add(DateUtils.forSecond(temp));
 					}else{
