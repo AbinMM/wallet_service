@@ -740,8 +740,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						if(thisInlineTraces.length==1) {
 							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-							BasicDBObject data=(BasicDBObject)act.get("data");
-							String quantityEos=(String)data.get("quantity");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
+							String quantityEos=data.getString("quantity");
 			            	String[] quantity_eos_array= quantityEos.split(" ");
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
 			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
@@ -751,11 +752,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 							BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
 							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-							BasicDBObject data=(BasicDBObject)act.get("data");
-							String quantityEos=(String)data.get("quantity");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
+							String quantityEos=data.getString("quantity");
 							BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
-							BasicDBObject data2=(BasicDBObject)act2.get("data");
-							String quantityFeeEos2=(String)data2.get("quantity");
+							//BasicDBObject data2=(BasicDBObject)act2.get("data");
+							JSONObject data2 = JSONObject.parseObject(JSONObject.toJSONString(act2.get("data")), JSONObject.class);
+							String quantityFeeEos2=data2.getString("quantity");
 			            	String[] quantity_eos_array= quantityEos.split(" ");
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
 			            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
