@@ -184,7 +184,7 @@ public class GateioServiceImpl implements GateioService {
 					t.setStart(0);
 				}
 
-				JSONObject obj = cacheService.get("gateio_ticker_" + c.getCode().toLowerCase(), JSONObject.class);
+				JSONObject obj = cacheService.get("ticker_" + c.getCode().toLowerCase(), JSONObject.class);
 				if (obj != null) {
 					t.setMax(Double.parseDouble(formatter.format(obj.getDoubleValue("high24hr") * rate)));
 					t.setMin(Double.parseDouble(formatter.format(obj.getDoubleValue("low24hr") * rate)));
