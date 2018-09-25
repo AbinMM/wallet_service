@@ -312,10 +312,12 @@ public class ActivityServiceImpl implements ActivityService {
 			criteriaOr.andStatusEqualTo("new");
 			criteriaOr.andIsLuckyEqualTo("y");
 
+			System.out.println("1111111111111111111111111111111111111111=");
 			long countN = activityStageUserMapper.countByExample(example);
 			if (countN == 0) {
 				continue;
 			}
+			System.out.println("22222222222222222222222222222222222222=");
 			List<ActivityStageUser> activityStageUsers = activityStageUserMapper.selectByExample(example);
 			for (ActivityStageUser thisActivityStageUser : activityStageUsers) {
 				this.transfer2WinAndLuckyUserPerOne(thisActivityStageUser);
@@ -364,13 +366,14 @@ public class ActivityServiceImpl implements ActivityService {
 	}
 
 	public void transfer2WinAndLuckyUserPerOne(ActivityStageUser thisActivityStageUser) {
+		System.out.println("3333333333333333333333333333333=");
 		Date nowDate = new Date();
 		ActivityStage activityStage = activityStageMapper
 				.selectByPrimaryKey(thisActivityStageUser.getActivityStageId());
 		if (!activityStage.getStatus().equalsIgnoreCase("completed")) {
 			return;
 		}
-
+		System.out.println("4444444444444444444444444444444444=");
 		if (thisActivityStageUser.getIsWinner().equalsIgnoreCase("y")) {
 			int maxQty = activityStage.getCommonMaxQty().intValue();
 			int minQty = activityStage.getCommonMinQty().intValue();
@@ -388,17 +391,18 @@ public class ActivityServiceImpl implements ActivityService {
 			activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
 
 			try {
+				System.out.println("55555555555555555555555555555555=");
 				this.transfer(accountName, activityStage.getTokenContract(),
 						quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(), memo);
 			} catch (Exception e) {
 
 			}
 		}
-
+		System.out.println("566666666666666666666666666666666666666=");
 		if (thisActivityStageUser.getIsLucky().equalsIgnoreCase("y")) {
 			int luckyCoinQty = activityStage.getLuckyCoinQty().intValue();
 			int luckyCount = activityStage.getLuckyCount().intValue();
-
+			System.out.println("77777777777777777777777777777777777777777=");
 			String luckyMethod = activityStage.getLuckyMethod();
 			if (luckyMethod.equalsIgnoreCase("share")) {
 				BigDecimal quantity = BigDecimal.valueOf(luckyCoinQty).divide(BigDecimal.valueOf(luckyCount), 2,
@@ -414,6 +418,7 @@ public class ActivityServiceImpl implements ActivityService {
 				activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
 
 				try {
+					System.out.println("8888888888888888888888888888888888888888888=");
 					this.transfer(accountName, activityStage.getTokenContract(),
 							quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(),
 							memo);
@@ -447,13 +452,14 @@ public class ActivityServiceImpl implements ActivityService {
 		jo.put("contractAccount", contractAccount);
 		jo.put("quantity", qtyStr);
 		jo.put("memo", memo);
-
+		System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
 		try {
 			String result = HttpClientUtils.doPostJson(url, jo.toJSONString());
 			System.out.println("url================= : " + url);
 			System.out.println("json data: " + jo.toJSONString());
 			return result;
 		} catch (Exception e) {
+			System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=");
 			e.printStackTrace();
 		}
 		return null;
