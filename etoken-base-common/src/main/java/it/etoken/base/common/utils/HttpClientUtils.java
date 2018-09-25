@@ -2,15 +2,21 @@ package it.etoken.base.common.utils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 public class HttpClientUtils {
@@ -84,6 +90,43 @@ public class HttpClientUtils {
         return null;
     }
     
-    
+    /**
+     * 带参数的post请求
+     * 
+     * @param url
+     * @param map
+     * @return
+     * @throws Exception
+     */
+    public static String doPost(String url, Map<String, String> data) throws Exception {
+        // 声明httpPost请求
+        HttpPost httpPost = new HttpPost(url);
+        
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        
+        httpPost.addHeader("Content-type","application/json; charset=utf-8");
+        httpPost.setHeader("Accept", "application/json");
+        
+        // 判断map是否为空，不为空则进行遍历，封装from表单对象
+        if (null != data) {
+        	List<NameValuePair> list = new ArrayList<NameValuePair>();
+        	for(String key : data.keySet()) {
+        		NameValuePair nvp = new BasicNameValuePair(key, data.get(key));
+        		list.add(nvp);
+        	}
+        	UrlEncodedFormEntity uef = new UrlEncodedFormEntity(list, Charset.forName("UTF-8"));
+            httpPost.setEntity(uef);
+        }
+
+        // 发起请求
+        CloseableHttpResponse response = httpclient.execute(httpPost);
+        
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode >= 200 && statusCode < 300) {
+            // 返回响应体的内容
+            return EntityUtils.toString(response.getEntity(), "UTF-8");
+        }
+        return null;
+    }
 
 }
