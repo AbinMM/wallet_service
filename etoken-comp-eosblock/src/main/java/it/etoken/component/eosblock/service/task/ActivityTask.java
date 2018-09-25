@@ -13,14 +13,14 @@ public class ActivityTask {
 	ActivityService activityService;
 	
 	// 获取购买币的用户
-	@Scheduled(cron = "0 */2 * * * ?")
+	@Scheduled(cron = "*/10 * * * * ?")
 	public void getBuyUser() {
 		System.out.println("开始获取交易用户信息...");
 		activityService.getAllBuyUsers();
 		System.out.println("获取交易用户信息结束.");
 	}
 	
-	@Scheduled(cron = "*/10 * * * * ?")
+	@Scheduled(cron = "*/5 * * * * ?")
 	public void updateStatus() {
 		System.out.println("开始更新活动状态...");
 		activityService.updateStatus();
