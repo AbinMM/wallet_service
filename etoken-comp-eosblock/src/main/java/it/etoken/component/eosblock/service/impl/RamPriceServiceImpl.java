@@ -538,7 +538,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 				}
 				String blockNum=thisBasicDBObject.getString("block_num");
 				if(blockNum==null || blockNum.isEmpty()) {	
-					Date time=new Date(thisBasicDBObject.getDate("expiration").getTime()-30*1000);
+					Date time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
 						continue;
@@ -654,7 +654,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 					startDate =new Date(DateUtils.formateDate( existTransactionsList.get(0).getString("expiration")).getTime()-30*1000);
 				}else {
 					JSONObject obj=JSONObject.parseObject(existTransactionsList.get(0).get("transaction_header").toString());
-					startDate=obj.getDate("expiration");
+					startDate =new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
 				}
 			}
 		}
