@@ -745,7 +745,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 	@Override
 	public  Map<String, String> findSellRamExactPrice(Object[] trsationId) {
 		try {
-			Criteria actorCriteria = Criteria.where("id").in("c83db51f3c9efd4af6e85f02e4a22152d504fa2b70caba83946df286a25434a0");
+			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
 			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
