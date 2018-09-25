@@ -745,7 +745,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 	@Override
 	public  Map<String, String> findSellRamExactPrice(Object[] trsationId) {
 		try {
-			Criteria actorCriteria = Criteria.where("id").in(trsationId);
+			Criteria actorCriteria = Criteria.where("id").in("c83db51f3c9efd4af6e85f02e4a22152d504fa2b70caba83946df286a25434a0");
 			Query query = new Query(actorCriteria);
 			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
@@ -776,9 +776,16 @@ public class TransactionsServiceImpl implements TransactionsService{
 						if(thisInlineTraces.length==1) {
 							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-							BasicDBObject data=(BasicDBObject)act.get("data");
-							String quantityEos=(String)data.get("quantity");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
+							String quantityEos=data.getString("quantity");
+							if(null==quantityEos) {
+								continue;
+							}
 			            	String[] quantity_eos_array= quantityEos.split(" ");
+			            	if(quantity_eos_array.length<1||null==quantity_eos_array) {
+			            		continue;
+			            	}
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
 			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
 			            	BigDecimal price= eosQuantity.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
@@ -787,11 +794,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
 							BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
 							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-							BasicDBObject data=(BasicDBObject)act.get("data");
-							String quantityEos=(String)data.get("quantity");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
+							String quantityEos=data.getString("quantity");
 							BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
-							BasicDBObject data2=(BasicDBObject)act2.get("data");
-							String quantityFeeEos2=(String)data2.get("quantity");
+							//BasicDBObject data2=(BasicDBObject)act2.get("data");
+							JSONObject data2 = JSONObject.parseObject(JSONObject.toJSONString(act2.get("data")), JSONObject.class);
+							String quantityFeeEos2=data2.getString("quantity");
 			            	String[] quantity_eos_array= quantityEos.split(" ");
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
 			            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
