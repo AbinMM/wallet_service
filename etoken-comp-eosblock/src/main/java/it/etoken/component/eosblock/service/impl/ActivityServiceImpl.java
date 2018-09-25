@@ -367,56 +367,54 @@ public class ActivityServiceImpl implements ActivityService {
 			return;
 		}
 
-		synchronized (this) {
-			if (thisActivityStageUser.getIsWinner().equalsIgnoreCase("y")) {
-				int maxQty = activityStage.getCommonMaxQty().intValue();
-				int minQty = activityStage.getCommonMinQty().intValue();
+		if (thisActivityStageUser.getIsWinner().equalsIgnoreCase("y")) {
+			int maxQty = activityStage.getCommonMaxQty().intValue();
+			int minQty = activityStage.getCommonMinQty().intValue();
 
-				Random rand = new Random();
-				int quantity = rand.nextInt(maxQty - minQty + 1) + minQty;
+			Random rand = new Random();
+			int quantity = rand.nextInt(maxQty - minQty + 1) + minQty;
+			String accountName = thisActivityStageUser.getAccountName();
+			String memo = "ET交易所优胜奖励已经到账啦~交易所地址：http://etdac.io/  还有超级大奖等你来拿";
+
+			ActivityStageUser updateActivityStageUser = new ActivityStageUser();
+			updateActivityStageUser.setId(thisActivityStageUser.getId());
+			updateActivityStageUser.setStatus("completed");
+			updateActivityStageUser.setWinQty(BigDecimal.valueOf(quantity));
+			updateActivityStageUser.setUpdateDate(nowDate);
+			activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
+
+			try {
+				this.transfer(accountName, activityStage.getTokenContract(),
+						quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(), memo);
+			} catch (Exception e) {
+
+			}
+		}
+
+		if (thisActivityStageUser.getIsLucky().equalsIgnoreCase("y")) {
+			int luckyCoinQty = activityStage.getLuckyCoinQty().intValue();
+			int luckyCount = activityStage.getLuckyCount().intValue();
+
+			String luckyMethod = activityStage.getLuckyMethod();
+			if (luckyMethod.equalsIgnoreCase("share")) {
+				BigDecimal quantity = BigDecimal.valueOf(luckyCoinQty).divide(BigDecimal.valueOf(luckyCount), 2,
+						BigDecimal.ROUND_HALF_UP);
 				String accountName = thisActivityStageUser.getAccountName();
-				String memo = "ET交易所优胜奖励已经到账啦~交易所地址：http://etdac.io/  还有超级大奖等你来拿";
+				String memo = "恭喜您，被ET交易所幸运大奖砸中啦~还有更多精彩活动，尽在 http://etdac.io/ ";
 
 				ActivityStageUser updateActivityStageUser = new ActivityStageUser();
 				updateActivityStageUser.setId(thisActivityStageUser.getId());
 				updateActivityStageUser.setStatus("completed");
-				updateActivityStageUser.setWinQty(BigDecimal.valueOf(quantity));
+				updateActivityStageUser.setLuckyQty(quantity);
 				updateActivityStageUser.setUpdateDate(nowDate);
 				activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
 
 				try {
 					this.transfer(accountName, activityStage.getTokenContract(),
-							quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(), memo);
+							quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(),
+							memo);
 				} catch (Exception e) {
 
-				}
-			}
-
-			if (thisActivityStageUser.getIsLucky().equalsIgnoreCase("y")) {
-				int luckyCoinQty = activityStage.getLuckyCoinQty().intValue();
-				int luckyCount = activityStage.getLuckyCount().intValue();
-
-				String luckyMethod = activityStage.getLuckyMethod();
-				if (luckyMethod.equalsIgnoreCase("share")) {
-					BigDecimal quantity = BigDecimal.valueOf(luckyCoinQty).divide(BigDecimal.valueOf(luckyCount), 2,
-							BigDecimal.ROUND_HALF_UP);
-					String accountName = thisActivityStageUser.getAccountName();
-					String memo = "恭喜您，被ET交易所幸运大奖砸中啦~还有更多精彩活动，尽在 http://etdac.io/ ";
-
-					ActivityStageUser updateActivityStageUser = new ActivityStageUser();
-					updateActivityStageUser.setId(thisActivityStageUser.getId());
-					updateActivityStageUser.setStatus("completed");
-					updateActivityStageUser.setLuckyQty(quantity);
-					updateActivityStageUser.setUpdateDate(nowDate);
-					activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
-
-					try {
-						this.transfer(accountName, activityStage.getTokenContract(),
-								quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(),
-								memo);
-					} catch (Exception e) {
-
-					}
 				}
 			}
 		}
