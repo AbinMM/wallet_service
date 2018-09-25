@@ -450,6 +450,8 @@ public class ActivityServiceImpl implements ActivityService {
 
 		try {
 			String result = HttpClientUtils.doPostJson(url, jo.toJSONString());
+			System.out.println("url================= : " + url);
+			System.out.println("json data: " + jo.toJSONString());
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
