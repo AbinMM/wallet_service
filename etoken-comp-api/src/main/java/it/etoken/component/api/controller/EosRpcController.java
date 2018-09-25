@@ -443,11 +443,12 @@ public class EosRpcController extends BaseController {
 				if(last_id.equalsIgnoreCase("-1")) {
 					last_id = "";
 				}
-				result=transactionsFacadeAPI.findByAccountAndActorNew(last_id, pageSize, account, actor,code);
-				if (!result.isSuccess()) {
-					return this.error(result.getErrorCode(),result.getErrorHint(), null);
-				}
-				return this.success(result.getList());
+				return this.error(MLApiException.EOSRPC_FAIL, null);
+////				result=transactionsFacadeAPI.findByAccountAndActorNew(last_id, pageSize, account, actor,code);
+//				if (!result.isSuccess()) {
+//					return this.error(result.getErrorCode(),result.getErrorHint(), null);
+//				}
+//				return this.success(result.getList());
 			}	
 		}
 		catch (Exception e) {
