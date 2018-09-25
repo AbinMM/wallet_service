@@ -266,14 +266,18 @@ public class TransactionsServiceImpl implements TransactionsService{
 		
 		//eos
 		Criteria eosCriteria = new Criteria();
+		Criteria transfer_and_unit_Criteria = new Criteria();
+		transfer_and_unit_Criteria.andOperator(
+				Criteria.where("actions.name").is("transfer"),Criteria.where("actions.data.quantity").regex(pattern)
+				);
 		Criteria actions_name_eos_criteria = new Criteria();
 		actions_name_eos_criteria.orOperator(
-				Criteria.where("actions.data.quantity").regex(pattern),
 				Criteria.where("actions.name").is("delegatebw"),
 				Criteria.where("actions.name").is("buyram"),
 				Criteria.where("actions.name").is("sellram"),
-				Criteria.where("actions.name").is("transfer"),
-				Criteria.where("actions.name").is("undelegatebw"));
+				Criteria.where("actions.name").is("undelegatebw"),
+				transfer_and_unit_Criteria
+				);
 		
 		eosCriteria.andOperator(
 				actorCriteria,
@@ -318,11 +322,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 		//Other
 		Criteria otherCriteria = new Criteria();
 		Criteria actions_name_other_criteria = new Criteria();
-		actions_name_other_criteria.orOperator(
+		actions_name_other_criteria.andOperator(
 				Criteria.where("actions.data.quantity").regex(pattern),
-				Criteria.where("actions.name").is("transfer"),
-				Criteria.where("actions.name").is("issue"),
-				Criteria.where("actions.name").is("newaccount"));
+				Criteria.where("actions.name").is("transfer")
+				);
         if(null==account|| "".equals(account)) {
 			otherCriteria.andOperator(actions_name_other_criteria,actorCriteria);
    		}else {
@@ -331,11 +334,9 @@ public class TransactionsServiceImpl implements TransactionsService{
         
 		Criteria criteria = new Criteria();
 		if(code.equalsIgnoreCase("eos")){
-		criteria.orOperator(eosCriteria, etCriteria);
-			System.out.println(criteria.getCriteriaObject());
+		    criteria.orOperator(eosCriteria, etCriteria);
 		}else {
 			criteria.orOperator(otherCriteria, etCriteria);
-			System.out.println(criteria.getCriteriaObject());
 		}
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<JSONObject> list=new ArrayList<JSONObject>();
@@ -353,7 +354,6 @@ public class TransactionsServiceImpl implements TransactionsService{
 			}else {
 				query = query.addCriteria(Criteria.where("createdAt").exists(true));
 			}
-
 		   // List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
 		    List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			if(null == transactionsList || transactionsList.isEmpty()) {
