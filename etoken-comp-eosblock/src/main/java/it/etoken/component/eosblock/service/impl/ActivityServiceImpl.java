@@ -125,8 +125,12 @@ public class ActivityServiceImpl implements ActivityService {
 
 		Query query = new Query(criteria);
 		query.with(new Sort(new Order(Direction.ASC, "expiration")));
+		
+		mongoTemplate.count(query, "transactions");
 
 		List<BasicDBObject> buyTransactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
+		
+		
 		for (BasicDBObject thisBuyTransactions : buyTransactionsList) {
 			JSONObject thisBuyTransactionsJO = JSONObject.parseObject(JSONObject.toJSONString(thisBuyTransactions));
 			ActivityStageUser activityStageUser = new ActivityStageUser();
@@ -280,7 +284,7 @@ public class ActivityServiceImpl implements ActivityService {
 		ActivityStageExample.Criteria activityStageCriteria = activityStageExample.createCriteria();
 		activityStageCriteria.andStatusEqualTo("completed");
 		activityStageCriteria.andIsPaidEqualTo("n");
-		activityStageCriteria.andEndDateLessThanOrEqualTo(endDate);
+//		activityStageCriteria.andEndDateLessThanOrEqualTo(endDate);
 		List<ActivityStage> payActivityStageList = activityStageMapper.selectByExample(activityStageExample);
 		for (ActivityStage thisActivityStage : payActivityStageList) {
 			ActivityStage updateActivityStage = new ActivityStage();
