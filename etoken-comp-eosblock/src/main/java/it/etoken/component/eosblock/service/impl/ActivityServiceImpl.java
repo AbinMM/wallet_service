@@ -273,7 +273,7 @@ public class ActivityServiceImpl implements ActivityService {
 	}
 
 	@Override
-	public synchronized void transfer2WinAndLuckyUser() {
+	public void transfer2WinAndLuckyUser() {
 		Date nowDate = new Date();
 		Date endDate = new Date(nowDate.getTime() - 2 * 60 * 60 * 1000); // 两小时后发币
 		ActivityStageExample activityStageExample = new ActivityStageExample();
@@ -287,8 +287,8 @@ public class ActivityServiceImpl implements ActivityService {
 			updateActivityStage.setId(thisActivityStage.getId());
 			updateActivityStage.setIsPaid("y");
 			activityStageMapper.updateByPrimaryKeySelective(updateActivityStage);
-			
-			//最后一次获取交易用户，确保拿全数据
+
+			// 最后一次获取交易用户，确保拿全数据
 			this.getCurrentBuyUsers(thisActivityStage);
 
 			// 找出优胜奖人员
@@ -319,7 +319,7 @@ public class ActivityServiceImpl implements ActivityService {
 		}
 	}
 
-	public synchronized void calculateWinner(ActivityStage activityStage) {
+	public void calculateWinner(ActivityStage activityStage) {
 		Date nowDate = new Date();
 		Page<ActivityStageUser> pageResult = PageHelper.startPage(1, activityStage.getCommonCount().intValue());
 		ActivityStageUserExample example = new ActivityStageUserExample();
@@ -338,7 +338,7 @@ public class ActivityServiceImpl implements ActivityService {
 		}
 	}
 
-	public synchronized void selectLuckyUser(long activityStageId) {
+	public void selectLuckyUser(long activityStageId) {
 		Date nowDate = new Date();
 		Page<ActivityStageUser> pageResult = PageHelper.startPage(1, 3);
 		ActivityStageUserExample example = new ActivityStageUserExample();
@@ -359,7 +359,7 @@ public class ActivityServiceImpl implements ActivityService {
 
 	}
 
-	public synchronized void transfer2WinAndLuckyUserPerOne(ActivityStageUser thisActivityStageUser) {
+	public void transfer2WinAndLuckyUserPerOne(ActivityStageUser thisActivityStageUser) {
 		Date nowDate = new Date();
 		ActivityStage activityStage = activityStageMapper
 				.selectByPrimaryKey(thisActivityStageUser.getActivityStageId());
@@ -367,45 +367,20 @@ public class ActivityServiceImpl implements ActivityService {
 			return;
 		}
 
-		if (thisActivityStageUser.getIsWinner().equalsIgnoreCase("y")) {
-			int maxQty = activityStage.getCommonMaxQty().intValue();
-			int minQty = activityStage.getCommonMinQty().intValue();
+		synchronized (this) {
+			if (thisActivityStageUser.getIsWinner().equalsIgnoreCase("y")) {
+				int maxQty = activityStage.getCommonMaxQty().intValue();
+				int minQty = activityStage.getCommonMinQty().intValue();
 
-			Random rand = new Random();
-			int quantity = rand.nextInt(maxQty - minQty + 1) + minQty;
-			String accountName = thisActivityStageUser.getAccountName();
-			String memo = "ET交易所优胜奖励已经到账啦~交易所地址：http://etdac.io/  还有超级大奖等你来拿";
-
-			ActivityStageUser updateActivityStageUser = new ActivityStageUser();
-			updateActivityStageUser.setId(thisActivityStageUser.getId());
-			updateActivityStageUser.setStatus("completed");
-			updateActivityStageUser.setWinQty(BigDecimal.valueOf(quantity));
-			updateActivityStageUser.setUpdateDate(nowDate);
-			activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
-
-			try {
-				this.transfer(accountName, activityStage.getTokenContract(),
-						quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(), memo);
-			} catch (Exception e) {
-
-			}
-		}
-
-		if (thisActivityStageUser.getIsLucky().equalsIgnoreCase("y")) {
-			int luckyCoinQty = activityStage.getLuckyCoinQty().intValue();
-			int luckyCount = activityStage.getLuckyCount().intValue();
-
-			String luckyMethod = activityStage.getLuckyMethod();
-			if (luckyMethod.equalsIgnoreCase("share")) {
-				BigDecimal quantity = BigDecimal.valueOf(luckyCoinQty).divide(BigDecimal.valueOf(luckyCount), 2,
-						BigDecimal.ROUND_HALF_UP);
+				Random rand = new Random();
+				int quantity = rand.nextInt(maxQty - minQty + 1) + minQty;
 				String accountName = thisActivityStageUser.getAccountName();
-				String memo = "恭喜您，被ET交易所幸运大奖砸中啦~还有更多精彩活动，尽在 http://etdac.io/ ";
+				String memo = "ET交易所优胜奖励已经到账啦~交易所地址：http://etdac.io/  还有超级大奖等你来拿";
 
 				ActivityStageUser updateActivityStageUser = new ActivityStageUser();
 				updateActivityStageUser.setId(thisActivityStageUser.getId());
 				updateActivityStageUser.setStatus("completed");
-				updateActivityStageUser.setLuckyQty(quantity);
+				updateActivityStageUser.setWinQty(BigDecimal.valueOf(quantity));
 				updateActivityStageUser.setUpdateDate(nowDate);
 				activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
 
@@ -414,6 +389,34 @@ public class ActivityServiceImpl implements ActivityService {
 							quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(), memo);
 				} catch (Exception e) {
 
+				}
+			}
+
+			if (thisActivityStageUser.getIsLucky().equalsIgnoreCase("y")) {
+				int luckyCoinQty = activityStage.getLuckyCoinQty().intValue();
+				int luckyCount = activityStage.getLuckyCount().intValue();
+
+				String luckyMethod = activityStage.getLuckyMethod();
+				if (luckyMethod.equalsIgnoreCase("share")) {
+					BigDecimal quantity = BigDecimal.valueOf(luckyCoinQty).divide(BigDecimal.valueOf(luckyCount), 2,
+							BigDecimal.ROUND_HALF_UP);
+					String accountName = thisActivityStageUser.getAccountName();
+					String memo = "恭喜您，被ET交易所幸运大奖砸中啦~还有更多精彩活动，尽在 http://etdac.io/ ";
+
+					ActivityStageUser updateActivityStageUser = new ActivityStageUser();
+					updateActivityStageUser.setId(thisActivityStageUser.getId());
+					updateActivityStageUser.setStatus("completed");
+					updateActivityStageUser.setLuckyQty(quantity);
+					updateActivityStageUser.setUpdateDate(nowDate);
+					activityStageUserMapper.updateByPrimaryKeySelective(updateActivityStageUser);
+
+					try {
+						this.transfer(accountName, activityStage.getTokenContract(),
+								quantity + " " + activityStage.getTokenName(), activityStage.getPrecisionNumber(),
+								memo);
+					} catch (Exception e) {
+
+					}
 				}
 			}
 		}
@@ -443,12 +446,12 @@ public class ActivityServiceImpl implements ActivityService {
 		jo.put("quantity", qtyStr);
 		jo.put("memo", memo);
 
-		 try {
-		 String result = HttpClientUtils.doPostJson(url, jo.toJSONString());
-		 return result;
-		 } catch (Exception e) {
-		 e.printStackTrace();
-		 }
+		try {
+			String result = HttpClientUtils.doPostJson(url, jo.toJSONString());
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 }
