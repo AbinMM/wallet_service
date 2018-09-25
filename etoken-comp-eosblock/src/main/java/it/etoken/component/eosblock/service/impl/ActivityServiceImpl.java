@@ -273,7 +273,7 @@ public class ActivityServiceImpl implements ActivityService {
 	}
 
 	@Override
-	public void transfer2WinAndLuckyUser() {
+	public synchronized void transfer2WinAndLuckyUser() {
 		Date nowDate = new Date();
 		Date endDate = new Date(nowDate.getTime() - 2 * 60 * 60 * 1000); // 两小时后发币
 		ActivityStageExample activityStageExample = new ActivityStageExample();
