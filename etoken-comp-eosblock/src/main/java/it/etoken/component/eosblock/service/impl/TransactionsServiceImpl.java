@@ -651,6 +651,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						//BasicDBObject data1=(BasicDBObject)act1.get("data");
 						JSONObject data1 = JSONObject.parseObject(JSONObject.toJSONString(act1.get("data")), JSONObject.class);
 						String quantity2=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
+						if(null==quantity2) {
+							continue;
+						}
 		            	String[] quantity1_array= quantity1.split(" ");
 		            	String[] quantity2_array= quantity2.split(" ");
 		            	BigDecimal quantityarr1= new  BigDecimal(quantity1_array[0]);
