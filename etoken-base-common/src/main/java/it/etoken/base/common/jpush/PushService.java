@@ -47,7 +47,7 @@ public class PushService {
 		}
 	}
 
-	public void pushByTag(String tag, String content, Map<String, String> extras) throws MLException {
+	public void pushByTag(String tag, String content, Map<String, String> extras) {
 		try {
 			PushPayload p = PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.tag(tag))
 				.setMessage(Message.content(content)).setNotification(Notification.android(content, null, extras)).build();
