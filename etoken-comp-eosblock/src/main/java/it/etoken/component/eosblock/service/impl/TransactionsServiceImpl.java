@@ -797,13 +797,25 @@ public class TransactionsServiceImpl implements TransactionsService{
 							//BasicDBObject data=(BasicDBObject)act.get("data");
 							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
 							String quantityEos=data.getString("quantity");
+							if(null==quantityEos) {
+			            		continue;
+			            	}
 							BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
 							//BasicDBObject data2=(BasicDBObject)act2.get("data");
 							JSONObject data2 = JSONObject.parseObject(JSONObject.toJSONString(act2.get("data")), JSONObject.class);
+							if(null==data2) {
+			            		continue;
+			            	}
 							String quantityFeeEos2=data2.getString("quantity");
+							if(null==quantityFeeEos2) {
+			            		continue;
+			            	}
 			            	String[] quantity_eos_array= quantityEos.split(" ");
 			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
 			            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
+			            	if(quantity_fee_eos_array.length<1||null==quantity_fee_eos_array) {
+			            		continue;
+			            	}
 			            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
 			            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
 			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
