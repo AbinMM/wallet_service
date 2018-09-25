@@ -6,28 +6,28 @@ import org.springframework.stereotype.Component;
 
 import it.etoken.component.eosblock.service.ActivityService;
 
-@Component
+//@Component
 public class ActivityTask {
 
 	@Autowired
 	ActivityService activityService;
 	
 	// 获取购买币的用户
-	@Scheduled(cron = "*/10 * * * * ?")
+	@Scheduled(cron = "0 */2 * * * ?")
 	public void getBuyUser() {
 		System.out.println("开始获取交易用户信息...");
 		activityService.getAllBuyUsers();
 		System.out.println("获取交易用户信息结束.");
 	}
 	
-	@Scheduled(cron = "*/5 * * * * ?")
+	@Scheduled(cron = "*/10 * * * * ?")
 	public void updateStatus() {
 		System.out.println("开始更新活动状态...");
 		activityService.updateStatus();
 		System.out.println("更新活动状态结束.");
 	}
 	
-	@Scheduled(cron = "0 */5 * * * ?")
+	@Scheduled(cron = "0 */15 * * * ?")
 	public void transfer2WinAndLuckyUser() {
 		System.out.println("开始转账给用户...");
 		activityService.transfer2WinAndLuckyUser();
