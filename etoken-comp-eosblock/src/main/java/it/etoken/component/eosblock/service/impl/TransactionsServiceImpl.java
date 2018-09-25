@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
+import it.etoken.base.common.utils.DateUtils;
 import it.etoken.component.eosblock.service.TransactionsService;
 
 @Component
@@ -55,6 +56,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	@Override
 	@Deprecated
 	public List<JSONObject> findByAccountAndActor(int page, int pageSize, String account, String actor,String code) {
@@ -98,7 +100,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		   System.out.println(criteria.getCriteriaObject());
 		}
 	    Query query = new Query(criteria);
-	    query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+	    query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 	    query = query.limit(pageSize);
 	    query = query.skip((page - 1) * pageSize);
 
@@ -115,7 +117,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 			String code_new="";
 			String transactionId=thisBasicDBObject.getString("trx_id");
 			String blockNum=thisBasicDBObject.getString("block_num");
-			Date  blockTime=thisBasicDBObject.getDate("createdAt");
+			Date  blockTime=null;
+			if(null!=thisBasicDBObject.getString("expiration")) {
+				 blockTime=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+			}else {
+				JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
+				blockTime=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+			}
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         	Long times = 0l;
 			BigDecimal price = BigDecimal.ZERO;
@@ -242,6 +250,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		return list;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public List<JSONObject> findByAccountAndActorNew(String last_id, int pageSize, String account, String actor,String code) {
 		Date startDate = null;
@@ -249,7 +258,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 			Query query = new Query(Criteria.where("_id").is(new ObjectId(last_id)));
 			List<BasicDBObject> existTransactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
-				startDate = existTransactionsList.get(0).getDate("createdAt");
+				if(null!=existTransactionsList.get(0).getString("expiration")) {
+					startDate=new Date(DateUtils.formateDate(existTransactionsList.get(0).getString("expiration")).getTime()-30*1000);
+				}else {
+					JSONObject obj=JSONObject.parseObject(existTransactionsList.get(0).get("transaction_header").toString());
+					startDate=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+				}
 			}
 		}
 		
@@ -344,13 +358,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 		int i=0;
 		do {
 		    Query query = new Query(criteria);
-		    query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		    query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 		    query = query.limit(pageSize);
 		    //query = query.skip((page - 1) * pageSize);
 		    if (null != startDate) {
-				query = query.addCriteria(Criteria.where("createdAt").lt(startDate));
+		    	Criteria expirationCriteria = new Criteria();
+				expirationCriteria.orOperator(Criteria.where("expiration").lt(startDate),Criteria.where("transaction_header.expiration").lt(startDate));	
+				query = query.addCriteria(expirationCriteria);
 			}else {
-				query = query.addCriteria(Criteria.where("createdAt").exists(true));
+				Criteria expirationCriteria = new Criteria();
+				expirationCriteria.orOperator(Criteria.where("expiration").exists(true),Criteria.where("transaction_header.expiration").exists(true));
+				query = query.addCriteria(expirationCriteria);
 			}
 
 		   // List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
@@ -359,7 +377,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 				haveList = false;
 				break;
 			}
-			startDate = transactionsList.get(transactionsList.size()-1).getDate("createdAt");
+			if(null!=transactionsList.get(transactionsList.size()-1).getDate("expiration")) {
+				startDate=new Date(DateUtils.formateDate(transactionsList.get(transactionsList.size()-1).getString("expiration")).getTime()-30*1000);
+			}else {
+				JSONObject obj=JSONObject.parseObject(transactionsList.get(transactionsList.size()-1).get("transaction_header").toString());
+				startDate=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+			}
 			for (BasicDBObject thisBasicDBObject :transactionsList) {
  				String transactionId=thisBasicDBObject.getString("trx_id");
 				if (existMap.containsKey(transactionId)) {
@@ -367,7 +390,14 @@ public class TransactionsServiceImpl implements TransactionsService{
 				}
 				String blockNum=thisBasicDBObject.getString("block_num");
 				if(blockNum==null || blockNum.isEmpty()) {
-					Date time=thisBasicDBObject.getDate("createdAt");
+					Date time=null;
+					if(null!=thisBasicDBObject.getDate("expiration")) {
+						 time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+					}else {
+						JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
+						time=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+					}
+					
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
 						continue;
@@ -390,7 +420,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 				String description="";
 				String code_new="";
 				String _id=thisBasicDBObject.getString("_id");
-				Date  blockTime=thisBasicDBObject.getDate("createdAt");
+				Date blockTime=null;
+				if(null!=thisBasicDBObject.getString("expiration")) {
+					 blockTime=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+				}else {
+					 JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
+					 blockTime=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+				}
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	        	Long times = 0l;
 				BigDecimal price = BigDecimal.ZERO;
@@ -627,7 +663,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		try {
 			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
 			 Map<String, String> pricetMap = new HashMap<String, String>();
 			 for (BasicDBObject thisBasicDBObject :list) {
@@ -678,7 +714,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		try {
 			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
 			 Map<String, String> quantMap = new HashMap<String, String>();
 			 for (BasicDBObject thisBasicDBObject :list) {
@@ -711,7 +747,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		try {
 			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
 			 Map<String, String> pricetMap = new HashMap<String, String>();
 			 for (BasicDBObject thisBasicDBObject :list) {
@@ -774,6 +810,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public List<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort, String token,
 			String contract) {
@@ -808,10 +845,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 		}
 		 Query query = new Query(criteria);
 		 if(sort.equals("desc")) {
-		       query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		       query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 		 }
 		 if(sort.equals("asc")) {
-		       query = query.with(new Sort(new Order(Direction.ASC, "createdAt")));
+		       query = query.with(new Sort(new Order(Direction.ASC, "expiration"),new Order(Direction.ASC, "transaction_header.expiration")));
 		 }
 		 query = query.limit(count);
 		 query = query.skip(start);
@@ -820,7 +857,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 		 for (BasicDBObject thisBasicDBObject :transactionsList) {
 				String transactionId=thisBasicDBObject.getString("trx_id");
 				String blockNum=thisBasicDBObject.getString("block_num");
-				Date  blockTime=thisBasicDBObject.getDate("createdAt");
+				Date  blockTime=null;
+				if(null!=thisBasicDBObject.getString("expiration")) {
+				    blockTime=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+				}else {
+					JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
+					blockTime=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+				}
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	        	Long times = 0l;
 				BigDecimal price = BigDecimal.ZERO;
@@ -895,7 +938,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 				Criteria.where("actions.data.quantity").regex(".*" + tokenName)
 				);
 		query.addCriteria(criteria);
-		query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 		query.limit(pageCount);
 		query.skip((page-1)*pageCount);
 		
