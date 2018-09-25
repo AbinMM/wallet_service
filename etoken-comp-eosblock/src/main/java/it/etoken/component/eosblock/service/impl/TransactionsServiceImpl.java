@@ -639,10 +639,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BasicDBObject actionTraces = (BasicDBObject)object;
 						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
 						Object[] thisInlineTraces = inline_traces.toArray();
-						if(null == thisInlineTraces || thisInlineTraces.length==0) {
+						if(null == thisInlineTraces || thisInlineTraces.length==0||thisInlineTraces.length<2) {
 							continue;
 						}
-						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];	
 						BasicDBObject inlineTraces2= (BasicDBObject)thisInlineTraces[1];
 						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
 						BasicDBObject data=(BasicDBObject)act.get("data");
