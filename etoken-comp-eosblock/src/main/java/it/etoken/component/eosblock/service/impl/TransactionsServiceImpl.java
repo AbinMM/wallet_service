@@ -648,7 +648,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BasicDBObject data=(BasicDBObject)act.get("data");
 						String quantity1=(String)data.get("quantity");//如果是sell就是买的币的数量如果是buy就是eos的数量
 						BasicDBObject act1=(BasicDBObject) inlineTraces2.get("act");
-						BasicDBObject data1=(BasicDBObject)act1.get("data");
+						//BasicDBObject data1=(BasicDBObject)act1.get("data");
+						JSONObject data1 = JSONObject.parseObject(JSONObject.toJSONString(act1.get("data")), JSONObject.class);
 						String quantity2=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
 		            	String[] quantity1_array= quantity1.split(" ");
 		            	String[] quantity2_array= quantity2.split(" ");
