@@ -86,7 +86,7 @@ public class DateUtils {
 	
 	public static Date formateDate(String date) {
 		  SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");//注意格式化的表达式
-		  format.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+//		  format.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
 		  try {
 			Date d = format.parse(date );
 			return d;
@@ -99,7 +99,7 @@ public class DateUtils {
 	
 	public static String formateDate(Date date) {
 		  SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");//注意格式化的表达式
-		  sd.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+//		  sd.setTimeZone(TimeZone.getTimeZone("GMT+0"));
 		  try {
 			String d = sd.format(date);
 			return d;
