@@ -27,7 +27,7 @@ public class ActivityTask {
 		System.out.println("活动-------------------------------------------------------更新活动状态结束.");
 	}
 	
-	@Scheduled(cron = "0 */15 * * * ?")
+	@Scheduled(cron = "0 */2 * * * ?")
 	public void transfer2WinAndLuckyUser() {
 		System.out.println("活动-------------------------------------------------------开始转账给用户...");
 		activityService.transfer2WinAndLuckyUser();
