@@ -497,8 +497,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 			if(actionName.equalsIgnoreCase("sellram")){
 				String ramqty=ramTradeLog.getRam_qty();
 				String[] ramqtys=ramqty.split(" ");
-				Long bytes=Long.valueOf(ramqtys[0]);
-				BigDecimal bytesK = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1024l), 2,
+				BigDecimal bytes=new BigDecimal(ramqtys[0]);
+				BigDecimal bytesK =bytes.divide(BigDecimal.valueOf(1024l), 2,
 						BigDecimal.ROUND_HALF_UP);
 				
 				BigDecimal eos_qty = bytesK.multiply(new BigDecimal(price));
@@ -644,10 +644,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 			if(actionName.equalsIgnoreCase("sellram")){
 				String ramqty=ramTradeLog.getRam_qty();
 				String[] ramqtys=ramqty.split(" ");
-				Long bytes=Long.valueOf(ramqtys[0]);
-				BigDecimal bytesK = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1024l), 2,
+				BigDecimal bytes=new BigDecimal(ramqtys[0]);
+				BigDecimal bytesK =bytes.divide(BigDecimal.valueOf(1024l), 2,
 						BigDecimal.ROUND_HALF_UP);
-				
 				BigDecimal eos_qty = bytesK.multiply(new BigDecimal(price));
 				eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
 				ramTradeLog.setEos_qty(eos_qty + " EOS");
@@ -850,10 +849,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 			if(actionName.equalsIgnoreCase("sellram")){
 				String ramqty=ramTradeLog.getRam_qty();
 				String[] ramqtys=ramqty.split(" ");
-				Long bytes=Long.valueOf(ramqtys[0]);
-				BigDecimal bytesK = BigDecimal.valueOf(bytes).divide(BigDecimal.valueOf(1024l), 2,
+				BigDecimal bytes=new BigDecimal(ramqtys[0]);
+				BigDecimal bytesK =bytes.divide(BigDecimal.valueOf(1024l), 2,
 						BigDecimal.ROUND_HALF_UP);
-				
 				BigDecimal eos_qty = bytesK.multiply(new BigDecimal(price));
 				eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
 				ramTradeLog.setEos_qty(eos_qty + " EOS");
