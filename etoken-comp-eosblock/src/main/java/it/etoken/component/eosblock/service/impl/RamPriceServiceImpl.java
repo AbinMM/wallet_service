@@ -485,6 +485,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			}
 		}
 		
+		
 		Map<String, String> priceMap=transactionsService.findSellRamExactPrice(obj);
 		for (RamTradeLog ramTradeLog : result) {
 			String price=priceMap.get(ramTradeLog.getTrx_id());
