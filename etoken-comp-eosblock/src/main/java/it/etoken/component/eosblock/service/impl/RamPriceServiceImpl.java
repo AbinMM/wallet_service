@@ -243,23 +243,11 @@ public class RamPriceServiceImpl implements RamPriceService {
 		
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
 		Query query = new Query(Criteria.where("actions.name").in(actionsNames));
-		
-
-		Criteria expirationCriteria = new Criteria();
-			Criteria headerExpirationCriteria = new Criteria();
-			expirationCriteria.andOperator(
-					Criteria.where("expiration").exists(true),
-					Criteria.where("expiration").gte(DateUtils.formateDate(startDate)),
-					Criteria.where("expiration").lt(DateUtils.formateDate(endDate)));
-			headerExpirationCriteria.andOperator(
-					Criteria.where("transaction_header.expiration").exists(true),
-					Criteria.where("transaction_header.expiration").gte(DateUtils.formateDate(startDate)),
-					Criteria.where("transaction_header.expiration").lt(DateUtils.formateDate(endDate))
-					);
-		
 		Criteria createDateCriteria = new Criteria();
 		createDateCriteria.andOperator(
-				expirationCriteria,headerExpirationCriteria
+				Criteria.where("createdAt").exists(true),
+				Criteria.where("createdAt").gte(startDate),
+				Criteria.where("createdAt").lt(endDate)
 				);
 		query.addCriteria(createDateCriteria);
 		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
@@ -378,18 +366,13 @@ public class RamPriceServiceImpl implements RamPriceService {
 		return price;
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	public List<RamTradeLog> getNewTradeOrders() throws MLException {
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
-		Query query = new Query();
-		Criteria expirationCriteria = new Criteria();
-		expirationCriteria.andOperator(Criteria.where("actions.name").in(actionsNames),
-				Criteria.where("expiration").exists(true));
-		query.addCriteria(expirationCriteria);
+		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true));
 		int page = 1;
 		int pageSize = 100;
-		query = query.with(new Sort(new Order(Direction.DESC, "expiration")));
+		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
 		query = query.limit(pageSize);
 		query = query.skip((page - 1) * pageSize);
 
@@ -412,7 +395,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			}
 			String blockNum=thisBasicDBObject.getString("block_num");
 			if(blockNum==null || blockNum.isEmpty()) {
-				Date time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+				Date time=thisBasicDBObject.getDate("createdAt");
 				Date newDate=new Date();
 				if(newDate.getTime()-time.getTime()>10*60*1000) {
 					continue;
@@ -435,7 +418,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 				BasicDBObject data = (BasicDBObject) action.get("data");
 
-				Date createdAt =new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+				Date createdAt = thisBasicDBObject.getDate("createdAt");
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 				SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -503,16 +486,11 @@ public class RamPriceServiceImpl implements RamPriceService {
 		return result;
 	}
 
-	@SuppressWarnings("unused")
 	@Override
 	public List<RamTradeLog> getBigTradeOrders() throws MLException {
 		
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
-		Query query = new Query();
-		Criteria expirationCriteria = new Criteria();
-		expirationCriteria.andOperator(Criteria.where("actions.name").in(actionsNames),
-				Criteria.where("expiration").exists(true));
-		query.addCriteria(expirationCriteria);
+		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true));
 		int page = 1;
 		int pageSize = 1000;
 
@@ -521,9 +499,10 @@ public class RamPriceServiceImpl implements RamPriceService {
 		Object[] obj=new Object[pageSize];
 		int i=0;
 		do {
-			query = query.with(new Sort(new Order(Direction.DESC, "expiration")));
+			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
 			query = query.limit(pageSize);
 			query = query.skip((page - 1) * pageSize);
+
 			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
@@ -537,8 +516,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					continue;
 				}
 				String blockNum=thisBasicDBObject.getString("block_num");
-				if(blockNum==null || blockNum.isEmpty()) {	
-					Date time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+				if(blockNum==null || blockNum.isEmpty()) {
+					Date time=thisBasicDBObject.getDate("createdAt");
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
 						continue;
@@ -560,8 +539,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					}
 
 					BasicDBObject data = (BasicDBObject) action.get("data");
-					Date createdAt = new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
-					
+
+					Date createdAt = thisBasicDBObject.getDate("createdAt");
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -640,7 +619,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 	}
 	
 	
-	@SuppressWarnings("unused")
 	public List<RamTradeLog> getNewTradeOrdersByAccountNameNew(String accountName, int pageSize, String last_id)
 			throws MLException {
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
@@ -650,12 +628,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 			Query query = new Query(Criteria.where("_id").is(new ObjectId(last_id)));
 			List<BasicDBObject> existTransactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
-				if(null!=existTransactionsList.get(0).getString("expiration")) {
-					startDate =new Date(DateUtils.formateDate( existTransactionsList.get(0).getString("expiration")).getTime()-30*1000);
-				}else {
-					JSONObject obj=JSONObject.parseObject(existTransactionsList.get(0).get("transaction_header").toString());
-					startDate =new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
-				}
+				startDate = existTransactionsList.get(0).getDate("createdAt");
 			}
 		}
 
@@ -677,37 +650,26 @@ public class RamPriceServiceImpl implements RamPriceService {
 		int i=0;
 		int countN = 0;
 		do {
-			Query query = new Query();
-			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
+			Query query = new Query(actorCriteria);
+
+			query = query.addCriteria(actionsNameCriteria);
+			
+
+			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
 			query = query.limit(pageSize);
 			if (null != startDate) {
-				Criteria expirationCriteria = new Criteria();
-				expirationCriteria.orOperator(Criteria.where("expiration").lt(DateUtils.formateDate(startDate)),
-						Criteria.where("transaction_header.expiration").lt(DateUtils.formateDate(startDate)));
-				Criteria criteria = new Criteria();
-				criteria.andOperator(actorCriteria,expirationCriteria,actionsNameCriteria);
-				query = query.addCriteria(criteria);
+				query = query.addCriteria(Criteria.where("createdAt").lt(startDate));
 			}else {
-				Criteria expirationCriteria = new Criteria();
-				expirationCriteria.orOperator(Criteria.where("expiration").exists(true),
-						Criteria.where("transaction_header.expiration").exists(true));
-				Criteria criteria = new Criteria();
-				criteria.andOperator(actorCriteria,expirationCriteria,actionsNameCriteria);
-				query = query.addCriteria(criteria);
-			
+				query = query.addCriteria(Criteria.where("createdAt").exists(true));
 			}
-			System.out.println("getNewTradeOrdersByAccountNameNewquery:"+query);
+
 			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			if(null == transactionsList || transactionsList.isEmpty()) {
 				haveList = false;
 				break;
 			}
-			if(null!=transactionsList.get(transactionsList.size()-1).getString("expiration")) {
-				startDate = new Date(DateUtils.formateDate(transactionsList.get(transactionsList.size()-1).getString("expiration")).getTime()-30*1000);
-			}else {
-				JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
-				startDate= new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
-			}
+			startDate = transactionsList.get(transactionsList.size()-1).getDate("createdAt");
+			
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
 				String trx_id = thisBasicDBObject.getString("trx_id");
@@ -716,13 +678,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 				}
 				String blockNum=thisBasicDBObject.getString("block_num");
 				if(blockNum==null || blockNum.isEmpty()) {
-					Date time=null;
-					if(null!=thisBasicDBObject.getString("expiration")) {
-					   time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
-					}else {
-						JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
-						time=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
-					}
+					Date time=thisBasicDBObject.getDate("createdAt");
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
 						continue;
@@ -745,13 +701,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					}
 
 					BasicDBObject data = (BasicDBObject) action.get("data");
-					Date createdAt=null;
-					if(null!=thisBasicDBObject.getString("expiration")) {
-					    createdAt = new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
-					}else {
-						JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
-						createdAt=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
-					}
+
+					Date createdAt = thisBasicDBObject.getDate("createdAt");
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -831,7 +782,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 		return result;
 	}
 	
-	@SuppressWarnings("unused")
 	@Override
 	@Deprecated
 	public List<RamTradeLog> getNewTradeOrdersByAccountName(String accountName, int page, int pageSize) throws MLException {
@@ -849,15 +799,11 @@ public class RamPriceServiceImpl implements RamPriceService {
 		
 		Criteria actionsNameCriteria = Criteria.where("actions.name").in(actionsNames);
 		Query query = new Query(actorCriteria);
-		//query = query.addCriteria(actionsNameCriteria);
+		query = query.addCriteria(actionsNameCriteria);
 		query = query.addCriteria(Criteria.where("block_id").exists(true));
-		Criteria expirationCriteria = new Criteria();
-		expirationCriteria.orOperator(Criteria.where("expiration").exists(true),Criteria.where("transaction_header.expiration").exists(true));
-		Criteria criteria = new Criteria();
-		criteria.andOperator(expirationCriteria,expirationCriteria);
-		query = query.addCriteria(criteria);
+		query = query.addCriteria(Criteria.where("createdAt").exists(true));
 		
-		query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
+		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
 		query = query.limit(pageSize);
 		query = query.skip((page - 1) * pageSize);
 
@@ -877,14 +823,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 				}
 
 				BasicDBObject data = (BasicDBObject) action.get("data");
-				Date createdAt=null;
-				if(null!=thisBasicDBObject.getString("expiration")) {
-					createdAt =new Date( DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
-				}else {
-					JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
-					createdAt=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
-				}
-				
+
+				Date createdAt = thisBasicDBObject.getDate("createdAt");
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 				SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -937,7 +877,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 		return result;
 	}
 	
-	@SuppressWarnings({ "unused"})
 	public Map<String, Object> calculateAmountStatistics() {
 		
 
@@ -958,10 +897,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 		Criteria actionsNameCriteria = Criteria.where("actions.name").in(actionsNames).and("block_id").exists(true);
 		long utcTimes = DateUtils.getUtcTimes();
 		long calculateTimes = utcTimes-24*60*60*1000;
-		Date date = new Date(calculateTimes+30*1000);
-		Criteria todayCriteria = new Criteria();
-		todayCriteria.orOperator(Criteria.where("expiration").gte(DateUtils.formateDate(date)),
-		Criteria.where("transaction_header.expiration").gte(DateUtils.formateDate(date)));
+		Date date = new Date(calculateTimes);
+		Criteria todayCriteria = Criteria.where("createdAt").gte(date);
+		
 		Query query = new Query(todayCriteria);
 		query = query.addCriteria(actionsNameCriteria);
 		
@@ -992,14 +930,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					if (!actionName.equalsIgnoreCase("sellram") && !actionName.equalsIgnoreCase("buyram")) {
 						continue;
 					}
-					Date createdAt=null;
-					if(null!=thisBasicDBObject.getString("expiration")) {
-						createdAt =new Date( DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
-					}else {
-						JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
-						createdAt=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
-					}
 
+					Date createdAt = thisBasicDBObject.getDate("createdAt");
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 				
