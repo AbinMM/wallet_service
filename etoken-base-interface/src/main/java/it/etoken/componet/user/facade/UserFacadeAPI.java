@@ -64,4 +64,6 @@ public interface UserFacadeAPI {
 	public MLResultObject<User> findByUid(String uid);
 	
 	public MLResult updateEost(String uid);
+	
+	public MLResultObject<Boolean> isOpenET();
 }

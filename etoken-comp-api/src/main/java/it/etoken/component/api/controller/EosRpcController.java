@@ -1,6 +1,5 @@
 package it.etoken.component.api.controller;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,12 +23,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.jpush.PushService;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.model.eosblock.entity.Delegatebw;
+import it.etoken.base.model.eosblock.entity.UserEosAccount;
+import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.eosrpc.CreateAccount;
 import it.etoken.component.api.eosrpc.EosResult;
 import it.etoken.component.api.eosrpc.GetAccountDelbandInfo;
@@ -49,6 +51,7 @@ import it.etoken.component.api.exception.MLApiException;
 import it.etoken.component.api.utils.EosNodeUtils;
 import it.etoken.componet.eosblock.facade.DelegatebwFacadeAPI;
 import it.etoken.componet.eosblock.facade.TransactionsFacadeAPI;
+import it.etoken.componet.eosblock.facade.UserEosAccountFacadeAPI;
 
 @Controller
 @RequestMapping(value = "/eosrpc")
@@ -61,12 +64,19 @@ public class EosRpcController extends BaseController {
 	
 	@Autowired
 	EosNodeUtils eosNodeUtils;
+	
+	@Autowired
+	CacheService cacheService;
+	
 
 	@Reference(version = "1.0.0", timeout = 120000, retries = 3)
 	TransactionsFacadeAPI transactionsFacadeAPI;
 	
 	@Reference(version = "1.0.0")
 	DelegatebwFacadeAPI delegatebwFacadeAPI;
+	
+	@Reference(version = "1.0.0", timeout = 120000, retries = 3)
+	UserEosAccountFacadeAPI userEosAccountFacadeAPI;
 
 
 //	@Value("${nodeos.path.chain}")
@@ -176,6 +186,24 @@ public class EosRpcController extends BaseController {
 
 		JSONObject jsonObject = new JSONObject();
 		try {
+			String uid = request.getHeader("uid");
+			MLResultObject<UserEosAccount> result=userEosAccountFacadeAPI.findbyUidAndAccount(uid, requestMap.get("account"));
+			if(result.isSuccess()) {
+				if(result.getResult()!=null) {
+					UserEosAccount uea=result.getResult();
+					uea.setUpdateDate(new Date());
+					userEosAccountFacadeAPI.update(uea);
+				}else {
+					UserEosAccount userEosAccount=new UserEosAccount();
+					if(null!=uid) {
+						userEosAccount.setUid(Long.parseLong(uid));	
+					}
+					userEosAccount.setEosAccount(requestMap.get("account"));
+					userEosAccount.setCreateDate(new Date());
+					userEosAccount.setUpdateDate(new Date());
+					userEosAccountFacadeAPI.save(userEosAccount);
+				}
+			}
 			jsonObject.put("code", requestMap.get("contract"));
 			jsonObject.put("account", requestMap.get("account"));
 			jsonObject.put("symbol", requestMap.get("symbol"));
@@ -415,11 +443,12 @@ public class EosRpcController extends BaseController {
 				if(last_id.equalsIgnoreCase("-1")) {
 					last_id = "";
 				}
-				result=transactionsFacadeAPI.findByAccountAndActorNew(last_id, pageSize, account, actor,code);
-				if (!result.isSuccess()) {
-					return this.error(result.getErrorCode(),result.getErrorHint(), null);
-				}
-				return this.success(result.getList());
+				return this.error(MLApiException.EOSRPC_FAIL, null);
+////				result=transactionsFacadeAPI.findByAccountAndActorNew(last_id, pageSize, account, actor,code);
+//				if (!result.isSuccess()) {
+//					return this.error(result.getErrorCode(),result.getErrorHint(), null);
+//				}
+//				return this.success(result.getList());
 			}	
 		}
 		catch (Exception e) {
@@ -570,16 +599,18 @@ public class EosRpcController extends BaseController {
 	public Object queryRamPrice(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
 		logger.info("/queryRamPrice request map : " + requestMap);
 		try {
-			String url = "https://tbeospre.mytokenpocket.vip/v1/ram_price";
-			String result = HttpClientUtils.doGet(url);
-			GsonBuilder gb = new GsonBuilder();
-		    Gson g = gb.create();
-		    Map<String, String> map = g.fromJson(result, new TypeToken<Map<String, String>>() {}.getType());
-		    Double data= Double.parseDouble(map.get("data"));
-		    Double realPrice = 1 * 1024 / data;
-		    BigDecimal b = new BigDecimal(realPrice);
-		    realPrice = b.setScale(5, BigDecimal.ROUND_HALF_UP).doubleValue(); 
-		    return this.success(realPrice);
+//			String url = "https://tbeospre.mytokenpocket.vip/v1/ram_price";
+//			String result = HttpClientUtils.doGet(url);
+//			GsonBuilder gb = new GsonBuilder();
+//		    Gson g = gb.create();
+//		    Map<String, String> map = g.fromJson(result, new TypeToken<Map<String, String>>() {}.getType());
+//		    Double data= Double.parseDouble(map.get("data"));
+//		    Double realPrice = 1 * 1024 / data;
+//		    BigDecimal b = new BigDecimal(realPrice);
+//		    realPrice = b.setScale(5, BigDecimal.ROUND_HALF_UP).doubleValue(); 
+		    BasicDBObject ram_price_info=cacheService.get("ram_price_info",BasicDBObject.class);
+		    Double price=ram_price_info.getDouble("price");
+		    return this.success(price);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}	

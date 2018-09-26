@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -26,10 +27,11 @@ import it.etoken.base.model.market.entity.Coins;
 import it.etoken.base.model.market.vo.CoinTicker;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.market.service.CoinsService;
+import it.etoken.component.market.service.GateioService;
 import it.etoken.component.market.service.MarketService;
 
 @Component
-public class GateioServiceImpl implements MarketService {
+public class GateioServiceImpl implements GateioService {
 
 	private final static Logger logger = LoggerFactory.getLogger(GateioServiceImpl.class);
 	
@@ -56,6 +58,9 @@ public class GateioServiceImpl implements MarketService {
 	
 	@Autowired
 	CoinsService coinsService;
+	
+	@Value("${gate.exchange}")
+	String gateExchange;
 
 	@Override
 	@Async
@@ -68,13 +73,17 @@ public class GateioServiceImpl implements MarketService {
 			logger.info("==============================");
 			String symble = coins.getSymble().toLowerCase();
 			String[] symbleArray = symble.split("-");
-			String result = httpClientService.doGet(server+symbleArray[0]+"_"+symbleArray[1]);
-			
-			JSONObject jo = JSON.parseObject(result);
-			cacheService.set("gateio_ticker_"+coins.getCode(),jo);
-			
-			//保存k线
-			this.line(coins);
+			if(symbleArray.length>=2) {
+				String result = httpClientService.doGet(server+symbleArray[0]+"_"+symbleArray[1]);
+				
+				JSONObject jo = JSON.parseObject(result);
+				BigDecimal rate= cacheService.get("CNY_USDT",BigDecimal.class);
+				Double last_rmb=Double.parseDouble(formatter2.format(jo.getDoubleValue("last") * rate.doubleValue()));
+				jo.put("last_rmb", last_rmb);
+				cacheService.set("ticker_"+coins.getCode(),jo);
+				//保存k线
+				this.line(coins);
+			}
 		}catch (Exception e) {
 			logger.error("ticker",e);
 		}
@@ -146,7 +155,10 @@ public class GateioServiceImpl implements MarketService {
 	public List<CoinTicker> getTicker() throws MLException {
 		List<CoinTicker> tikes = new ArrayList<CoinTicker>();
 		try {
-			Page<Coins> coins = coinsService.findAllBy4Market();
+			Page<Coins> coins = coinsService.findAllBy4MarketByExchange(gateExchange);
+			if(coins.getResult().size()<=0){
+				return null;
+			}
 			for (Coins c : coins.getResult()) {
 				String symble = c.getSymble().toLowerCase();
 				String[] symbleArray = symble.split("-");
@@ -172,7 +184,7 @@ public class GateioServiceImpl implements MarketService {
 					t.setStart(0);
 				}
 
-				JSONObject obj = cacheService.get("gateio_ticker_" + c.getCode().toLowerCase(), JSONObject.class);
+				JSONObject obj = cacheService.get("ticker_" + c.getCode().toLowerCase(), JSONObject.class);
 				if (obj != null) {
 					t.setMax(Double.parseDouble(formatter.format(obj.getDoubleValue("high24hr") * rate)));
 					t.setMin(Double.parseDouble(formatter.format(obj.getDoubleValue("low24hr") * rate)));
@@ -274,7 +286,7 @@ public class GateioServiceImpl implements MarketService {
 					ps.add(Double.parseDouble(formatter.format(Double.parseDouble(String.valueOf(a.get(2))))));
 					
 					double xx = a.getDouble(0);
-					long temp = (long) xx/1000;
+					long temp = (long) xx;
 					if(i==0 || i==1){
 						x.add(DateUtils.forSecond(temp));
 					}else{

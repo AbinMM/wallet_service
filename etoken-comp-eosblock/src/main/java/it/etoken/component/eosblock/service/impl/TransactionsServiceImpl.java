@@ -2,7 +2,6 @@ package it.etoken.component.eosblock.service.impl;
 
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import java.util.regex.Pattern;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -28,7 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
-import it.etoken.base.model.eosblock.entity.RamTradeLog;
+import it.etoken.base.common.utils.DateUtils;
 import it.etoken.component.eosblock.service.TransactionsService;
 
 @Component
@@ -266,14 +266,18 @@ public class TransactionsServiceImpl implements TransactionsService{
 		
 		//eos
 		Criteria eosCriteria = new Criteria();
+		Criteria transfer_and_unit_Criteria = new Criteria();
+		transfer_and_unit_Criteria.andOperator(
+				Criteria.where("actions.name").is("transfer"),Criteria.where("actions.data.quantity").regex(pattern)
+				);
 		Criteria actions_name_eos_criteria = new Criteria();
 		actions_name_eos_criteria.orOperator(
-				Criteria.where("actions.data.quantity").regex(pattern),
 				Criteria.where("actions.name").is("delegatebw"),
 				Criteria.where("actions.name").is("buyram"),
 				Criteria.where("actions.name").is("sellram"),
-				Criteria.where("actions.name").is("transfer"),
-				Criteria.where("actions.name").is("undelegatebw"));
+				Criteria.where("actions.name").is("undelegatebw"),
+				transfer_and_unit_Criteria
+				);
 		
 		eosCriteria.andOperator(
 				actorCriteria,
@@ -318,11 +322,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 		//Other
 		Criteria otherCriteria = new Criteria();
 		Criteria actions_name_other_criteria = new Criteria();
-		actions_name_other_criteria.orOperator(
+		actions_name_other_criteria.andOperator(
 				Criteria.where("actions.data.quantity").regex(pattern),
-				Criteria.where("actions.name").is("transfer"),
-				Criteria.where("actions.name").is("issue"),
-				Criteria.where("actions.name").is("newaccount"));
+				Criteria.where("actions.name").is("transfer")
+				);
         if(null==account|| "".equals(account)) {
 			otherCriteria.andOperator(actions_name_other_criteria,actorCriteria);
    		}else {
@@ -331,11 +334,9 @@ public class TransactionsServiceImpl implements TransactionsService{
         
 		Criteria criteria = new Criteria();
 		if(code.equalsIgnoreCase("eos")){
-		criteria.orOperator(eosCriteria, etCriteria);
-			System.out.println(criteria.getCriteriaObject());
+		    criteria.orOperator(eosCriteria, etCriteria);
 		}else {
 			criteria.orOperator(otherCriteria, etCriteria);
-			System.out.println(criteria.getCriteriaObject());
 		}
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<JSONObject> list=new ArrayList<JSONObject>();
@@ -353,7 +354,6 @@ public class TransactionsServiceImpl implements TransactionsService{
 			}else {
 				query = query.addCriteria(Criteria.where("createdAt").exists(true));
 			}
-
 		   // List<Transactions> transactionsList = mongoTemplate.find(query, Transactions.class);
 		    List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			if(null == transactionsList || transactionsList.isEmpty()) {
@@ -628,7 +628,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		try {
 			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
 			 Map<String, String> pricetMap = new HashMap<String, String>();
 			 for (BasicDBObject thisBasicDBObject :list) {
@@ -639,17 +639,21 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BasicDBObject actionTraces = (BasicDBObject)object;
 						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
 						Object[] thisInlineTraces = inline_traces.toArray();
-						if(null == thisInlineTraces || thisInlineTraces.length==0) {
+						if(null == thisInlineTraces || thisInlineTraces.length==0||thisInlineTraces.length<2) {
 							continue;
 						}
-						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];	
 						BasicDBObject inlineTraces2= (BasicDBObject)thisInlineTraces[1];
 						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
 						BasicDBObject data=(BasicDBObject)act.get("data");
 						String quantity1=(String)data.get("quantity");//如果是sell就是买的币的数量如果是buy就是eos的数量
 						BasicDBObject act1=(BasicDBObject) inlineTraces2.get("act");
-						BasicDBObject data1=(BasicDBObject)act1.get("data");
+						//BasicDBObject data1=(BasicDBObject)act1.get("data");
+						JSONObject data1 = JSONObject.parseObject(JSONObject.toJSONString(act1.get("data")), JSONObject.class);
 						String quantity2=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
+						if(null==quantity2) {
+							continue;
+						}
 		            	String[] quantity1_array= quantity1.split(" ");
 		            	String[] quantity2_array= quantity2.split(" ");
 		            	BigDecimal quantityarr1= new  BigDecimal(quantity1_array[0]);
@@ -679,7 +683,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		try {
 			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
 			 Map<String, String> quantMap = new HashMap<String, String>();
 			 for (BasicDBObject thisBasicDBObject :list) {
@@ -712,7 +716,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		try {
 			Criteria actorCriteria = Criteria.where("id").in(trsationId);
 			Query query = new Query(actorCriteria);
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			 List<BasicDBObject> list=mongoTemplate.find(query, BasicDBObject.class,"transaction_traces");
 			 Map<String, String> pricetMap = new HashMap<String, String>();
 			 for (BasicDBObject thisBasicDBObject :list) {
@@ -722,7 +726,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 					for (Object object : thisActionsTraces) {
 						BasicDBObject actionTraces = (BasicDBObject)object;
 						BasicDBObject actionact=(BasicDBObject)actionTraces.get("act");
-						BasicDBObject actiondata=(BasicDBObject)actionact.get("data");
+						//BasicDBObject actiondata=(BasicDBObject)actionact.get("data");
+						JSONObject actiondata = JSONObject.parseObject(JSONObject.toJSONString(actionact.get("data")), JSONObject.class);
 						Integer bytes= (Integer) actiondata.get("bytes");
 						if(null==bytes) {
 							continue;
@@ -731,22 +736,61 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BigDecimal kb= bytes1.divide(new BigDecimal(1024), 10, BigDecimal.ROUND_HALF_UP);
 						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
 						Object[] thisInlineTraces = inline_traces.toArray();
-						BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
-						BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
-						BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
-						BasicDBObject data=(BasicDBObject)act.get("data");
-						String quantityEos=(String)data.get("quantity");
-						BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
-						BasicDBObject data2=(BasicDBObject)act2.get("data");
-						String quantityFeeEos2=(String)data2.get("quantity");
-		            	String[] quantity_eos_array= quantityEos.split(" ");
-		            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
-		            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
-		            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
-		            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
-		            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
-		            	BigDecimal price= sellRamEos.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
-		            	pricetMap.put(id,price.toPlainString());
+						if(null == thisInlineTraces || thisInlineTraces.length==0) {
+							continue;
+						}
+						if(thisInlineTraces.length<1) {
+							continue;
+						}
+						if(thisInlineTraces.length==1) {
+							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
+							String quantityEos=data.getString("quantity");
+							if(null==quantityEos) {
+								continue;
+							}
+			            	String[] quantity_eos_array= quantityEos.split(" ");
+			            	if(quantity_eos_array.length<1||null==quantity_eos_array) {
+			            		continue;
+			            	}
+			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
+			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
+			            	BigDecimal price= eosQuantity.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
+			            	pricetMap.put(id,price.toPlainString());
+						}else {
+							BasicDBObject inlineTraces1 = (BasicDBObject)thisInlineTraces[0];
+							BasicDBObject inlineTraces2 = (BasicDBObject)thisInlineTraces[1];
+							BasicDBObject act=(BasicDBObject) inlineTraces1.get("act");
+							//BasicDBObject data=(BasicDBObject)act.get("data");
+							JSONObject data = JSONObject.parseObject(JSONObject.toJSONString(act.get("data")), JSONObject.class);
+							String quantityEos=data.getString("quantity");
+							if(null==quantityEos) {
+			            		continue;
+			            	}
+							BasicDBObject act2=(BasicDBObject) inlineTraces2.get("act");
+							//BasicDBObject data2=(BasicDBObject)act2.get("data");
+							JSONObject data2 = JSONObject.parseObject(JSONObject.toJSONString(act2.get("data")), JSONObject.class);
+							if(null==data2) {
+			            		continue;
+			            	}
+							String quantityFeeEos2=data2.getString("quantity");
+							if(null==quantityFeeEos2) {
+			            		continue;
+			            	}
+			            	String[] quantity_eos_array= quantityEos.split(" ");
+			            	BigDecimal eosQuantity= new  BigDecimal(quantity_eos_array[0]);
+			            	String[] quantity_fee_eos_array= quantityFeeEos2.split(" ");
+			            	if(quantity_fee_eos_array.length<1||null==quantity_fee_eos_array) {
+			            		continue;
+			            	}
+			            	BigDecimal feeEosQuantity= new  BigDecimal(quantity_fee_eos_array[0]); 
+			            	BigDecimal sellRamEos=eosQuantity.subtract(feeEosQuantity);
+			            	//eosQuantity除以coinQuantity并保留两位小数单位是eos
+			            	BigDecimal price= sellRamEos.divide(kb, 6, BigDecimal.ROUND_HALF_UP);
+			            	pricetMap.put(id,price.toPlainString());
+						}
 					}
 			    }
 			return pricetMap;
@@ -756,6 +800,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		}
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public List<JSONObject> getEosTransactionRecord(int start, int count, String account, String sort, String token,
 			String contract) {
@@ -790,10 +835,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 		}
 		 Query query = new Query(criteria);
 		 if(sort.equals("desc")) {
-		       query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		       query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 		 }
 		 if(sort.equals("asc")) {
-		       query = query.with(new Sort(new Order(Direction.ASC, "createdAt")));
+		       query = query.with(new Sort(new Order(Direction.ASC, "expiration"),new Order(Direction.ASC, "transaction_header.expiration")));
 		 }
 		 query = query.limit(count);
 		 query = query.skip(start);
@@ -802,7 +847,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 		 for (BasicDBObject thisBasicDBObject :transactionsList) {
 				String transactionId=thisBasicDBObject.getString("trx_id");
 				String blockNum=thisBasicDBObject.getString("block_num");
-				Date  blockTime=thisBasicDBObject.getDate("createdAt");
+				Date  blockTime=null;
+				if(null!=thisBasicDBObject.getString("expiration")) {
+				    blockTime=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+				}else {
+					JSONObject obj=JSONObject.parseObject(thisBasicDBObject.get("transaction_header").toString());
+					blockTime=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+				}
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	        	Long times = 0l;
 				BigDecimal price = BigDecimal.ZERO;
@@ -863,5 +914,25 @@ public class TransactionsServiceImpl implements TransactionsService{
 				}	
 			}
 			return list;
-	}    
+	} 
+	
+	@Override
+	public List<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount) {
+		Query query = new Query();
+		
+		Criteria criteria = new Criteria();
+		criteria.andOperator(
+				Criteria.where("actions.account").is(account),
+				Criteria.where("actions.name").in("transfer"),
+				Criteria.where("actions.data.to").is(to),
+				Criteria.where("actions.data.quantity").regex(".*" + tokenName)
+				);
+		query.addCriteria(criteria);
+		query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
+		query.limit(pageCount);
+		query.skip((page-1)*pageCount);
+		
+		List<JSONObject> result = mongoTemplate.find(query, JSONObject.class, "transactions");
+		return result;
+	}
 }

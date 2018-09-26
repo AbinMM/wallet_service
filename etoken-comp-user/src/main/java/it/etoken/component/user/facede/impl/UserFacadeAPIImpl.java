@@ -286,4 +286,15 @@ public class UserFacadeAPIImpl implements UserFacadeAPI {
 			return new MLResult(e);
 		}
 	}
+	
+	@Override
+	public MLResultObject<Boolean> isOpenET() {
+		try {
+			Boolean result = userService.isOpenET();
+			return new MLResultObject<Boolean>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<Boolean>(e);
+		}
+	}
 }

@@ -5,7 +5,7 @@ import it.etoken.base.model.eosblock.entity.DappInfo;
 
 public interface DappInfoFacadeAPI {
 	
-	public MLResultList<DappInfo> findAll(int page,int pageSize);
+	public MLResultList<DappInfo> findAll(int page,int pageSize,String name);
 	
 	public MLResultList<DappInfo> findAllRecommend();
 	

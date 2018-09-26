@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,19 @@ public class CoinsServiceImpl implements CoinsService {
 	
 	@Autowired
 	private CoinsMapper coinsMapper;
+	
+	@Value("${gate.exchange}")
+	String gateExchange;
+	
+	@Value("${okex.exchange}")
+	String okexExchange;
+	
+	@Value("${bigone.exchange}")
+	String bigOneExchange;
+	
+	@Value("${eostoken.exchange}")
+	String eosTokenExchange;
+	
 	
 	@Override
 	@CacheEvict(value="coinsCache",allEntries=true)
@@ -105,6 +119,8 @@ public class CoinsServiceImpl implements CoinsService {
 			CoinsExample.Criteria criteria = example.createCriteria();
 			if(null != code && !code.isEmpty()) {
 				criteria.andCodeEqualTo(code);
+			}else {
+				example.setOrderByClause("name asc");
 			}
 			coinsMapper.selectByExample(example);
 			return result;
@@ -159,7 +175,29 @@ public class CoinsServiceImpl implements CoinsService {
 			throw new MLException(MLCommonException.system_err);
 		}
 	}
-
+	
+	@Override
+	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
+	public Page<Coins> findAllBy4MarketByExchange(String exchange) throws MLException {
+		try{
+			CoinsExample example = new CoinsExample();
+			Criteria criteria = example.createCriteria();
+			criteria.andIsSupportMarketEqualTo("y");
+			criteria.andExchangeEqualTo(exchange);
+			
+			Page<Coins> result = PageHelper.startPage(1,1000); 
+			
+			coinsMapper.selectByExample(example);
+			return result;
+		}catch (MLException ex) {
+			logger.error(ex.toString());
+			throw ex;
+		}catch (Exception e) {
+			logger.error(e.toString());
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
+	
 	@Override
 	public List<Coins> findAllCoins() {
 		try{

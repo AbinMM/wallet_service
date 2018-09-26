@@ -25,11 +25,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.result.MLResultList;
+import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.api.exception.MLApiException;
 import it.etoken.componet.eosblock.facade.ETExchangePriceFacadeAPI;
 import it.etoken.componet.eosblock.facade.ETExchangeTradeUserFacadeAPI;
+import it.etoken.componet.user.facade.UserFacadeAPI;
 
 @Controller
 @RequestMapping(value = "/etExchangePrice")
@@ -44,6 +46,9 @@ public class ETExchangePriceController extends BaseController {
 	
 	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
 	ETExchangeTradeUserFacadeAPI eTExchangeTradeUserFacadeAPI;
+	
+	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
+	UserFacadeAPI userFacadeAPI;
 	
 	@ResponseBody
 	@RequestMapping(value = "/list")
@@ -260,12 +265,12 @@ public class ETExchangePriceController extends BaseController {
 //					return this.error(result.getErrorCode(),result.getErrorHint(), null);
 //				}
 //			}
-			if(null != list && !list.isEmpty()) {
-				return this.success(list);
-			}else {
-				return this.error(MLApiException.SYS_ERROR, null);
-			}
-			
+//			if(null != list && !list.isEmpty()) {
+//				return this.success(list);
+//			}else {
+//				return this.error(MLApiException.SYS_ERROR, null);
+//			}
+			return this.success(list);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return this.error(MLApiException.SYS_ERROR, null);
@@ -353,6 +358,26 @@ public class ETExchangePriceController extends BaseController {
 			if(result.isSuccess()) {
 				List<JSONObject> list = result.getList();
 				return this.success(list);
+			}else {
+				return this.error(result.getErrorCode(),result.getErrorHint(), null);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return this.error(MLApiException.SYS_ERROR, null);
+		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/isOpenET")
+	public Object isOpenET(HttpServletRequest request) {
+		logger.info("isOpenET: ");
+		try {
+			MLResultObject<Boolean> result = userFacadeAPI.isOpenET();
+			if(result.isSuccess()) {
+				Boolean isOpenET = result.getResult();
+				JSONObject jo = new JSONObject();
+				jo.put("open", isOpenET);
+				return this.success(jo);
 			}else {
 				return this.error(result.getErrorCode(),result.getErrorHint(), null);
 			}

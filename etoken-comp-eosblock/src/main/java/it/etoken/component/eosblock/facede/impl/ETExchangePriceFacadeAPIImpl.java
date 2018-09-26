@@ -84,4 +84,16 @@ public class ETExchangePriceFacadeAPIImpl implements ETExchangePriceFacadeAPI {
 			return new MLResultList<JSONObject>(e);
 		}
 	}
+
+	@Override
+	public MLResultObject<JSONObject> getTodayKInfo(String code) {
+		try {
+			JSONObject result = eTExchangePriceService.getTodayKInfo(code);
+			
+			return new MLResultObject<JSONObject>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<JSONObject>(e);
+		}
+	}
 }

@@ -1,5 +1,7 @@
 package it.etoken.componet.coins.facade;
 
+import com.alibaba.fastjson.JSONObject;
+
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
@@ -13,7 +15,7 @@ public interface CoinsFacadeAPI {
 
 	public MLResult delete(Long id);
 	
-	public MLResultList<Coins> findAllByPage(int page, String code);
+	public MLResultList<JSONObject> findAllByPage(int page, String code);
 	
 	public MLResultObject<Coins> findByName(String name);
 	

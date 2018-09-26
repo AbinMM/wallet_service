@@ -59,6 +59,13 @@ public interface CoinsService {
 	 * @throws MLException
 	 */
 	public Page<Coins> findAllBy4Market() throws MLException;
+	
+	/**
+	 * 获取所有支持行情的coin
+	 * @return
+	 * @throws MLException
+	 */
+	public Page<Coins> findAllBy4MarketByExchange(String exchange) throws MLException;
 
 	public List<Coins> findAllCoins();
 }

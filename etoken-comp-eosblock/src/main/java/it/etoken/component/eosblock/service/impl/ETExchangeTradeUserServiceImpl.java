@@ -1,5 +1,6 @@
 package it.etoken.component.eosblock.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -54,8 +55,17 @@ public class ETExchangeTradeUserServiceImpl implements ETExchangeTradeUserServic
 		Query query = new Query(Criteria.where("code").is(code));
 		query = query.with(new Sort(new Order(Direction.DESC, "qty")));
 		query = query.limit(20);
-		List<JSONObject> RamLargeRankList = mongoTemplate.find(query, JSONObject.class, "et_price_trade_user");
-		return RamLargeRankList;
+		List<JSONObject> ramLargeRankList = mongoTemplate.find(query, JSONObject.class, "et_price_trade_user");
+		
+		int i = 1;
+		List<JSONObject> result = new ArrayList<JSONObject>(); 
+		for (JSONObject jo : ramLargeRankList) {
+			jo.put("seq", i);
+			result.add(jo);
+			i++;
+		}
+		
+		return result;
 	}
 
 	@Override

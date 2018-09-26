@@ -103,4 +103,6 @@ public interface UserService {
 	public User findByUid(String uid) throws MLException;
 
 	public void updateEost(String uid) throws MLException;
+	
+	public Boolean isOpenET() throws MLException;
 }

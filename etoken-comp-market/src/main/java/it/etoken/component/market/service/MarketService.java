@@ -36,11 +36,9 @@ public interface MarketService {
 	 * @throws MLException
 	 */
 	public Map getLine(String coin,String type)throws MLException;
+
+	public void morningPrice(Coins c)throws MLException;
 	
-	/**
-	 * 获取0时价格
-	 * @param coins
-	 */
-	public void morningPrice(Coins coins) throws MLException;
+
 
 }

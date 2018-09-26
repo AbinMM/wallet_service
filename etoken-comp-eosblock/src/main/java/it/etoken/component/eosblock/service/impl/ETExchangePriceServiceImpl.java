@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,7 @@ import it.etoken.component.eosblock.utils.EosNodeUtils;
 @Transactional
 public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	private final int[] lines_hour = new int[] { 1, 2, 6, 24, 48 };
+	private final int[] lines_second = new int[] {300,3600,21600,86400};
 	private final long BIG_BILLS_AMMOUNT = 2000;
 	private final long MID_BILLS_AMMOUNT = 500;
 
@@ -151,7 +153,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			
 
 			// 获取交易量
-			JSONObject tradingVolumeResult = this.getTradingVolumeByCode(code, price);
+			JSONObject tradingVolumeResult = this.getTradingVolumeByCode(code, price);	
 			priceInfo.put("trading_volum", tradingVolumeResult.getDouble("trading_volum"));
 			priceInfo.put("buy_volum", tradingVolumeResult.getDouble("buy_volum"));
 			priceInfo.put("sell_volum", tradingVolumeResult.getDouble("sell_volum"));
@@ -159,21 +161,22 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			BigDecimal todayVolum = this.getTodayVolum(code);
 			priceInfo.put("today_volum", todayVolum.doubleValue());
 			
-			//创建索引
-			BasicDBObject record_date_keys = new BasicDBObject();
-			record_date_keys.put("record_date", -1);
-			BasicDBObject record_date_options = new BasicDBObject();
-			record_date_options.put("background", true);
-			record_date_options.put("unique", true);
-			mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
-			
-			BasicDBObject code_keys = new BasicDBObject();
-			code_keys.put("code", "hashed");
-			
-			BasicDBObject code_options = new BasicDBObject();
-			code_options.put("background", true);
-			mongoTemplate.getCollection(collection_name).createIndex(code_keys, code_options);
-			
+			if(!mongoTemplate.collectionExists(collection_name)) {
+				//创建索引
+				BasicDBObject record_date_keys = new BasicDBObject();
+				record_date_keys.put("record_date", -1);
+				BasicDBObject record_date_options = new BasicDBObject();
+				record_date_options.put("background", true);
+				record_date_options.put("unique", true);
+				mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
+				
+				BasicDBObject code_keys = new BasicDBObject();
+				code_keys.put("code", "hashed");
+				
+				BasicDBObject code_options = new BasicDBObject();
+				code_options.put("background", true);
+				mongoTemplate.getCollection(collection_name).createIndex(code_keys, code_options);
+			}
 
 			Query queryExists = new Query(Criteria.where("record_date").is(times));
 			BasicDBObject existsEtPriceInfo = mongoTemplate.findOne(queryExists, BasicDBObject.class, collection_name);
@@ -277,16 +280,22 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 
 		}
 		long startTimes = timesx - 1 * 60 * 1000;
-		Date startDate = new Date(startTimes);
-		Date endDate = new Date(timesx);
+		Date startDate = new Date(startTimes+30*1000);
+		Date endDate = new Date(timesx+30*1000);
 
 		String[] codes = code.split("_");
 
 		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]));
 		Criteria createDateCriteria = new Criteria();
-		createDateCriteria=createDateCriteria.andOperator(Criteria.where("createdAt").exists(true),
-				Criteria.where("createdAt").gte(startDate), Criteria.where("createdAt").lt(endDate));
-//		query.addCriteria(createDateCriteria);
+		createDateCriteria=createDateCriteria.andOperator(Criteria.where("expiration").exists(true),
+				Criteria.where("expiration").gte(DateUtils.formateDate(startDate)), Criteria.where("expiration").lt(DateUtils.formateDate(endDate)));
+		Criteria createDateCriteria1 = new Criteria();
+		createDateCriteria1=createDateCriteria1.andOperator(Criteria.where("transaction_header.expiration").exists(true),
+				Criteria.where("transaction_header.expiration").gte(DateUtils.formateDate(startDate)), Criteria.where("transaction_header.expiration").lt(DateUtils.formateDate(endDate)));
+
+		Criteria DateCriteria = new Criteria();
+		DateCriteria.orOperator(createDateCriteria,createDateCriteria1);
+		//		query.addCriteria(createDateCriteria);
 		
 		Criteria buyCriteria = new Criteria();
 		Criteria sellCriteria = new Criteria();
@@ -297,9 +306,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
 		
-		tempCriteria.andOperator(createDateCriteria, buysellCriteria);
+		tempCriteria.andOperator(DateCriteria, buysellCriteria);
 		query.addCriteria(tempCriteria);
-		
+		System.out.println("query:"+query.toString());
 		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 		Map<String, String> existMap = new HashMap<String, String>();
@@ -418,6 +427,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					
 					tempPriceInfoList.add(thisEtPriceInfo);
 				}
+				
 
 				cacheService.set("et_price_hours_" + code + "_" + thisLineHour, tempPriceInfoList);
 			}
@@ -426,29 +436,92 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 	}
 	
 	@Override
+	public void buildLineDataSecond() throws MLException {
+		long utcTimes = DateUtils.getUtcTimes();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		long times = 0;
+		try {
+			times = sdf.parse(sdf.format(new Date(utcTimes))).getTime();
+		} catch (Exception e) {
+
+		}
+
+		
+		JSONArray etExchangeMarketInfoAndPriceResult = this.getEtExchangeMarketInfoAndPrice();
+		for (Object o : etExchangeMarketInfoAndPriceResult) {
+			JSONObject thisExchage = (JSONObject) o;
+			String code = thisExchage.getString("code");
+			String collection_name = "et_price_" + code;
+			
+			for (int thisLineHour : this.lines_second) {
+				long start_time = 0;
+				start_time = times - thisLineHour * 1000;
+
+				Query query = new Query(Criteria.where("record_date").gte(start_time));
+				query = query.with(new Sort(new Order(Direction.ASC, "record_date")));
+
+				List<JSONObject> etPriceInfoList = mongoTemplate.find(query, JSONObject.class, collection_name);
+				List<JSONObject> tempPriceInfoList = new ArrayList<JSONObject>();
+				
+				for(JSONObject thisEtPriceInfo : etPriceInfoList) {
+					thisEtPriceInfo.put("price", thisEtPriceInfo.getBigDecimal("price").toPlainString());
+					thisEtPriceInfo.put("price_rmb", thisEtPriceInfo.getBigDecimal("price_rmb").toPlainString());
+					thisEtPriceInfo.put("open", thisEtPriceInfo.getBigDecimal("open").toPlainString());
+					
+					thisEtPriceInfo.put("base_balance_num", thisEtPriceInfo.getBigDecimal("base_balance_num").toPlainString());
+					thisEtPriceInfo.put("quote_balance_num", thisEtPriceInfo.getBigDecimal("quote_balance_num").toPlainString());
+					thisEtPriceInfo.put("trading_volum", thisEtPriceInfo.getBigDecimal("trading_volum").toPlainString());
+					thisEtPriceInfo.put("buy_volum", thisEtPriceInfo.getBigDecimal("buy_volum").toPlainString());
+					thisEtPriceInfo.put("sell_volum", thisEtPriceInfo.getBigDecimal("sell_volum").toPlainString());
+					thisEtPriceInfo.put("today_volum", thisEtPriceInfo.getBigDecimal("today_volum").toPlainString());
+					
+					tempPriceInfoList.add(thisEtPriceInfo);
+				}
+				
+				String [] codes=code.split("_");
+				System.out.println("code" + codes[0]);
+				cacheService.set("code" + codes[0], code);
+				cacheService.set("et_price_second_" + codes[0] + "_" + thisLineHour, tempPriceInfoList);
+			}
+		}
+		
+	}
+	
+	
+	@SuppressWarnings("unused")
+	@Override
 	public List<ETTradeLog> getNewTradeOrdersByCode(String code) throws MLException {
 		String[] codes = code.split("_");
-		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2])
-				.and("createdAt").exists(true));
+		Criteria expirationCriteria = new Criteria();
+		expirationCriteria.andOperator(Criteria.where("actions.data.token_contract").is(codes[2]),
+				Criteria.where("expiration").exists(true));
+		Query query = new Query();
 		
 		Criteria buyCriteria = new Criteria();
 		Criteria sellCriteria = new Criteria();
 		Criteria buysellCriteria = new Criteria();
+		Criteria criteria = new Criteria();
 		
-		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
-		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
+		buyCriteria = buyCriteria.andOperator(
+				Criteria.where("actions.name").is("buytoken"),
+				Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
+		sellCriteria = sellCriteria.andOperator(
+				Criteria.where("actions.name").is("selltoken"), 
+				Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
 		
-		query.addCriteria(buysellCriteria);
+		criteria.andOperator(expirationCriteria,buysellCriteria);
+		
+		query.addCriteria(criteria);
 		
 		int page = 1;
 		int pageSize = 100;
 		int count = 20;
 		
-		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+		query = query.with(new Sort(new Order(Direction.DESC, "expiration")));
 		query = query.limit(pageSize);
 		query = query.skip((page - 1) * pageSize);
-
 		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 		Map<String, String> existMap = new HashMap<String, String>();
@@ -465,9 +538,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				continue;
 			}
 			String blockNum=thisBasicDBObject.getString("block_num");
-			if(blockNum==null || blockNum.isEmpty()) {
-				Date time=thisBasicDBObject.getDate("createdAt");
+			if(null==blockNum || blockNum.isEmpty()) {
+				Date  time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
 				Date newDate=new Date();
+				
 				if(newDate.getTime()-time.getTime()>10*60*1000) {
 					continue;
 				}
@@ -488,8 +562,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				}
 
 				BasicDBObject data = (BasicDBObject) action.get("data");
-
-				Date createdAt = thisBasicDBObject.getDate("createdAt");
+			
+				Date  createdAt = new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+			
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 				SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -572,11 +647,23 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
 		for (ETTradeLog eTTradeLog : result) {
 			String price=priceMap.get(eTTradeLog.getTrx_id());
-			if(price==null||price.length()==0) {
+			if(null==price||price.length()==0) {
 				Object[] obj1=new Object[1];
 				obj1[0]=eTTradeLog.getTrx_id();
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 				price=priceMap1.get(eTTradeLog.getTrx_id());
+			}
+			String quant = eTTradeLog.getToken_qty();
+			String[] quants = quant.split(" ");
+			if(!quants[1].trim().equalsIgnoreCase(codes[0])&&quants[0].trim().equals("0")) {
+				continue;
+			}
+			BigDecimal price1=new BigDecimal(price);
+			BigDecimal qty = new BigDecimal(quants[0].trim());
+			BigDecimal eos_qty = qty.multiply(price1);
+			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0) {
+				eTTradeLog.setEos_qty(eos_qty + " EOS");
 			}
 			eTTradeLog.setPrice(price);
 		}
@@ -585,7 +672,8 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 
 		return result;
 	}
-
+	
+	@SuppressWarnings("unused")
 	@Override
 	public List<ETTradeLog> getBigTradeOrdersByCode(String code) throws MLException {
 		String[] codes = code.split("_");
@@ -596,42 +684,38 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		if(null != bigOrderSettings) {
 			big_order_qty = BigDecimal.valueOf(bigOrderSettings.getDouble("value"));
 		}
+		Date endDate = new Date(new Date().getTime()+30*1000); 
+		Date startDate = new Date(endDate.getTime()-24*60*60*1000);
 		
-		
-		Query query = new Query(Criteria.where("actions.data.token_contract").is(codes[2]).and("createdAt").exists(true));
-		
+		Query query = new Query();
+		Criteria expirationCriteria = new Criteria();
+		expirationCriteria.andOperator(Criteria.where("actions.data.token_contract").is(codes[2]),
+				Criteria.where("expiration").exists(true),Criteria.where("expiration").gte(DateUtils.formateDate(startDate)),
+				Criteria.where("expiration").lt(DateUtils.formateDate(endDate)));
 		Criteria buyCriteria = new Criteria();
 		Criteria sellCriteria = new Criteria();
 		Criteria buysellCriteria = new Criteria();
-		Criteria createdAtCriteria = new Criteria();
-		
-		Date endDate = new Date(); 
-		Date startDate = new Date(endDate.getTime()-24*60*60*1000);
 		
 		buyCriteria = buyCriteria.andOperator(Criteria.where("actions.name").is("buytoken"), Criteria.where("actions.data.token_symbol").regex(".*"+codes[0]));
 		sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 		buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
-		
-		createdAtCriteria.andOperator(
-				Criteria.where("createdAt").gte(startDate),
-				Criteria.where("createdAt").lt(endDate)
-				);
 		Criteria criteria = new Criteria();
-		criteria.andOperator(buysellCriteria, createdAtCriteria);
+		criteria.andOperator(expirationCriteria,buysellCriteria);
 		
 		query.addCriteria(criteria);
 		
+		
 		int page = 1;
-		int pageSize = 200;
+		int pageSize = 200;    
 		int count = 20;
 
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<ETTradeLog> result = new ArrayList<ETTradeLog>();
 		do {
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration")));
 			query = query.limit(pageSize);
 			query = query.skip((page - 1) * pageSize);
-
+			System.out.println("getBigTradeOrdersByCodequery:"+query);
 			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
@@ -645,8 +729,8 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					continue;
 				}
 				String blockNum=thisBasicDBObject.getString("block_num");
-				if(blockNum==null || blockNum.isEmpty()) {
-					Date time=thisBasicDBObject.getDate("createdAt");
+				if(null==blockNum || blockNum.isEmpty()) {
+				    Date time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
 						continue;
@@ -668,8 +752,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					}
 
 					BasicDBObject data = (BasicDBObject) action.get("data");
-
-					Date createdAt = thisBasicDBObject.getDate("createdAt");
+					Date createdAt=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -769,6 +852,18 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 				price=priceMap1.get(eTTradeLog.getTrx_id());
 			}
+			String quant = eTTradeLog.getToken_qty();
+			String[] quants = quant.split(" ");
+			if(!quants[1].trim().equalsIgnoreCase(codes[0])&&quants[0].trim().equals("0")) {
+				continue;
+			}
+			BigDecimal price1=new BigDecimal(price);
+			BigDecimal qty = new BigDecimal(quants[0].trim());
+			BigDecimal eos_qty = qty.multiply(price1);
+			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0) {
+				eTTradeLog.setEos_qty(eos_qty + " EOS");
+			}
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
@@ -778,6 +873,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 
 	}
 
+	@SuppressWarnings("unused")
 	public List<ETTradeLog> getNewTradeOrdersByCodeAndAccountName(String code, String accountName, int pageSize, String last_id)
 			throws MLException {
 		String[] codes = code.split("_");
@@ -786,7 +882,12 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			Query query = new Query(Criteria.where("_id").is(new ObjectId(last_id)));
 			List<BasicDBObject> existTransactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 			if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
-				startDate = existTransactionsList.get(0).getDate("createdAt");
+				if(null!=existTransactionsList.get(0).getString("expiration")) {
+					startDate =new Date(DateUtils.formateDate(existTransactionsList.get(0).getString("expiration")).getTime()-30*1000);
+				}else {
+					JSONObject obj=JSONObject.parseObject(existTransactionsList.get(0).get("transaction_header").toString());
+					startDate=new Date(DateUtils.formateDate(obj.getString("expiration")).getTime()-30*1000);
+				}
 			}
 		}
 		Criteria actorCriteria = Criteria.where("actions.authorization.actor").is(accountName);
@@ -810,14 +911,26 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			sellCriteria = sellCriteria.andOperator(Criteria.where("actions.name").is("selltoken"), Criteria.where("actions.data.quant").regex(".*"+codes[0]));
 			buysellCriteria = buysellCriteria.orOperator(buyCriteria, sellCriteria);
 			
-			query.addCriteria(buysellCriteria);
+			//query.addCriteria(buysellCriteria);
 
-			query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
+			query = query.with(new Sort(new Order(Direction.DESC, "expiration"),new Order(Direction.DESC, "transaction_header.expiration")));
 			query = query.limit(pageSize);
 			if (null != startDate) {
-				query = query.addCriteria(Criteria.where("createdAt").lt(startDate));
+				Criteria expirationCriteria = new Criteria();
+				expirationCriteria.orOperator(Criteria.where("expiration").lt(DateUtils.formateDate(startDate)),
+						Criteria.where("transaction_header.expiration").lt(DateUtils.formateDate(startDate)));
+				Criteria criteria = new Criteria();
+				criteria.andOperator(buysellCriteria,expirationCriteria);
+				query = query.addCriteria(criteria);
+				System.out.println("getNewTradeOrdersByCodeAndAccountNamequerystartDate:"+query);
 			} else {
-				query = query.addCriteria(Criteria.where("createdAt").exists(true));
+				Criteria expirationCriteria = new Criteria();
+				expirationCriteria.orOperator(Criteria.where("expiration").exists(true),
+						Criteria.where("transaction_header.expiration").exists(true));
+				Criteria criteria = new Criteria();
+				criteria.andOperator(buysellCriteria,expirationCriteria);
+				query = query.addCriteria(criteria);
+				System.out.println("getNewTradeOrdersByCodeAndAccountNamequery:"+query);
 			}
 
 			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
@@ -825,8 +938,12 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				haveList = false;
 				break;
 			}
-			startDate = transactionsList.get(transactionsList.size() - 1).getDate("createdAt");
-
+			if(null!=transactionsList.get(transactionsList.size() - 1).getString("expiration")) {
+				startDate = new Date(DateUtils.formateDate(transactionsList.get(transactionsList.size() - 1).getString("expiration")).getTime()-30*1000);
+			}else {
+				JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
+				startDate=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
+			}
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
 				String trx_id = thisBasicDBObject.getString("trx_id");
@@ -834,8 +951,14 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					continue;
 				}
 				String blockNum=thisBasicDBObject.getString("block_num");
-				if(blockNum==null || blockNum.isEmpty()) {
-					Date time=thisBasicDBObject.getDate("createdAt");
+				if(null==blockNum || blockNum.isEmpty()) {
+					Date time=null;
+					if(null!=thisBasicDBObject.getString("expiration")) {
+						 time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+					}else {
+						JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
+						time=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
+					}
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
 						continue;
@@ -858,8 +981,13 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 					}
 
 					BasicDBObject data = (BasicDBObject) action.get("data");
-
-					Date createdAt = thisBasicDBObject.getDate("createdAt");
+					Date createdAt=null;
+					if(null!=thisBasicDBObject.getString("expiration")) {
+						createdAt = new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+					}else {
+						JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
+						createdAt=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
+					}
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -941,13 +1069,25 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						Map<String, String> priceMap=transactionsService.findETExchangeExactPrice(obj);
 						for (ETTradeLog eTTradeLog : result) {
 							String price1=priceMap.get(eTTradeLog.getTrx_id());
-							if(price1==null||price1.length()==0) {
+							if(null==price1||price1.length()==0) {
 								Object[] obj1=new Object[1];
 								obj1[0]=eTTradeLog.getTrx_id();
 								Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 							    price1=priceMap1.get(eTTradeLog.getTrx_id());
 							}
-							System.out.println("修改后的价格"+price1+"修改前的价格"+eTTradeLog.getPrice());
+							String quant = eTTradeLog.getToken_qty();
+							String[] quants = quant.split(" ");
+							if(!quants[1].trim().equalsIgnoreCase(codes[0])&&quants[0].trim().equals("0")) {
+								continue;
+							}
+							BigDecimal price2=new BigDecimal(price1);
+							BigDecimal qty = new BigDecimal(quants[0].trim());
+							BigDecimal eos_qty = qty.multiply(price2);
+							eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+							String Action_name=etTradeLog.getAction_name();
+							if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && Action_name.equals("selltoken")) {
+								eTTradeLog.setEos_qty(eos_qty + " EOS");
+							}
 							eTTradeLog.setPrice(price1);
 						}
 						existMap.clear();
@@ -974,7 +1114,18 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 				Map<String, String> priceMap1=transactionsService.findETExchangeExactPrice(obj1);
 				price=priceMap1.get(eTTradeLog.getTrx_id());
 			}
-			System.out.println("修改后的价格"+price+"修改前的价格"+eTTradeLog.getPrice());
+			String quant = eTTradeLog.getToken_qty();
+			String[] quants = quant.split(" ");
+			if(!quants[1].trim().equalsIgnoreCase(codes[0])&&quants[0].trim().equals("0")) {
+				continue;
+			}
+			BigDecimal price1=new BigDecimal(price);
+			BigDecimal qty = new BigDecimal(quants[0].trim());
+			BigDecimal eos_qty = qty.multiply(price1);
+			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0) {
+				eTTradeLog.setEos_qty(eos_qty + " EOS");
+			}
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
@@ -1229,13 +1380,16 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		result.put("increase", increase);
 		result.put("amplitude", amplitude);
 		
-		//创建索引
-		BasicDBObject record_date_keys = new BasicDBObject();
-		record_date_keys.put("record_date", -1);
-		BasicDBObject record_date_options = new BasicDBObject();
-		record_date_options.put("background", true);
-		record_date_options.put("unique", true);
-		mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
+		if(!mongoTemplate.collectionExists(collection_name)) {
+			//创建索引
+			BasicDBObject record_date_keys = new BasicDBObject();
+			record_date_keys.put("record_date", -1);
+			BasicDBObject record_date_options = new BasicDBObject();
+			record_date_options.put("background", true);
+			record_date_options.put("unique", true);
+			mongoTemplate.getCollection(collection_name).createIndex(record_date_keys, record_date_options);
+		}
+		
 
 		Query queryExists = new Query(Criteria.where("record_date").is(startTimes));
 		BasicDBObject existsKline = mongoTemplate.findOne(queryExists, BasicDBObject.class,
