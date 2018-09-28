@@ -32,4 +32,94 @@ public interface TransactionsService {
 	 * @return
 	 */
 	public List<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount);
+	
+	/**
+	 * EOS转账记录
+	 * 
+	 * @param last_id
+	 * @param pageSize
+	 * @param actor
+	 * @param transferType
+	 * @return
+	 */
+	public List<JSONObject> getActionsEosTransfer(String last_id, int pageSize, String actor, String transferType);
+
+	/**
+	 * EOS 抵押记录
+	 * 
+	 * @param last_id
+	 * @param pageSize
+	 * @param account
+	 * @param actor
+	 * @param delegateType
+	 * @return
+	 */
+	public List<JSONObject> getActionsEosDelegatebw(String last_id, int pageSize, String account, String actor,
+			String delegateType);
+
+	/**
+	 * EOS内存交易记录
+	 * 
+	 * @param last_id
+	 * @param pageSize
+	 * @param account
+	 * @param actor
+	 * @param tradeType
+	 * @return
+	 */
+	public List<JSONObject> getActionsEosRam(String last_id, int pageSize, String account, String actor,
+			String tradeType);
+
+	/**
+	 * EOS ET交易所币交易记录
+	 * 
+	 * @param last_id
+	 * @param pageSize
+	 * @param account
+	 * @param actor
+	 * @param tradeType
+	 * @return
+	 */
+	public List<JSONObject> getActionsEosET(String last_id, int pageSize, String account, String actor,
+			String tradeType);
+
+	/**
+	 * 非EOS ET交易所交易记录
+	 * 
+	 * @param last_id
+	 * @param pageSize
+	 * @param account
+	 * @param actor
+	 * @param code
+	 * @param tradeType
+	 * @return
+	 */
+	public List<JSONObject> getActionsOtherET(String last_id, int pageSize, String account, String actor, String code,
+			String tradeType);
+
+	/**
+	 * 非EOS 转账记录
+	 * 
+	 * @param last_id
+	 * @param pageSize
+	 * @param account
+	 * @param actor
+	 * @param code
+	 * @param transferType
+	 * @return
+	 */
+	public List<JSONObject> getActionsOtherTransfer(String last_id, int pageSize, String account, String actor,
+			String code, String transferType);
+	
+	/**
+	 * 获取交易记录
+	 * @param last_id
+	 * @param pageSize
+	 * @param account
+	 * @param actor
+	 * @param code
+	 * @param transferType
+	 * @return
+	 */
+	public List<JSONObject> getActions(String last_id, int pageSize, String account, String actor, String code, String type);
 }

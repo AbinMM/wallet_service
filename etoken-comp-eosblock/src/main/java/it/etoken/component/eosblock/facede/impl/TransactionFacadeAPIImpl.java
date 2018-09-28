@@ -78,4 +78,15 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 			return new MLResultList<JSONObject>(e);
 		}
 	}
+	
+	@Override
+	public MLResultList<JSONObject> getActions(String last_id, int pageSize, String account, String actor, String code, String type){
+		try {
+			List<JSONObject> result= transactionsService.getActions(last_id, pageSize, account, actor, code, type);
+			return new MLResultList<JSONObject>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultList<JSONObject>(e);
+		}
+	}
 }

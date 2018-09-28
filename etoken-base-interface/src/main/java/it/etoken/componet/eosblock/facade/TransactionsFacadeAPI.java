@@ -18,4 +18,6 @@ public interface TransactionsFacadeAPI {
 			String token, String contract);
 	
 	public MLResultList<JSONObject> findAllTransferInByAccountAndTokenName(String account,  String tokenName, String to, int page, int pageCount);
+	
+	public MLResultList<JSONObject> getActions(String last_id, int pageSize, String account, String actor, String code, String type);
 }
