@@ -458,6 +458,53 @@ public class EosRpcController extends BaseController {
 		}
 	}
 	
+	@ResponseBody
+	@RequestMapping(value = "/getActions2")
+	public Object getActions2(@RequestBody Map<String, Object> requestMap, HttpServletRequest request) {
+		logger.info("/getActions request map : " + requestMap);
+		try {
+			String code = requestMap.get("code").toString();// 代币符号
+			String account = requestMap.get("contract_account").toString();// 合约账号
+			String actor = requestMap.get("account_name").toString();// 用户账户名
+			String type = requestMap.get("type").toString();// 类型
+			int pageSize = 10;
+			if (null != requestMap.get("countPerPage") && !requestMap.get("countPerPage").toString().isEmpty()) {
+				pageSize = Integer.parseInt(requestMap.get("countPerPage").toString());
+			}
+			if (null == code || code.isEmpty()) {
+				return this.error(MLApiException.PARAM_ERROR, requestMap);
+			}
+			if (null == actor || actor.isEmpty()) {
+				return this.error(MLApiException.PARAM_ERROR, requestMap);
+			}
+			if (null == account || account.isEmpty()) {
+				return this.error(MLApiException.PARAM_ERROR, requestMap);
+			}
+			if (null == type || type.isEmpty()) {
+				return this.error(MLApiException.PARAM_ERROR, requestMap);
+			}
+			String last_id = "";// 这一页最后一条的id
+			if (null != requestMap.get("last_id") && !requestMap.get("last_id").toString().isEmpty()) {
+				last_id = requestMap.get("last_id").toString();
+			}
+
+			MLResultList<JSONObject> result = null;
+
+			if (last_id.equalsIgnoreCase("-1")) {
+				last_id = "";
+			}
+			result = transactionsFacadeAPI.getActions(last_id, pageSize, account, actor, code, type);
+			if (!result.isSuccess()) {
+				return this.error(result.getErrorCode(), result.getErrorHint(), null);
+			}
+			return this.success(result.getList());
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e.getMessage());
+			return this.error(MLApiException.EOSRPC_FAIL, null);
+		}
+	}
+	
 	
 //	@ResponseBody
 //	@RequestMapping(value = "/getActions")
