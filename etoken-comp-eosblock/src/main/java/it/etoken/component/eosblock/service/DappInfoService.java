@@ -10,9 +10,15 @@ import it.etoken.base.model.eosblock.entity.DappInfo;
 
 public interface DappInfoService {
 
-	Page<DappInfo> findAll(int page,int pageSize,String name) throws  MLException;
+	public Page<DappInfo> findAll(int page,int pageSize,String name) throws  MLException;
 
-	List<DappInfo> findAllRecommend() throws  MLException;
+	public List<DappInfo> findAllRecommend() throws  MLException;
 
-	List<DappInfo> findByName(String name) throws  MLException;
+	public List<DappInfo> findByName(String name) throws  MLException;
+	
+	public DappInfo saveUpdate(DappInfo dappInfo) throws MLException;
+	
+	public void delete(Long id) throws MLException;
+	
+	public DappInfo findById(Long id) throws MLException;
 }

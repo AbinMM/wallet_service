@@ -10,7 +10,9 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
+import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.DappInfo;
 import it.etoken.component.eosblock.service.DappInfoService;
 import it.etoken.componet.eosblock.facade.DappInfoFacadeAPI;
@@ -47,11 +49,44 @@ public class DappInfoFacadeAPIImpl implements DappInfoFacadeAPI{
 	@Override
 	public MLResultList<DappInfo> findByName(String name) {
 		try {
-			List<DappInfo>  result= dappInfoService.findByName(name);
+			List<DappInfo> result = dappInfoService.findByName(name);
 			return new MLResultList<DappInfo>(result);
 		} catch (MLException e) {
 			logger.error(e.toString());
-			return  new MLResultList<DappInfo>(e);
+			return new MLResultList<DappInfo>(e);
+		}
+	}
+
+	@Override
+	public MLResultObject<DappInfo> saveUpdate(DappInfo dappInfo) throws MLException {
+		try {
+			DappInfo result = dappInfoService.saveUpdate(dappInfo);
+			return new MLResultObject<DappInfo>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<DappInfo>(e);
+		}
+	}
+
+	@Override
+	public MLResult delete(Long id) throws MLException {
+		try {
+			dappInfoService.delete(id);
+			return new MLResult(true);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResult(false);
+		}
+	}
+
+	@Override
+	public MLResultObject<DappInfo> findById(Long id) throws MLException {
+		try {
+			DappInfo result = dappInfoService.findById(id);
+			return new MLResultObject<DappInfo>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<DappInfo>(e);
 		}
 	}
 	
