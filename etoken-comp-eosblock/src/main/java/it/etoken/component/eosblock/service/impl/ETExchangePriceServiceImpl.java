@@ -662,7 +662,8 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			BigDecimal qty = new BigDecimal(quants[0].trim());
 			BigDecimal eos_qty = qty.multiply(price1);
 			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
-			if(eos_qty.compareTo(BigDecimal.ZERO)!=0) {
+			String actionName=eTTradeLog.getAction_name();
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && Action_name.equals("selltoken")) {
 				eTTradeLog.setEos_qty(eos_qty + " EOS");
 			}
 			eTTradeLog.setPrice(price);
@@ -672,6 +673,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 
 		return result;
 	}
+	
+	
+	
+	
 	
 	@SuppressWarnings("unused")
 	@Override
@@ -712,10 +717,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<ETTradeLog> result = new ArrayList<ETTradeLog>();
 		do {
-			query = query.with(new Sort(new Order(Direction.DESC, "expiration")));
+		    query = query.with(new Sort(new Order(Direction.DESC, "expiration")));
 			query = query.limit(pageSize);
 			query = query.skip((page - 1) * pageSize);
-			System.out.println("getBigTradeOrdersByCodequery:"+query);
 			List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
 
 			for (BasicDBObject thisBasicDBObject : transactionsList) {
@@ -808,6 +812,8 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						etTradeLog.setToken_contract(data.getString("token_contract"));
 						etTradeLog.setEos_qty(eos_quant);
 						etTradeLog.setToken_qty(buyTokenQty + " " + token_uom);
+						etTradeLog.setEos_qty_nounit(buyQty);
+						etTradeLog.setToken_qty_nounit(buyTokenQty);
 					} else if (actionName.equalsIgnoreCase("selltoken")) {
 						String quant = data.getString("quant");
 						String[] quants = quant.split(" ");
@@ -824,8 +830,10 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 						
 						etTradeLog.setAccount(data.getString("receiver"));
 						etTradeLog.setToken_contract(data.getString("token_contract"));
-						etTradeLog.setEos_qty(eos_qty + " EOS");
+						etTradeLog.setEos_qty(eos_qty+" EOS");
 						etTradeLog.setToken_qty(quant);
+						etTradeLog.setEos_qty_nounit(eos_qty);
+						etTradeLog.setToken_qty_nounit(qty);
 					}
 					
 					existMap.put(trx_id, trx_id);
@@ -867,12 +875,53 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
-		cacheService.set("et_big_trade_orders_" + code, result);
-
+		//cacheService.set("et_big_trade_orders_" + code, result);
+		String collection_name = "et_big_trade_orders_"+code;
+		List<ETTradeLog> lastresult = new ArrayList<ETTradeLog>();
+        for (ETTradeLog etTradeLog : result) {
+        	Query  queryExist=new Query(Criteria.where("trx_id").is(etTradeLog.getTrx_id()));
+    		BasicDBObject exist  = mongoTemplate.findOne(queryExist, BasicDBObject.class,collection_name);
+    		if(null == exist) {
+    			lastresult.add(etTradeLog);
+    		}
+		}
+		mongoTemplate.insert(lastresult, collection_name);
+		findBigOrder(code);
 		return result;
 
 	}
+	
 
+	//查询数据库中的存储的大单根据时间倒叙查询后放入缓存中
+	@Override
+	public List<ETTradeLog>  findBigOrder(String code){
+		String collection_name = "et_big_trade_orders_"+code;
+		Query  query=new Query();
+		query = query.with(new Sort(new Order(Direction.DESC, "record_date")));
+		query = query.limit(20);
+		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class,collection_name);
+		List<ETTradeLog> result = new ArrayList<ETTradeLog>();
+		for (BasicDBObject basicDBObject : transactionsList) {
+			ETTradeLog etTradeLog = new ETTradeLog();
+			etTradeLog.set_id(basicDBObject.getString("_id"));
+			etTradeLog.setTrx_id(basicDBObject.getString("trx_id"));
+			etTradeLog.setBlock_id(basicDBObject.getString("block_id"));
+			etTradeLog.setBlock_num(basicDBObject.getString("block_num"));
+			etTradeLog.setRecord_date(basicDBObject.getString("record_date"));
+			etTradeLog.setAction_name(basicDBObject.getString("action_name"));
+			etTradeLog.setPrice(basicDBObject.getString("price"));
+			etTradeLog.setAccount(basicDBObject.getString("account"));
+			etTradeLog.setToken_contract(basicDBObject.getString("token_contract"));
+			etTradeLog.setEos_qty(basicDBObject.getString("eos_qty"));
+			etTradeLog.setToken_qty(basicDBObject.getString("token_qty"));
+			result.add(etTradeLog);	
+		}
+		cacheService.set("et_big_trade_orders_" + code, result);
+		return result;
+		
+	}
+	
+	
 	@SuppressWarnings("unused")
 	public List<ETTradeLog> getNewTradeOrdersByCodeAndAccountName(String code, String accountName, int pageSize, String last_id)
 			throws MLException {
@@ -1123,7 +1172,8 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			BigDecimal qty = new BigDecimal(quants[0].trim());
 			BigDecimal eos_qty = qty.multiply(price1);
 			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
-			if(eos_qty.compareTo(BigDecimal.ZERO)!=0) {
+			String actionName=eTTradeLog.getAction_name();
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && Action_name.equals("selltoken")) {
 				eTTradeLog.setEos_qty(eos_qty + " EOS");
 			}
 			eTTradeLog.setPrice(price);

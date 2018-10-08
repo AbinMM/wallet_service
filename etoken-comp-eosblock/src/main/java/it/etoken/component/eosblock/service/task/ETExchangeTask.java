@@ -72,7 +72,7 @@ public class ETExchangeTask {
 	}
 	
 	//获取大单交易记录
-	@Scheduled(cron = "*/10 * * * * ?")
+	@Scheduled(cron = "0 */10 * * * ?")
 	public void getBigTradeOrders() {
 		try {
 			System.out.println("开始获取ET大单交易记录...");

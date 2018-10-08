@@ -112,5 +112,7 @@ public interface ETExchangePriceService {
 	 * 构建行情分时图
 	 * @throws MLException
 	 */
-	void buildLineDataSecond() throws MLException;
+	public void buildLineDataSecond() throws MLException;
+
+	public List<ETTradeLog> findBigOrder(String code) throws MLException;
 }

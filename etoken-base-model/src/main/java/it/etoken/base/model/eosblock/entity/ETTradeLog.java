@@ -18,7 +18,9 @@ public class ETTradeLog implements Serializable{
 	private String price;
 	private String price_rmb;
 	private String eos_qty;
+	private BigDecimal eos_qty_nounit;
 	private String token_qty;
+	private BigDecimal token_qty_nounit;
 	private String account;
 	private String token_contract;
 	public String get_id() {
@@ -92,5 +94,17 @@ public class ETTradeLog implements Serializable{
 	}
 	public void setToken_contract(String token_contract) {
 		this.token_contract = token_contract;
+	}
+	public BigDecimal getEos_qty_nounit() {
+		return eos_qty_nounit;
+	}
+	public void setEos_qty_nounit(BigDecimal eos_qty_nounit) {
+		this.eos_qty_nounit = eos_qty_nounit;
+	}
+	public BigDecimal getToken_qty_nounit() {
+		return token_qty_nounit;
+	}
+	public void setToken_qty_nounit(BigDecimal token_qty_nounit) {
+		this.token_qty_nounit = token_qty_nounit;
 	}
 }
