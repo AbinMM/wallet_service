@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.base.model.eosblock.entity.RamTradeLog;
 
 public interface RamPriceService {
@@ -110,5 +111,7 @@ public interface RamPriceService {
 	 * @return
 	 */
 	public JSONObject getLatestInfo(Long startDateTimes);
+
+	public List<RamTradeLog> findBigOrder();
 	
 }

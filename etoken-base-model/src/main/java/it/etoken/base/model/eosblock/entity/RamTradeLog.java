@@ -21,6 +21,9 @@ public class RamTradeLog implements Serializable{
 	private String receiver;
 	private String eos_qty;
 	private String ram_qty;
+	private BigDecimal eos_qty_nounit;
+	private BigDecimal ram_qty_nounit;
+	
 	
 	public String get_id() {
 		return _id;
@@ -87,5 +90,17 @@ public class RamTradeLog implements Serializable{
 	}
 	public void setRam_qty(String ram_qty) {
 		this.ram_qty = ram_qty;
+	}
+	public BigDecimal getEos_qty_nounit() {
+		return eos_qty_nounit;
+	}
+	public void setEos_qty_nounit(BigDecimal eos_qty_nounit) {
+		this.eos_qty_nounit = eos_qty_nounit;
+	}
+	public BigDecimal getRam_qty_nounit() {
+		return ram_qty_nounit;
+	}
+	public void setRam_qty_nounit(BigDecimal ram_qty_nounit) {
+		this.ram_qty_nounit = ram_qty_nounit;
 	}
 }

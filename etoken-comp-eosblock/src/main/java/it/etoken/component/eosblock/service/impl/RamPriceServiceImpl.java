@@ -34,6 +34,7 @@ import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.utils.DateUtils;
 import it.etoken.base.common.utils.HttpClientUtils;
+import it.etoken.base.model.eosblock.entity.ETTradeLog;
 import it.etoken.base.model.eosblock.entity.RamTradeLog;
 import it.etoken.cache.service.CacheService;
 import it.etoken.component.eosblock.utils.EosNodeUtils;
@@ -587,7 +588,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 						ramTradeLog.setReceiver(data.getString("receiver"));
 						ramTradeLog.setEos_qty(data.getString("quant"));
 						ramTradeLog.setRam_qty(ram_qty + " KB");
-
+						ramTradeLog.setEos_qty_nounit(new BigDecimal(quant));
+						ramTradeLog.setRam_qty_nounit(ram_qty);
 						if (quant < 1000) {
 							continue;
 						}
@@ -604,13 +606,15 @@ public class RamPriceServiceImpl implements RamPriceService {
 						ramTradeLog.setReceiver(data.getString("receiver"));
 						ramTradeLog.setEos_qty(eos_qty + " EOS");
 						ramTradeLog.setRam_qty(bytesK + " KB");
-
+						ramTradeLog.setEos_qty_nounit(eos_qty);
+						ramTradeLog.setRam_qty_nounit(bytesK);
+						
 						if (eos_qty.compareTo(BigDecimal.valueOf(1000)) < 0) {
 							continue;
 						}
 					}
 					existMap.put(trx_id, trx_id);
-					result.add(ramTradeLog);
+ 					result.add(ramTradeLog);
 				}
 			}
 			page++;
@@ -636,10 +640,48 @@ public class RamPriceServiceImpl implements RamPriceService {
 			}
 		}
 		existMap.clear();
-		cacheService.set("getBigTradeOrders", result);
-
+		//cacheService.set("getBigTradeOrders", result);
+		String collection_name = "ram_big_trade_orders";
+		List<RamTradeLog> lastresult = new ArrayList<RamTradeLog>();
+        for (RamTradeLog ramTradeLog : result) {
+        	Query  queryExist=new Query(Criteria.where("trx_id").is(ramTradeLog.getTrx_id()));
+    		BasicDBObject exist  = mongoTemplate.findOne(queryExist, BasicDBObject.class,collection_name);
+    		if(null == exist) {
+    			lastresult.add(ramTradeLog);
+    		}
+		}
+		mongoTemplate.insert(lastresult, collection_name);
+		findBigOrder();
 		return result;
-
+	}
+	
+	//查询数据库中的存储的内存大单根据时间倒叙查询后放入缓存中
+	@Override
+	public List<RamTradeLog>  findBigOrder(){
+		String collection_name = "ram_big_trade_orders";
+		Query  query=new Query();
+		query = query.with(new Sort(new Order(Direction.DESC, "record_date")));
+		query = query.limit(20);
+		List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class,collection_name);
+		List<RamTradeLog> result = new ArrayList<RamTradeLog>();
+		for (BasicDBObject basicDBObject : transactionsList) {
+			RamTradeLog ramTradeLog = new RamTradeLog();
+			ramTradeLog.set_id(basicDBObject.getString("_id"));
+			ramTradeLog.setTrx_id(basicDBObject.getString("trx_id"));
+			ramTradeLog.setBlock_id(basicDBObject.getString("block_id"));
+			ramTradeLog.setBlock_num(basicDBObject.getString("block_num"));
+			ramTradeLog.setRecord_date(basicDBObject.getString("record_date"));
+			ramTradeLog.setAction_name(basicDBObject.getString("action_name"));
+			ramTradeLog.setEos_qty(basicDBObject.getString("eos_qty"));
+			ramTradeLog.setRam_qty(basicDBObject.getString("ram_qty"));
+			ramTradeLog.setPayer(basicDBObject.getString("payer"));
+			ramTradeLog.setReceiver(basicDBObject.getString("receiver"));
+			ramTradeLog.setPrice(new BigDecimal(basicDBObject.getString("price")));
+			result.add(ramTradeLog);	
+		}
+		cacheService.set("getBigTradeOrders", result);
+		return result;
+		
 	}
 	
 	
