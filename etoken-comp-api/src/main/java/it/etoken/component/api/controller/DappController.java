@@ -99,12 +99,42 @@ public class DappController extends BaseController{
 		}
 	}
 	
-	@ResponseBody
+//	@ResponseBody
+//	@RequestMapping(value = "/findAllCategory")
+//	public Object findAllCategory(@RequestBody Map<String, String> requestMap,HttpServletRequest request) {
+//		try {
+//			
+//			
+//			int page=1;
+//			int pageSize=10;
+//			if(null!=requestMap.get("page")&&!"".equals(requestMap.get("page"))) {
+//				page =Integer.parseInt( requestMap.get("page"));
+//			}
+//			if(null!=requestMap.get("pageSize")&&!"".equals(requestMap.get("pageSize"))) {
+//				  pageSize =Integer.parseInt( requestMap.get("pageSize"));
+//			}
+//			String name="";
+//			if(null!=requestMap.get("name")&&!"".equals(requestMap.get("name"))) {
+//				name=requestMap.get("name");
+//			}
+//			MLResultList<DappCategory> result=dappCategoryFacadeAPI.findAll(page, pageSize,name);
+//			if(result.isSuccess()) {
+//				return this.success(result.getList());
+//			}else {
+//				return this.error(MLApiException.SYS_ERROR, null);
+//			}
+//		} catch (Exception e) {
+//			logger.error(e.getMessage(), e);
+//			return this.error(MLApiException.SYS_ERROR, null);
+//		}
+//	}
+	
+    @ResponseBody
 	@RequestMapping(value = "/findAllCategory")
 	public Object findByName(HttpServletRequest request) {
 		try {
 			
-			MLResultList<DappCategory> result=dappCategoryFacadeAPI.findAll();
+			MLResultList<DappCategory> result=dappCategoryFacadeAPI.findAll(1, 100,"");
 			if(result.isSuccess()) {
 				return this.success(result.getList());
 			}else {

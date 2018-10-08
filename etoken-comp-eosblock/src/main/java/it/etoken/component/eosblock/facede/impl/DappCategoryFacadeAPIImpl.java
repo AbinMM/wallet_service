@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
+import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.DappCategory;
+import it.etoken.base.model.eosblock.entity.DappInfo;
 import it.etoken.base.model.eosblock.entity.Delegatebw;
 import it.etoken.component.eosblock.service.DappCategoryService;
 import it.etoken.componet.eosblock.facade.DappCategoryFacadeAPI;
@@ -24,16 +27,48 @@ public class DappCategoryFacadeAPIImpl implements DappCategoryFacadeAPI{
 	DappCategoryService dappCategoryService;
 
 	@Override
-	public MLResultList<DappCategory> findAll() {
+	public MLResultList<DappCategory> findAll(int page,int pageSize,String name) {
 		try {
-			List<DappCategory>  result= dappCategoryService.findAll();
+			List<DappCategory>  result= dappCategoryService.findAll(page, pageSize,name);
 			return new MLResultList<DappCategory>(result);
 		} catch (MLException e) {
 			logger.error(e.toString());
 			return  new MLResultList<DappCategory>(e);
 		}
 	}
-	
+
+	@Override
+	public MLResultObject<DappCategory> saveUpdate(DappCategory dappCategory) throws MLException {
+		try {
+			DappCategory result = dappCategoryService.saveUpdate(dappCategory);
+			return new MLResultObject<DappCategory>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<DappCategory>(e);
+		}
+	}
+
+	@Override
+	public MLResult delete(Long id) throws MLException {
+		try {
+			dappCategoryService.delete(id);
+			return new MLResult(true);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResult(false);
+		}
+	}
+
+	@Override
+	public MLResultObject<DappCategory> findById(Long id) throws MLException {
+		try {
+			DappCategory result = dappCategoryService.findById(id);
+			return new MLResultObject<DappCategory>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<DappCategory>(e);
+		}
+	}
 	
 
 }
