@@ -663,7 +663,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			BigDecimal eos_qty = qty.multiply(price1);
 			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
 			String actionName=eTTradeLog.getAction_name();
-			if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && Action_name.equals("selltoken")) {
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && actionName.equals("selltoken")) {
 				eTTradeLog.setEos_qty(eos_qty + " EOS");
 			}
 			eTTradeLog.setPrice(price);
@@ -1173,7 +1173,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			BigDecimal eos_qty = qty.multiply(price1);
 			eos_qty = eos_qty.setScale(4, BigDecimal.ROUND_HALF_UP);
 			String actionName=eTTradeLog.getAction_name();
-			if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && Action_name.equals("selltoken")) {
+			if(eos_qty.compareTo(BigDecimal.ZERO)!=0 && actionName.equals("selltoken")) {
 				eTTradeLog.setEos_qty(eos_qty + " EOS");
 			}
 			eTTradeLog.setPrice(price);
