@@ -186,6 +186,29 @@ public class NewsController extends BaseController {
 			if (params.getId() == null) {
 				return this.error(MLAdminException.PARAM_ERROR, null);
 			}
+			//生成html
+			if(params.getHtml()!=null) {
+				if(params.getTid()==12) {
+					MLResultObject<HtmlTemplate> ml=htmlTemplateFacadeAPI.findTemplate();
+					String template=ml.getResult().getTemplate();
+					Double eosprice=findEosPrice();
+					String url=params.getUrl();
+					String[] url_new=url.split("/");
+					String a=url_new[4];
+					String b=url_new[5];
+					String filename=a + "/" + b;
+				    HtmlUtils.gemHtmlforAlertsUpdate(params.getContent(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
+					params.setUrl(HtmlServer+filename);
+				}else {
+					String url=params.getUrl();
+					String[] url_new=url.split("/");
+					String a=url_new[4];
+					String b=url_new[5];
+					String filename=a + "/" + b;
+					HtmlUtils.gemHtmlUpdate(params.getHtml(), HtmlSave,filename);
+				    params.setUrl(HtmlServer+filename);
+				}
+			}
 			MLResult r = newsFacadeAPI2.push(params.getId());
 			if (r.isSuccess()) {
 				return this.success(null);
