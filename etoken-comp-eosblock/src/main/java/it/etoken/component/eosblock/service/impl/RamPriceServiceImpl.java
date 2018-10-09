@@ -370,7 +370,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 	@Override
 	public List<RamTradeLog> getNewTradeOrders() throws MLException {
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true));
+		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true).and("actions.account").is("eosio"));
 		int page = 1;
 		int pageSize = 100;
 		query = query.with(new Sort(new Order(Direction.DESC, "createdAt")));
@@ -503,7 +503,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 	public List<RamTradeLog> getBigTradeOrders() throws MLException {
 		
 		Object[] actionsNames = new Object[] { "buyram", "sellram" };
-		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true));
+		Query query = new Query(Criteria.where("actions.name").in(actionsNames).and("createdAt").exists(true).and("actions.account").is("eosio"));
 		int page = 1;
 		int pageSize = 1000;
 
@@ -551,8 +551,17 @@ public class RamPriceServiceImpl implements RamPriceService {
 						continue;
 					}
 
-					BasicDBObject data = (BasicDBObject) action.get("data");
-
+				
+					//BasicDBObject data = (BasicDBObject)action.get("data");
+					JSONObject data = null;
+					try {
+						data = JSONObject.parseObject(JSONObject.toJSONString(action.get("data")), JSONObject.class);
+					}catch(Exception e) {
+						Object xx = action.get("data");
+						System.out.println(xx);
+					}
+					
+					
 					Date createdAt = thisBasicDBObject.getDate("createdAt");
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
