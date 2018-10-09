@@ -97,7 +97,7 @@ public class EosRpcController extends BaseController {
 		try {
 			resp = new GetInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), "");
 			if (resp.isSuccess()) {
-				return this.success(resp.getData());
+				return this.success(JSONObject.parseObject(resp.getData()));
 			} else {
 				return this.error(resp.getStatus(), resp.getData());
 			}
@@ -130,7 +130,7 @@ public class EosRpcController extends BaseController {
 		try {
 			resp = new CreateAccount().run(EOS_SERVER_API, jsonObject.toString()); // http://localhost:7001/account/create,需要在本地启动eos-server-api服务
 			if (resp.isSuccess()) {
-				return this.success(resp.getData());
+				return this.success(JSONObject.parseObject(resp.getData()));
 			} else {
 				return this.error(resp.getStatus(), resp.getData());
 			}
@@ -167,7 +167,7 @@ public class EosRpcController extends BaseController {
 			resp = new PushTransaction().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), transactionData);
 			if (resp.isSuccess()) {
 				pushService.pushByTag(to, to + "收到一笔  " + amount  + " 转账." + "来自：" + from + ". 备注：" + memo, extr);
-				return this.success(resp.getData());
+				return this.success(JSONObject.parseObject(resp.getData()));
 			} else {
 				return this.error(resp.getStatus(), resp.getData());
 			}
@@ -215,7 +215,7 @@ public class EosRpcController extends BaseController {
 		try {
 			resp = new GetBalance().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
-				return this.success(resp.getData());
+				return this.success(JSONObject.parseObject(resp.getData()));
 			}else {
 				System.out.println(this.error(resp.getStatus(), resp.getData()).toString());
 				return this.error(resp.getStatus(), resp.getData());
@@ -265,7 +265,7 @@ public class EosRpcController extends BaseController {
 		try {
 			resp = new PushTransaction().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), transactionData);
 			if (resp.isSuccess()) {
-				return this.success(resp.getData());
+				return this.success(JSONObject.parseObject(resp.getData()));
 			}else {
 				return this.error(resp.getStatus(), resp.getData());
 			}
@@ -922,9 +922,9 @@ public class EosRpcController extends BaseController {
 			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
 					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
 			if (resp.isSuccess()) {
-				return this.success(resp.getData());
+				return this.success(JSONObject.parse(resp.getData()));
 			} else {
-				return this.error(resp.getStatus(), resp.getData());
+				return this.error(resp.getStatus(), JSONObject.parse(resp.getData()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
