@@ -561,7 +561,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 						System.out.println(xx);
 					}
 					
-					
 					Date createdAt = thisBasicDBObject.getDate("createdAt");
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
