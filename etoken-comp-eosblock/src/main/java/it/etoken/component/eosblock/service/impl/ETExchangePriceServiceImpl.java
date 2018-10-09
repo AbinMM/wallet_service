@@ -690,7 +690,7 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			big_order_qty = BigDecimal.valueOf(bigOrderSettings.getDouble("value"));
 		}
 		Date endDate = new Date(new Date().getTime()+30*1000); 
-		Date startDate = new Date(endDate.getTime()-24*60*60*1000);
+		Date startDate = new Date(endDate.getTime()-30*60*1000);
 		
 		Query query = new Query();
 		Criteria expirationCriteria = new Criteria();
