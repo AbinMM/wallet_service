@@ -1,5 +1,6 @@
 package it.etoken.component.api.controller;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBObject;
 
@@ -436,7 +439,69 @@ public class ETExchangePriceController extends BaseController {
 		try {
 			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
 					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
+			if (resp.isSuccess()) {
+				JSONObject data = JSONObject.parseObject(resp.getData());
+				String idxkey = data.getJSONArray("rows").getJSONObject(0).getString("idxkey");
+				if(!boundKey.equalsIgnoreCase(idxkey)) {
+					return this.error("1004","资金池不存在此交易对", null);
+				}
+				
+				JSONObject rows0 = data.getJSONArray("rows").getJSONObject(0);
+				JSONArray map_acc_info = rows0.getJSONArray("map_acc_info");
+				map_acc_info = this.mapAccInfoSort(map_acc_info);
+				rows0.put("map_acc_info", map_acc_info);
+				JSONArray rows = new JSONArray();
+				rows.add(rows0);
+				data.put("rows", rows);
+				return this.success(data);
+			} else {
+				return this.error(resp.getStatus(), resp.getData());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this.error(MLApiException.EOSRPC_FAIL, null);
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/getEosMarkets")
+	public Object getEosMarkets(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
+		logger.info("/getEosShareholdersInfo request map : " + requestMap);
+		
+		if(requestMap.get("code")==null || requestMap.get("code").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		if(requestMap.get("base_contract")==null || requestMap.get("base_contract").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		String code = requestMap.get("code");
+		String[] codes = code.split("_");
+		String base_contract = requestMap.get("base_contract");
 
+		MLResultObject<Coins> result = coinsFacadeAPI.findByName(codes[0]);
+		if(!result.isSuccess()) {
+			return this.error(result.getErrorCode(), result.getErrorHint(), result.getResult());
+		}
+		Coins info = result.getResult();
+		int precision = info.getPrecisionNumber();
+		EOSUtils eOSUtils = new EOSUtils();
+		String boundKey = eOSUtils.getBoundKey(base_contract, precision, codes[0]);
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("json", true);
+		jsonObject.put("code", "etbexchanger");
+		jsonObject.put("scope", "etbexchanger");
+		jsonObject.put("table", "markets"); //markets
+		jsonObject.put("key-type", "i128");
+		jsonObject.put("limit", "1");
+		jsonObject.put("index", "2");
+		jsonObject.put("lower", boundKey);
+
+		EosResult resp = null;
+		try {
+//			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
+//					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
+			resp = new GetEosTableRows().run("http://18.144.16.89:8001/v1/chain/",
+					"http://18.144.16.89:8001/v1/chain/", jsonObject.toJSONString());
 			if (resp.isSuccess()) {
 				JSONObject data = JSONObject.parseObject(resp.getData());
 				String idxkey = data.getJSONArray("rows").getJSONObject(0).getString("idxkey");
@@ -451,6 +516,32 @@ public class ETExchangePriceController extends BaseController {
 			e.printStackTrace();
 		}
 		return this.error(MLApiException.EOSRPC_FAIL, null);
+	}
+	
+	private JSONArray mapAccInfoSort(JSONArray map_acc_info) {
+		JSONArray sortedJsonArray = new JSONArray();
+		List<JSONObject> jsonValues = map_acc_info.toJavaList(JSONObject.class);
+
+		Collections.sort(jsonValues, new Comparator<JSONObject>() {
+			@Override
+			public int compare(JSONObject a, JSONObject b) {
+				BigDecimal aBD = BigDecimal.ZERO;
+				BigDecimal bBD = BigDecimal.ZERO;;
+				try {
+					String aStr = a.getJSONObject("info").getString("eos_holding");
+					String[] aArray = aStr.split(" ");
+					aBD = new BigDecimal(aArray[0].trim());
+					String bStr = b.getJSONObject("info").getString("eos_holding");
+					String[] bArray = bStr.split(" ");
+					bBD = new BigDecimal(bArray[0].trim());
+				} catch (JSONException e) {
+					// do something
+				}
+				return aBD.compareTo(bBD);
+			}
+		});
+		sortedJsonArray.addAll(jsonValues);
+		return sortedJsonArray;
 	}
 	
 }
