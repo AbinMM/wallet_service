@@ -26,9 +26,15 @@ import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
+import it.etoken.base.common.utils.EOSUtils;
 import it.etoken.base.model.eosblock.entity.ETTradeLog;
+import it.etoken.base.model.market.entity.Coins;
 import it.etoken.cache.service.CacheService;
+import it.etoken.component.api.eosrpc.EosResult;
+import it.etoken.component.api.eosrpc.GetEosTableRows;
 import it.etoken.component.api.exception.MLApiException;
+import it.etoken.component.api.utils.EosNodeUtils;
+import it.etoken.componet.coins.facade.CoinsFacadeAPI;
 import it.etoken.componet.eosblock.facade.ETExchangePriceFacadeAPI;
 import it.etoken.componet.eosblock.facade.ETExchangeTradeUserFacadeAPI;
 import it.etoken.componet.user.facade.UserFacadeAPI;
@@ -40,6 +46,9 @@ public class ETExchangePriceController extends BaseController {
 	private final static Logger logger = LoggerFactory.getLogger(ETExchangePriceController.class);
 	@Autowired
 	CacheService cacheService;
+	
+	@Autowired
+	EosNodeUtils eosNodeUtils;
 
 	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
 	ETExchangePriceFacadeAPI eTExchangePriceFacadeAPI;
@@ -49,6 +58,9 @@ public class ETExchangePriceController extends BaseController {
 	
 	@Reference(version = "1.0.0", timeout = 60000, retries = 3)
 	UserFacadeAPI userFacadeAPI;
+	
+	@Reference(version="1.0.0", timeout = 10000)
+	CoinsFacadeAPI coinsFacadeAPI;
 	
 	@ResponseBody
 	@RequestMapping(value = "/list")
@@ -385,6 +397,60 @@ public class ETExchangePriceController extends BaseController {
 			logger.error(e.getMessage(), e);
 			return this.error(MLApiException.SYS_ERROR, null);
 		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/getEosShareholdersInfo")
+	public Object getEosShareholdersInfo(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
+		logger.info("/getEosShareholdersInfo request map : " + requestMap);
+		
+		if(requestMap.get("code")==null || requestMap.get("code").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		if(requestMap.get("base_contract")==null || requestMap.get("base_contract").isEmpty()) {
+			return this.error(MLApiException.PARAM_ERROR, null);
+		}
+		String code = requestMap.get("code");
+		String[] codes = code.split("_");
+		String base_contract = requestMap.get("base_contract");
+
+		MLResultObject<Coins> result = coinsFacadeAPI.findByName(codes[0]);
+		if(!result.isSuccess()) {
+			return this.error(result.getErrorCode(), result.getErrorHint(), result.getResult());
+		}
+		Coins info = result.getResult();
+		int precision = info.getPrecisionNumber();
+		EOSUtils eOSUtils = new EOSUtils();
+		String boundKey = eOSUtils.getBoundKey(base_contract, precision, codes[0]);
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("json", true);
+		jsonObject.put("code", "etbexchanger");
+		jsonObject.put("scope", "etbexchanger");
+		jsonObject.put("table", "shareholders"); //markets
+		jsonObject.put("key-type", "i128");
+		jsonObject.put("limit", "1");
+		jsonObject.put("index", "2");
+		jsonObject.put("lower", boundKey);
+
+		EosResult resp = null;
+		try {
+			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
+					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
+
+			if (resp.isSuccess()) {
+				JSONObject data = JSONObject.parseObject(resp.getData());
+				String idxkey = data.getJSONArray("rows").getJSONObject(0).getString("idxkey");
+				if(!boundKey.equalsIgnoreCase(idxkey)) {
+					return this.error("1004","资金池不存在此交易对", null);
+				}
+				return this.success(data);
+			} else {
+				return this.error(resp.getStatus(), resp.getData());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return this.error(MLApiException.EOSRPC_FAIL, null);
 	}
 	
 }
