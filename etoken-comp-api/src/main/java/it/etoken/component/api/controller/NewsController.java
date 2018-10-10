@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
-import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.jpush.PushService;
 import it.etoken.base.common.result.MLResult;
@@ -26,6 +25,7 @@ import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.news.entity.Banner;
 import it.etoken.base.model.news.entity.News;
+import it.etoken.base.model.news.entity.SysNotification;
 import it.etoken.base.model.news.vo.NewsRoute;
 import it.etoken.base.model.news.vo.NewsVO;
 import it.etoken.base.model.user.entity.UserPointRecord;
@@ -35,6 +35,7 @@ import it.etoken.componet.news.facade.BannerFacadeAPI;
 import it.etoken.componet.news.facade.NewsFacadeAPI;
 import it.etoken.componet.news.facade.NewsStatisticsFacadeAPI;
 import it.etoken.componet.news.facade.NewsTypeFacadeAPI;
+import it.etoken.componet.news.facade.SysNotificationFacadeAPI;
 import it.etoken.componet.user.facade.UserFacadeAPI;
 import it.etoken.componet.user.point.UserPointType;
 
@@ -58,6 +59,9 @@ public class NewsController extends BaseController {
 
 	@Reference(version = "1.0.0")
 	UserFacadeAPI userFacadeAPI;
+	
+	@Reference(version = "1.0.0", timeout = 10000)
+	SysNotificationFacadeAPI sysNotificationFacadeAPI;
 
 	@Autowired
 	CacheService cacheService;
@@ -283,6 +287,23 @@ public class NewsController extends BaseController {
 			userFacadeAPI.updatePoint(UserPointType.SHARE, uid);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/sysNotificationList")
+	public Object sysNotificationList(@RequestParam Map<String, String> requestMap, HttpServletRequest request) {
+		logger.info("/list request map : " + requestMap);
+		try {
+			MLResultList<SysNotification> result = sysNotificationFacadeAPI.findByTimeAndStatus();
+			if (result.isSuccess()) {
+				return this.success(result.getList().get(0));
+			} else {
+				return this.error(result.getErrorCode(), result.getErrorHint(), null);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return this.error(MLApiException.SYS_ERROR, null);
 		}
 	}
 }
