@@ -27,7 +27,7 @@ public class UndelegateTask {
 	@Value("${eos.server.api}")
 	String EOS_SERVER_API;
 
-	@Scheduled(cron = "0 0 0 ? * MON")
+	@Scheduled(cron = "0 0 0 */1 * ?")
 	public void getLargeRank() {
 		try {
 			List<Delegatebw> list=delegatebwService.findByCreateDate();
