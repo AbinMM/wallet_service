@@ -27,7 +27,7 @@ public class UndelegateTask {
 	@Value("${eos.server.api}")
 	String EOS_SERVER_API;
 
-    //@Scheduled(cron = "0 */1 * * * ?")
+	@Scheduled(cron = "0 0 0 ? * MON")
 	public void getLargeRank() {
 		try {
 			List<Delegatebw> list=delegatebwService.findByCreateDate();
@@ -39,7 +39,14 @@ public class UndelegateTask {
 				      if(resp.isSuccess()) {
 				    	  delegatebw.setStatus(1L);//0是抵押，1是赎回
 	     			      delegatebw.setModifydate(new Date());
-					      delegatebwService.update(delegatebw); 
+				    	  try { 
+						      delegatebwService.update(delegatebw); 
+						   } catch (Exception e) {
+							  System.out.println("可能未修改状态成功ID："+delegatebw.getId());
+							  e.printStackTrace();
+							  throw new MLException(MLCommonException.system_err);
+						   }
+				    	
 				      }else {
 				    	  throw new MLException(MLCommonException.system_err);
 				      }
