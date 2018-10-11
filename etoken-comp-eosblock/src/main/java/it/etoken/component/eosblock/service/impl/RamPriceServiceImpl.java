@@ -865,7 +865,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 				continue;
 			}
 			ramTradeLog.setPrice(new BigDecimal(price));
-			
 			String actionName=ramTradeLog.getAction_name();
 			if(actionName.equalsIgnoreCase("sellram")){
 				String ramqty=ramTradeLog.getRam_qty();
