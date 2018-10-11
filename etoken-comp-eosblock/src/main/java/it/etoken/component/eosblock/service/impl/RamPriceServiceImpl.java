@@ -707,14 +707,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 				}
 			}
 		}
-
-		//Criteria[] actorCriterias = new Criteria[3];
-		//actorCriterias[0] = Criteria.where("actions.authorization.actor").is(accountName);
-		//actorCriterias[1] = Criteria.where("actions.data.receiver").is(accountName);
-		//actorCriterias[2] = Criteria.where("actions.data.to").is(accountName);
-
-		//Criteria actorCriteria = new Criteria();
-		//actorCriteria.orOperator(actorCriterias);
 		Criteria actorCriteria =Criteria.where("actions.authorization.actor").is(accountName);
 
 		Criteria actionsNameCriteria = Criteria.where("actions.name").in(actionsNames);
@@ -858,7 +850,6 @@ public class RamPriceServiceImpl implements RamPriceService {
 							if(null==price1) {
 								continue;
 							}
-							System.out.println("修改后价格"+price1+"修改前价格"+ramTradeLog1.getPrice());
 							ramTradeLog1.setPrice(new BigDecimal(price1));
 						}
 						existMap.clear();
