@@ -922,7 +922,7 @@ public class EosRpcController extends BaseController {
 			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
 					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
 			if (resp.isSuccess()) {
-				return this.success(resp.getData());
+				return this.success(JSONObject.parse(resp.getData()));
 			} else {
 				return this.error(resp.getStatus(), resp.getData());
 			}
