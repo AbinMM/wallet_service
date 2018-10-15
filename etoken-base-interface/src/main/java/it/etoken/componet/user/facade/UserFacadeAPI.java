@@ -66,4 +66,6 @@ public interface UserFacadeAPI {
 	public MLResult updateEost(String uid);
 	
 	public MLResultObject<Boolean> isOpenET();
+	
+	public MLResultObject<String> getSysConfigValueByName(String name);
 }
