@@ -1,25 +1,23 @@
 package it.etoken.component.eosblock.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
-
 import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.model.eosblock.entity.DappInfo;
 import it.etoken.base.model.eosblock.entity.DappInfoExample;
 import it.etoken.base.model.eosblock.entity.DappInfoExample.Criteria;
-import it.etoken.base.model.market.entity.Coins;
 import it.etoken.component.eosblock.dao.mapper.DappInfoMapper;
 import it.etoken.component.eosblock.service.DappInfoService;
 
@@ -31,6 +29,28 @@ public class DappInfoServiceImpl implements DappInfoService{
 	
 	@Autowired
 	DappInfoMapper dappInfoMapper;
+	
+	@Override
+	public MLPage<DappInfo> findAllByPage(int page, int pageSize, String name) throws MLException {
+		try {
+			Page<DappInfo> result = PageHelper.startPage(page,pageSize);  
+			DappInfoExample example=new DappInfoExample();
+			example.setOrderByClause("seq desc");
+			if(null != name && !name.isEmpty()) {
+				DappInfoExample.Criteria criteria=example.createCriteria();
+				criteria.andNameLike("%"+name+"%");
+			}
+		    dappInfoMapper.selectByExample(example);
+			return new MLPage<DappInfo>(result.getResult(), result.getTotal());
+		} catch (MLException ex) {
+			logger.error(ex.toString());
+			throw ex;
+		} catch (Exception e) {
+			logger.error(e.toString());
+			e.printStackTrace();
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
 
 	@Override
 	public Page<DappInfo> findAll(int page,int pageSize,String name) {
@@ -95,7 +115,10 @@ public class DappInfoServiceImpl implements DappInfoService{
 	@Override
 	public DappInfo saveUpdate(DappInfo dappInfo) throws MLException {
 		try{
+			Date nowDate = new Date();
+			dappInfo.setUpdateDate(nowDate);
 			if(dappInfo.getId()==null){
+				dappInfo.setCreateDate(nowDate);
 				dappInfoMapper.insertSelective(dappInfo);
 			}else{
 				dappInfoMapper.updateByPrimaryKeySelective(dappInfo);

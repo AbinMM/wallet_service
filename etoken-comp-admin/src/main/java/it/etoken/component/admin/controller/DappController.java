@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
@@ -46,17 +47,17 @@ public class DappController extends BaseController {
 
 	@ResponseBody
 	@RequestMapping(value = "/list")
-	public Object list(@RequestParam Map<String, String> requestMap, HttpServletRequest request) {
+	public Object list(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
 		logger.info("/list request map : " + requestMap);
 		try {
 			String page = requestMap.get("page");
 			if (StringUtils.isEmpty(page) || !MathUtil.isInteger(page)) {
-				return this.error(MLAdminException.PARAM_ERROR, null);
+				page = "1";
 			}
 			String name = requestMap.get("name");
-			MLResultList<DappInfo> result = dappInfoFacadeAPI.findAll(Integer.valueOf(page), 100, name);
+			MLResultObject<MLPage<DappInfo>> result = dappInfoFacadeAPI.findAllByPage(Integer.valueOf(page), 100, name);
 			if (result.isSuccess()) {
-				return this.success(result.getList());
+				return this.success(result.getResult());
 			} else {
 				return this.error(result.getErrorCode(), result.getErrorHint(), null);
 			}
@@ -72,7 +73,7 @@ public class DappController extends BaseController {
 		logger.info("/add request map : " + dappInfo);
 		try {
 			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
-					|| StringUtils.isEmpty(dappInfo.getUrl())) {
+					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
 				return this.error(MLAdminException.PARAM_ERROR, null);
 			}
 
@@ -94,7 +95,7 @@ public class DappController extends BaseController {
 		logger.info("/update request map : " + dappInfo);
 		try {
 			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
-					|| StringUtils.isEmpty(dappInfo.getUrl())) {
+					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
 				return this.error(MLAdminException.PARAM_ERROR, null);
 			}
 
