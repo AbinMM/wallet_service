@@ -439,6 +439,7 @@ public class ETExchangePriceController extends BaseController {
 		try {
 			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
 					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
+
 			if (resp.isSuccess()) {
 				JSONObject data = JSONObject.parseObject(resp.getData());
 				String idxkey = data.getJSONArray("rows").getJSONObject(0).getString("idxkey");
@@ -498,10 +499,9 @@ public class ETExchangePriceController extends BaseController {
 
 		EosResult resp = null;
 		try {
-//			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
-//					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
-			resp = new GetEosTableRows().run("http://18.144.16.89:8001/v1/chain/",
-					"http://18.144.16.89:8001/v1/chain/", jsonObject.toJSONString());
+			resp = new GetEosTableRows().run(eosNodeUtils.getNodeUrls().get("url_chain"),
+					eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toJSONString());
+			
 			if (resp.isSuccess()) {
 				JSONObject data = JSONObject.parseObject(resp.getData());
 				String idxkey = data.getJSONArray("rows").getJSONObject(0).getString("idxkey");
@@ -537,7 +537,7 @@ public class ETExchangePriceController extends BaseController {
 				} catch (JSONException e) {
 					// do something
 				}
-				return aBD.compareTo(bBD);
+				return -aBD.compareTo(bBD);
 			}
 		});
 		sortedJsonArray.addAll(jsonValues);
