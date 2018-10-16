@@ -36,7 +36,7 @@ public class UndelegateTask {
 	public void getLargeRank() {
 		try {
 			List<Delegatebw> list=delegatebwService.findByCreateDate();
-			logger.info("准备要赎回个数的："+list.size());
+			logger.info("准备要赎回个数的**************************************："+list.size());
 			int i=0;
 			if(list.size()>0) {
 				for (Delegatebw delegatebw : list) {
@@ -49,7 +49,7 @@ public class UndelegateTask {
 	     			  try { 
 					      delegatebwService.update(delegatebw); 
 					   } catch (Exception e) {
-						  logger.info("可能未修改状态成功ID："+delegatebw.getId());
+						  logger.info("可能未修改状态成功ID**************************************："+delegatebw.getId());
 						  e.printStackTrace();
 						  throw new MLException(MLCommonException.system_err);
 					   }
