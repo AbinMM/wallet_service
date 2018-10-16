@@ -1,12 +1,15 @@
 package it.etoken.componet.eosblock.facade;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.DappInfo;
 
 public interface DappInfoFacadeAPI {
+	
+	public MLResultObject<MLPage<DappInfo>> findAllByPage(int page, int pageSize, String name);
 	
 	public MLResultList<DappInfo> findAll(int page,int pageSize,String name);
 	

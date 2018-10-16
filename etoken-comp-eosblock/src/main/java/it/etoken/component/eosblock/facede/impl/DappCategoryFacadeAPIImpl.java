@@ -9,12 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.DappCategory;
-import it.etoken.base.model.eosblock.entity.DappInfo;
-import it.etoken.base.model.eosblock.entity.Delegatebw;
 import it.etoken.component.eosblock.service.DappCategoryService;
 import it.etoken.componet.eosblock.facade.DappCategoryFacadeAPI;
 
@@ -25,6 +24,17 @@ public class DappCategoryFacadeAPIImpl implements DappCategoryFacadeAPI{
 	
 	@Autowired
 	DappCategoryService dappCategoryService;
+	
+	@Override
+	public MLResultObject<MLPage<DappCategory>> findAllByPage(int page, int pageSize, String name) {
+		try {
+			MLPage<DappCategory> result = dappCategoryService.findAllByPage(page, pageSize, name);
+			return new MLResultObject<MLPage<DappCategory>>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<MLPage<DappCategory>>(e);
+		}
+	}
 
 	@Override
 	public MLResultList<DappCategory> findAll(int page,int pageSize,String name) {

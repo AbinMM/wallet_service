@@ -21,23 +21,14 @@ import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.common.utils.MathUtil;
 import it.etoken.base.model.eosblock.entity.DappCategory;
-import it.etoken.base.model.eosblock.entity.DappInfo;
 import it.etoken.component.admin.exception.MLAdminException;
-import it.etoken.componet.eosblock.facade.DappInfoFacadeAPI;
 import it.etoken.componet.eosblock.facade.DappCategoryFacadeAPI;
 
 @Controller
-@RequestMapping(value = "/admin/dapp")
-public class DappController extends BaseController {
+@RequestMapping(value = "/admin/dappCategory")
+public class DappCategoryController extends BaseController {
 
 	private final static Logger logger = LoggerFactory.getLogger(BaseController.class);
-
-	@Reference(version = "1.0.0", timeout = 10000)
-	DappInfoFacadeAPI dappInfoFacadeAPI;
-
-	@Reference(version = "1.0.0", timeout = 30000, retries = 0)
-	DappInfoFacadeAPI dappInfoFacadeAPI2;
-	
 	
 	@Reference(version = "1.0.0", timeout = 10000)
 	DappCategoryFacadeAPI dappCategoryFacadeAPI;
@@ -47,7 +38,7 @@ public class DappController extends BaseController {
 
 	@ResponseBody
 	@RequestMapping(value = "/list")
-	public Object list(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
+	public Object list(@RequestParam Map<String, String> requestMap, HttpServletRequest request) {
 		logger.info("/list request map : " + requestMap);
 		try {
 			String page = requestMap.get("page");
@@ -55,7 +46,7 @@ public class DappController extends BaseController {
 				page = "1";
 			}
 			String name = requestMap.get("name");
-			MLResultObject<MLPage<DappInfo>> result = dappInfoFacadeAPI.findAllByPage(Integer.valueOf(page), 100, name);
+			MLResultObject<MLPage<DappCategory>> result = dappCategoryFacadeAPI.findAllByPage(Integer.valueOf(page), 100, name);
 			if (result.isSuccess()) {
 				return this.success(result.getResult());
 			} else {
@@ -66,80 +57,15 @@ public class DappController extends BaseController {
 			return this.error(MLAdminException.SYS_ERROR, null);
 		}
 	}
-
-	@ResponseBody
-	@RequestMapping(value = "/add")
-	public Object add(@RequestBody DappInfo dappInfo, HttpServletRequest request) {
-		logger.info("/add request map : " + dappInfo);
-		try {
-			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
-					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
-				return this.error(MLAdminException.PARAM_ERROR, null);
-			}
-
-			MLResultObject<DappInfo> r = dappInfoFacadeAPI2.saveUpdate(dappInfo);
-			if (r.isSuccess()) {
-				return this.success(null);
-			} else {
-				return this.error(r.getErrorCode(), r.getErrorHint(), null);
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return this.error(MLAdminException.SYS_ERROR, null);
-		}
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/update")
-	public Object update(@RequestBody DappInfo dappInfo, HttpServletRequest request) {
-		logger.info("/update request map : " + dappInfo);
-		try {
-			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
-					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
-				return this.error(MLAdminException.PARAM_ERROR, null);
-			}
-
-			MLResultObject<DappInfo> r = dappInfoFacadeAPI2.saveUpdate(dappInfo);
-			if (r.isSuccess()) {
-				return this.success(null);
-			} else {
-				return this.error(r.getErrorCode(), r.getErrorHint(), null);
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return this.error(MLAdminException.SYS_ERROR, null);
-		}
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/delete")
-	public Object delete(@RequestBody DappInfo dappInfo, HttpServletRequest request) {
-		logger.info("/update request map : " + dappInfo);
-		try {
-			if (dappInfo.getId() == null) {
-				return this.error(MLAdminException.PARAM_ERROR, null);
-			}
-			MLResult r = dappInfoFacadeAPI2.delete(dappInfo.getId());
-			if (r.isSuccess()) {
-				return this.success(null);
-			} else {
-				return this.error(r.getErrorCode(), r.getErrorHint(), null);
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return this.error(MLAdminException.SYS_ERROR, null);
-		}
-	}
-	
 	
 	@ResponseBody
-	@RequestMapping(value = "/listCategory")
-	public Object listCategory(@RequestParam Map<String, String> requestMap, HttpServletRequest request) {
+	@RequestMapping(value = "/listNoPage")
+	public Object listNoPage(@RequestParam Map<String, String> requestMap, HttpServletRequest request) {
 		logger.info("/list request map : " + requestMap);
 		try {
 			String page = requestMap.get("page");
 			if (StringUtils.isEmpty(page) || !MathUtil.isInteger(page)) {
-				return this.error(MLAdminException.PARAM_ERROR, null);
+				page = "1";
 			}
 			String name = requestMap.get("name");
 			MLResultList<DappCategory> result = dappCategoryFacadeAPI.findAll(Integer.valueOf(page), 100, name);
@@ -155,8 +81,8 @@ public class DappController extends BaseController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/addCategory")
-	public Object addCategory(@RequestBody DappCategory dappCategory, HttpServletRequest request) {
+	@RequestMapping(value = "/add")
+	public Object add(@RequestBody DappCategory dappCategory, HttpServletRequest request) {
 		logger.info("/add request map : " + dappCategory);
 		try {
 			if (StringUtils.isEmpty(dappCategory.getName())) {
@@ -176,8 +102,8 @@ public class DappController extends BaseController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/updateCategory")
-	public Object updateCategory(@RequestBody DappCategory dappCategory, HttpServletRequest request) {
+	@RequestMapping(value = "/update")
+	public Object update(@RequestBody DappCategory dappCategory, HttpServletRequest request) {
 		logger.info("/update request map : " + dappCategory);
 		try {
 			if (StringUtils.isEmpty(dappCategory.getName())) {
@@ -197,8 +123,8 @@ public class DappController extends BaseController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/deleteCategory")
-	public Object deleteCategory(@RequestBody DappCategory dappCategory, HttpServletRequest request) {
+	@RequestMapping(value = "/delete")
+	public Object delete(@RequestBody DappCategory dappCategory, HttpServletRequest request) {
 		logger.info("/update request map : " + dappCategory);
 		try {
 			if (dappCategory.getId() == null) {

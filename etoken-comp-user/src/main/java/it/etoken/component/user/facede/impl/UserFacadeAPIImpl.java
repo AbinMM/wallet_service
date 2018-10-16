@@ -297,4 +297,15 @@ public class UserFacadeAPIImpl implements UserFacadeAPI {
 			return new MLResultObject<Boolean>(e);
 		}
 	}
+	
+	@Override
+	public MLResultObject<String> getSysConfigValueByName(String name) {
+		try {
+			String result = userService.getSysConfigValueByName(name);
+			return new MLResultObject<String>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<String>(e);
+		}
+	}
 }

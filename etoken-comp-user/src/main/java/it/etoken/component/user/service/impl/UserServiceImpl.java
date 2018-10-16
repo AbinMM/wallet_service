@@ -957,4 +957,13 @@ public class UserServiceImpl implements UserService {
     	}
     	return true;
     }
+    
+    @Override
+    public String getSysConfigValueByName(String name) throws MLException {
+    	SysConfig sysConfig = sysConfigMaper.findByName(name);
+    	if(null != sysConfig) {
+    		return sysConfig.getValue();
+    	}
+    	return "";
+    }
 }

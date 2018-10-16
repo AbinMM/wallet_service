@@ -10,6 +10,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
@@ -23,6 +24,17 @@ public class DappInfoFacadeAPIImpl implements DappInfoFacadeAPI{
 
 	@Autowired
 	DappInfoService dappInfoService;
+	
+	@Override
+	public MLResultObject<MLPage<DappInfo>> findAllByPage(int page, int pageSize, String name) {
+		try {
+			MLPage<DappInfo> result = dappInfoService.findAllByPage(page, pageSize, name);
+			return new MLResultObject<MLPage<DappInfo>>(result);
+		} catch (MLException e) {
+			logger.error(e.toString());
+			return new MLResultObject<MLPage<DappInfo>>(e);
+		}
+	}
 	
 	@Override
 	public MLResultList<DappInfo> findAll(int page,int pageSize,String name) {

@@ -2,6 +2,7 @@ package it.etoken.component.user.service;
 
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.result.MLPage;
+import it.etoken.base.model.admin.entity.SysConfig;
 import it.etoken.base.model.user.entity.EosAccountOrder;
 import it.etoken.base.model.user.entity.User;
 import it.etoken.base.model.user.entity.UserExt;
@@ -105,4 +106,6 @@ public interface UserService {
 	public void updateEost(String uid) throws MLException;
 	
 	public Boolean isOpenET() throws MLException;
+	
+	public String getSysConfigValueByName(String name) throws MLException;
 }
