@@ -14,6 +14,7 @@ import com.github.pagehelper.PageHelper;
 
 import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.model.eosblock.entity.DappInfo;
 import it.etoken.base.model.eosblock.entity.DappInfoExample;
 import it.etoken.base.model.news.entity.SysNotification;
@@ -33,14 +34,14 @@ private final static Logger logger = LoggerFactory.getLogger(SysNotificationServ
 	
 	
 	@Override
-	public Page<SysNotification> findAll(int page,int pageSize) {
+	public MLPage<SysNotification> findAll(int page,int pageSize) {
 		try {
 			Page<SysNotification> result = PageHelper.startPage(page,pageSize);  
 			SysNotificationExample example=new SysNotificationExample();
 			example.setOrderByClause("seq desc");
 			sysNotificationMapper.selectByExample(example);
 		    
-		    return result;
+			return new MLPage<SysNotification>(result.getResult(), result.getTotal());
 		} catch (MLException ex) {
 			logger.error(ex.toString());
 			throw ex;

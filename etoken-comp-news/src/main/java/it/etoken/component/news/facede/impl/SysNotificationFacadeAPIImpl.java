@@ -10,6 +10,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
@@ -29,13 +30,13 @@ public class SysNotificationFacadeAPIImpl implements SysNotificationFacadeAPI{
 	SysNotificationService sysNotificationService;
 	
 	@Override
-	public MLResultList<SysNotification> findAll(int page, int pageSize) {
+	public MLResultObject<MLPage<SysNotification>> findAll(int page, int pageSize) {
 		try {
-			Page<SysNotification> result= sysNotificationService.findAll(page,pageSize);
-			return new MLResultList<SysNotification>(result.getResult());
+			MLPage<SysNotification> result= sysNotificationService.findAll(page,pageSize);
+			return new MLResultObject<MLPage<SysNotification>>(result);
 		} catch (MLException e) {
 			logger.error(e.toString());
-			return  new MLResultList<SysNotification>(e);
+			return  new MLResultObject<MLPage<SysNotification>>(e);
 		}
 	}
 

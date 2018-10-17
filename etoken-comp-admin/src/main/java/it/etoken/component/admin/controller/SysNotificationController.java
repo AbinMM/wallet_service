@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
+import it.etoken.base.common.result.MLPage;
 import it.etoken.base.common.result.MLResult;
 import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
@@ -45,9 +46,9 @@ public class SysNotificationController extends BaseController {
 			if (StringUtils.isEmpty(page) || !MathUtil.isInteger(page)) {
 				return this.error(MLAdminException.PARAM_ERROR, null);
 			}
-			MLResultList<SysNotification> result = sysNotificationFacadeAPI.findAll(Integer.valueOf(page), 100);
+			MLResultObject<MLPage<SysNotification>> result = sysNotificationFacadeAPI.findAll(Integer.valueOf(page), 100);
 			if (result.isSuccess()) {
-				return this.success(result.getList());
+				return this.success(result.getResult());
 			} else {
 				return this.error(result.getErrorCode(), result.getErrorHint(), null);
 			}
