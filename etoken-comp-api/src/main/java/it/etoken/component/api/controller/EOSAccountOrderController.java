@@ -153,10 +153,10 @@ public class EOSAccountOrderController extends BaseController {
 				} else if (eosAccountOrder.getStatus().equalsIgnoreCase("paid")) {
 					return this.error("001", "您已支付成功! 请五分钟后再次查询激活状态。如仍未提示激活成功，请联系客服!", null);
 				} else {
-					return this.error("002", "支付不成功", null);
+					return this.error("002", "支付失败", null);
 				}
 			} else {
-				return this.error("003", "支付不成功", null);
+				return this.error("003", "支付失败", null);
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
