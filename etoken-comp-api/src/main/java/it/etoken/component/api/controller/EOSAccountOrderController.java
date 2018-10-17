@@ -62,11 +62,8 @@ public class EOSAccountOrderController extends BaseController {
 			
 			JSONObject getAccountJsonObject = new JSONObject();
 			getAccountJsonObject.put("account_name", accountName);
-//			EosResult getAccountResp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"),
-//					getAccountJsonObject.toString());
-			EosResult getAccountResp = new GetAccountInfo().run("http://34.222.33.131:8001/v1/chain/", "http://34.222.33.131:8001/v1/chain/",
+			EosResult getAccountResp = new GetAccountInfo().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"),
 					getAccountJsonObject.toString());
-			
 			
 			if (getAccountResp.isSuccess()) {
 				return this.error(MLApiException.ACCOUNT_NAME_EXIST, null);
