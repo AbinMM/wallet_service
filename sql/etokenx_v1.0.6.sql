@@ -81,6 +81,50 @@ CREATE TABLE `activity_stage_user` (
   KEY `activity_stage_id_4` (`activity_stage_id`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `eos_account_order`;
+
+CREATE TABLE `eos_account_order` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `order_no` varchar(50) NOT NULL COMMENT '订单号',
+  `status` varchar(50) NOT NULL DEFAULT 'new' COMMENT '状态',
+  `amount` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT '订单金额',
+  `account_name` varchar(100) NOT NULL COMMENT 'EOS账号',
+  `owner_public_key` varchar(100) NOT NULL COMMENT 'Owner公钥',
+  `active_public_key` varchar(100) NOT NULL COMMENT 'Active公钥',
+  `ip` varchar(100) NOT NULL COMMENT 'IP地址',
+  `transaction_id` varchar(100) DEFAULT NULL COMMENT '支付流水号',
+  `notify_content` text COMMENT '通知内容',
+  `notify_date` datetime DEFAULT NULL COMMENT '通知日期',
+  `createdate` datetime NOT NULL COMMENT '创建日期',
+  `updatedate` datetime NOT NULL COMMENT '修改日期',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `order_no` (`order_no`),
+  KEY `account_name` (`account_name`),
+  KEY `createdate` (`createdate`),
+  KEY `account_name_2` (`account_name`,`owner_public_key`)
+) ENGINE=InnoDB AUTO_INCREMENT=154 DEFAULT CHARSET=utf8 COMMENT='EOS账号订单';
+
+DROP TABLE IF EXISTS `sys_notification`;
+
+CREATE TABLE `sys_notification` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `picurl` varchar(50) NOT NULL COMMENT '图片地址',
+  `url` varchar(50) NOT NULL COMMENT '跳转地址',
+  `status` bigint(20) DEFAULT '0' COMMENT '状态，是否是活动状态，默认为0是活动状态',
+  `seq` bigint(20) DEFAULT '0' COMMENT '排序',
+  `starttime` datetime DEFAULT NULL,
+  `endtime` datetime DEFAULT NULL,
+  `createtime` datetime DEFAULT CURRENT_TIMESTAMP,
+  `modifydate` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='系统通知';
+
+/*添加配置信息 */
+insert  into `sysconf`(`name`,`desc`,`value`,`createdate`,`modifydate`) values 
+('et_open','ET交易所是否开放','1','2018-09-18 13:50:35','2018-09-18 13:50:35'),
+('eos_account_price','Eos账号费用','100','2018-10-17 05:44:29','2018-10-17 05:44:29');
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
