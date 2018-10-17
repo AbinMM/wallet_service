@@ -137,7 +137,7 @@ public class EOSAccountOrderController extends BaseController {
 			
 			MLResultObject<EosAccountOrder> result = eosAccountOrderFacadeAPI.checkByAccountNameAndOwnerPublicKey(accountName, ownerPublicKey);
 			if (result.isSuccess()) {
-				return this.success(result.getClass());
+				return this.success(result.getResult());
 			} else {
 				return this.error(result.getErrorCode(),result.getErrorHint(), null);
 			}

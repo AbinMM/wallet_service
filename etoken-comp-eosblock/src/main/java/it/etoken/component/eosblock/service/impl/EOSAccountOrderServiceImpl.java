@@ -1,6 +1,7 @@
 package it.etoken.component.eosblock.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,6 @@ import com.github.wxpay.sdk.WXPayUtil;
 
 import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
-import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.common.utils.MathUtil;
 import it.etoken.base.model.eosblock.entity.EosAccountOrder;
 import it.etoken.base.model.eosblock.entity.EosAccountOrderExample;
@@ -147,7 +147,25 @@ public class EOSAccountOrderServiceImpl implements EOSAccountOrderService {
 		EosAccountOrderExample.Criteria criteria = example.createCriteria();
 		criteria.andAccountNameEqualTo(accountName);
 		criteria.andOwnerPublicKeyEqualTo(ownerPublicKey);
+		
+		//查找支付成功或者已创建成功的单
+		List<String> statusList = new ArrayList<String>();
+		statusList.add("paid");
+		statusList.add("completed");
+		criteria.andStatusIn(statusList);
 		List<EosAccountOrder> list = eosAccountOrderMapper.selectByExample(example);
+		if (null != list && !list.isEmpty()) {
+			return list.get(0);
+		}
+		
+		//没有支付成功的，则返回最新一条记录
+		EosAccountOrderExample exampleLatest = new EosAccountOrderExample();
+		EosAccountOrderExample.Criteria criteriaLatest = exampleLatest.createCriteria();
+		criteriaLatest.andAccountNameEqualTo(accountName);
+		criteriaLatest.andOwnerPublicKeyEqualTo(ownerPublicKey);
+		exampleLatest.setOrderByClause("id desc");
+		
+		list = eosAccountOrderMapper.selectByExample(exampleLatest);
 		if (null == list || list.isEmpty()) {
 			return null;
 		}
