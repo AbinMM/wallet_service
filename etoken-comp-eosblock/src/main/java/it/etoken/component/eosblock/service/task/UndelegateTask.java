@@ -51,7 +51,7 @@ public class UndelegateTask {
 					   } catch (Exception e) {
 						  logger.info("可能未修改状态成功ID**************************************："+delegatebw.getId());
 						  e.printStackTrace();
-						  throw new MLException(MLCommonException.system_err);
+						 // throw new MLException(MLCommonException.system_err);
 					   }
 //				      }else {
 //				    	  throw new MLException(MLCommonException.system_err);
