@@ -21,6 +21,7 @@ import com.github.wxpay.sdk.WXPayUtil;
 
 import it.etoken.base.common.exception.MLCommonException;
 import it.etoken.base.common.exception.MLException;
+import it.etoken.base.common.utils.HttpClientUtils;
 import it.etoken.base.common.utils.MathUtil;
 import it.etoken.base.model.eosblock.entity.EosAccountOrder;
 import it.etoken.base.model.eosblock.entity.EosAccountOrderExample;
@@ -375,13 +376,13 @@ public class EOSAccountOrderServiceImpl implements EOSAccountOrderService {
 		jsonObject.put("active", eosAccountOrder.getActivePublicKey());
 		
 		try {
-//			String resultStr = HttpClientUtils.doPostJson(EOS_SERVER_API + "account/create", jsonObject.toString());
+			String resultStr = HttpClientUtils.doPostJson(EOS_SERVER_API + "account/create", jsonObject.toString());
 			
-//			JSONObject jo = JSONObject.parseObject(resultStr);
-//			int code = jo.getIntValue("code");
-//			String msg = jo.getString("msg");
-//			
-//			if(code == 0 && msg.equalsIgnoreCase("success")) {
+			JSONObject jo = JSONObject.parseObject(resultStr);
+			int code = jo.getIntValue("code");
+			String msg = jo.getString("msg");
+			
+			if(code == 0 && msg.equalsIgnoreCase("success")) {
 //				 修改订单状态为完成
 				Date nowDate = new Date();
 				EosAccountOrder updateEosAccountOrder = new EosAccountOrder();
@@ -389,7 +390,7 @@ public class EOSAccountOrderServiceImpl implements EOSAccountOrderService {
 				updateEosAccountOrder.setStatus("completed");
 				updateEosAccountOrder.setUpdatedate(nowDate);
 				this.saveUpdate(updateEosAccountOrder);
-//			}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
