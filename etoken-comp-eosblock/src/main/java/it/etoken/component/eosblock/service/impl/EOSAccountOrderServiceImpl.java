@@ -186,15 +186,30 @@ public class EOSAccountOrderServiceImpl implements EOSAccountOrderService {
 		}
 		return list.get(0);
 	}
+	
+	public EosAccountOrder queryPaidOrCompletedByAccountName(String accountName) {
+		EosAccountOrderExample example = new EosAccountOrderExample();
+		EosAccountOrderExample.Criteria criteria = example.createCriteria();
+		criteria.andAccountNameEqualTo(accountName);
+		
+		List<String> statusList = new ArrayList<String>();
+		statusList.add("paid");
+		statusList.add("completed");
+		criteria.andStatusIn(statusList);
+		
+		List<EosAccountOrder> list = eosAccountOrderMapper.selectByExample(example);
+		if (null == list || list.isEmpty()) {
+			return null;
+		}
+		return list.get(0);
+	}
 
 	@Override
 	public Map<String, String> createWxOrder(EosAccountOrder eOSAccountOrder) {
 		Date nowDate = new Date();
 
-		EosAccountOrder existSuccessEOSAccountOrder = this.queryByAccountName(eOSAccountOrder.getAccountName());
-		if (null != existSuccessEOSAccountOrder
-				&& (existSuccessEOSAccountOrder.getStatus().equalsIgnoreCase("completed")
-						|| existSuccessEOSAccountOrder.getStatus().equalsIgnoreCase("paid"))) {
+		EosAccountOrder existSuccessEOSAccountOrder = this.queryPaidOrCompletedByAccountName(eOSAccountOrder.getAccountName());
+		if (null != existSuccessEOSAccountOrder) {
 			throw new MLException("100", "此账号已付款，请勿再次支付");
 		}
 

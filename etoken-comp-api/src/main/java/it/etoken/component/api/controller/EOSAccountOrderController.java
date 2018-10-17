@@ -142,7 +142,7 @@ public class EOSAccountOrderController extends BaseController {
 			if (result.isSuccess()) {
 				EosAccountOrder eosAccountOrder = result.getResult();
 				if (null == eosAccountOrder) {
-					return this.error("005", "订单不存在", null);
+					return this.error("005", "账号未激活", null);
 				}
 				if (eosAccountOrder.getStatus().equalsIgnoreCase("completed")) {
 					Map<String, Object> successMap = new HashMap<String, Object>();
