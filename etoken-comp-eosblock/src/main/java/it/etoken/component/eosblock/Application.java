@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 @ServletComponentScan
 @ComponentScan(basePackages={"it.etoken.component.eosblock","it.etoken.base.cache","it.etoken.base.common.dao","it.etoken.base.common.jpush"})
-@PropertySource({"classpath:config_database.properties","classpath:config_mongodb.properties","classpath:config_redis.properties","classpath:config_jpush.properties", "classpath:config_http.properties"}) 
+@PropertySource({"classpath:config_database.properties","classpath:config_mongodb.properties","classpath:config_redis.properties","classpath:config_jpush.properties", "classpath:config_http.properties", "classpath:config_payment.properties"}) 
 public class Application {
 
 	private final static Logger logger = LoggerFactory.getLogger(Application.class);

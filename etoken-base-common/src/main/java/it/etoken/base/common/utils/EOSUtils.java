@@ -23,27 +23,54 @@ public class EOSUtils {
 		return 0;
 	}
 
-	private long string_to_name(String str) {
+//	private long string_to_name(String str) {
+//		char[] strc = str.toCharArray();
+//		long name = 0;
+//		int i = 0;
+//		for (; i < 12; ++i) {
+//			// NOTE: char_to_symbol() returns char type, and without this explicit
+//			// expansion to uint64 type, the compilation fails at the point of usage
+//			// of string_to_name(), where the usage requires constant (compile time)
+//			// expression.
+//			name |= (char_to_symbol(strc[i]) & 0x1f) << (64 - 5 * (i + 1));
+//		}
+//		// The for-loop encoded up to 60 high bits into uint64 'name' variable,
+//		// if (strlen(str) > 12) then encode str[12] into the low (remaining)
+//		// 4 bits of 'name'
+//		if (strc.length > 12)
+//			name |= char_to_symbol(strc[12]) & 0x0F;
+//		return name;
+//	}
+	
+	public String string_to_name(String str) {
 		char[] strc = str.toCharArray();
-		long name = 0;
 		int i = 0;
+		StringBuilder result2 = new StringBuilder("");
 		for (; i < 12; ++i) {
-			// NOTE: char_to_symbol() returns char type, and without this explicit
-			// expansion to uint64 type, the compilation fails at the point of usage
-			// of string_to_name(), where the usage requires constant (compile time)
-			// expression.
-			name |= (char_to_symbol(strc[i]) & 0x1f) << (64 - 5 * (i + 1));
+			long charToLong= (char_to_symbol(strc[i]) & 0x1f);
+			BigInteger b10 = new BigInteger(String.valueOf(charToLong));
+			String b2string = b10.toString(2);
+			StringBuilder b2 = new StringBuilder("");
+			if(b2string.length()<5) {
+				for(int n=0;n<5-b2string.length();n++) {
+					b2.append("0");
+				}
+				b2.append(b2string);
+			}else {
+				b2.append(b2string);
+			}
+			result2.append(b2.substring(0, 5));
 		}
-		// The for-loop encoded up to 60 high bits into uint64 'name' variable,
-		// if (strlen(str) > 12) then encode str[12] into the low (remaining)
-		// 4 bits of 'name'
-		if (strc.length > 12)
-			name |= char_to_symbol(strc[12]) & 0x0F;
-		return name;
+		result2.append("0000");
+		
+		result2 = new StringBuilder(result2.toString());
+		
+		BigInteger result = new BigInteger(result2.toString(), 2);
+		return result.toString(10);
 	}
 
 	public String getBoundKey(String name, int precision, String symbol) {
-		long i = string_to_name(name);
+		String i = string_to_name(name);
 		long j = string_to_symbol(precision, symbol);
 		BigInteger ii = new BigInteger(String.valueOf(i));
 		String iis = ii.toString(2);

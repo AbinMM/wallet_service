@@ -82,7 +82,7 @@ public class EosTokenServiceImpl  implements EosTokenService{
 			String code =cacheService.get("code" +coins.getCode().toUpperCase(),String.class );
 			MLResultObject<JSONObject> result=eTExchangePriceFacadeAPI.getTodayKInfo(code);
 			JSONObject obj=result.getResult();
-			System.out.println(obj.toString());
+			System.out.println(null == obj ? "" : obj.toString());
 			Double last_rmb=Double.parseDouble(formatter2.format(obj.getBigDecimal("min").doubleValue()* rate));
 			Double last=Double.parseDouble(formatter.format(obj.getBigDecimal("min").doubleValue()* rateUSD));
 			//兼容gate.io的格式。
