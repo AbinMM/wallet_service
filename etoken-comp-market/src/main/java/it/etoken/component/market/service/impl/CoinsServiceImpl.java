@@ -85,7 +85,7 @@ public class CoinsServiceImpl implements CoinsService {
 		try{
 			Page<Coins> result = PageHelper.startPage(1,100);  
 			CoinsExample example = new CoinsExample();
-			coinsMapper.selectByExample(example);
+			coinsMapper.selectByExampleWithBLOBs(example);
 			return result;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
