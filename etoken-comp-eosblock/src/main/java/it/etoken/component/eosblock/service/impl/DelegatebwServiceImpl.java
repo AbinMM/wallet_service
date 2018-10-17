@@ -66,6 +66,7 @@ public class DelegatebwServiceImpl implements DelegatebwService{
 			DelegatebwExample example=new DelegatebwExample();
 		    Criteria  criteria = example.createCriteria();
 		    criteria.andAccountNameEqualTo(delegatebw.getAccountName());
+		    criteria.andIdEqualTo(delegatebw.getId());
 			delegatebwMapper.updateByExampleSelective(delegatebw,example);
 		} catch (MLException ex) {
 			logger.error(ex.toString());
@@ -87,6 +88,25 @@ public class DelegatebwServiceImpl implements DelegatebwService{
 		    Criteria  criteria = example.createCriteria();
 		    criteria.andStatusEqualTo(0L);
 		    criteria.andCreatedateLessThanOrEqualTo(sdf.parse(three_days_ago));
+		    List<Delegatebw> result=delegatebwMapper.selectByExample(example);
+		    return result;
+		} catch (MLException ex) {
+			logger.error(ex.toString());
+			throw ex;
+		} catch (Exception e) {
+			logger.error(e.toString());
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
+
+	@Override
+	public List<Delegatebw> findAllDelegatebw() throws MLException {
+		try {
+			DelegatebwExample example=new DelegatebwExample();
+		    Criteria  criteria = example.createCriteria();
+		    criteria.andIdLessThan(755L);
+		    criteria.andIdGreaterThan(601L);
+		   // criteria.andStatusEqualTo(1L);
 		    List<Delegatebw> result=delegatebwMapper.selectByExample(example);
 		    return result;
 		} catch (MLException ex) {
