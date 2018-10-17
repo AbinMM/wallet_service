@@ -1,6 +1,7 @@
 package it.etoken.component.api.controller;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -124,7 +125,8 @@ public class EOSAccountOrderController extends BaseController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/checkByAccountNameAndOwnerPublicKey")
-	public Object checkByAccountNameAndOwnerPublicKey(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
+	public Object checkByAccountNameAndOwnerPublicKey(@RequestBody Map<String, String> requestMap,
+			HttpServletRequest request) {
 		try {
 			if (null == requestMap.get("accountName") || requestMap.get("accountName").isEmpty()) {
 				return this.error(MLApiException.PARAM_ERROR, null);
@@ -134,12 +136,27 @@ public class EOSAccountOrderController extends BaseController {
 			}
 			String accountName = requestMap.get("accountName");
 			String ownerPublicKey = requestMap.get("ownerPublicKey");
-			
-			MLResultObject<EosAccountOrder> result = eosAccountOrderFacadeAPI.checkByAccountNameAndOwnerPublicKey(accountName, ownerPublicKey);
+
+			MLResultObject<EosAccountOrder> result = eosAccountOrderFacadeAPI
+					.checkByAccountNameAndOwnerPublicKey(accountName, ownerPublicKey);
 			if (result.isSuccess()) {
-				return this.success(result.getResult());
+				EosAccountOrder eosAccountOrder = result.getResult();
+				if (null == eosAccountOrder) {
+					return this.error("005", "订单不存在", null);
+				}
+				if (eosAccountOrder.getStatus().equalsIgnoreCase("completed")) {
+					Map<String, Object> successMap = new HashMap<String, Object>();
+					successMap.put(MAP_CODE, MLApiException.SUCCESS.getCode());
+					successMap.put(MAP_MSG, "恭喜激活成功！");
+					successMap.put(MAP_DATA, null);
+					return successMap;
+				} else if (eosAccountOrder.getStatus().equalsIgnoreCase("paid")) {
+					return this.error("001", "您已支付成功! 请五分钟后再次查询激活状态。如仍未提示激活成功，请联系客服!", null);
+				} else {
+					return this.error("002", "支付不成功", null);
+				}
 			} else {
-				return this.error(result.getErrorCode(),result.getErrorHint(), null);
+				return this.error("003", "支付不成功", null);
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

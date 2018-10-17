@@ -79,6 +79,9 @@ public class EOSAccountOrderServiceImpl implements EOSAccountOrderService {
 	@Override
 	public EosAccountOrder checkByAccountNameAndOwnerPublicKey(String accountName, String ownerPublicKey) {
 		EosAccountOrder eosAccountOrder = this.queryByAccountNameAndOwnerPublicKey(accountName, ownerPublicKey);
+		if(null == eosAccountOrder) {
+			return null;
+		}
 		if (eosAccountOrder.getStatus().equalsIgnoreCase("paid")
 				|| eosAccountOrder.getStatus().equalsIgnoreCase("completed")) {
 			return eosAccountOrder;
