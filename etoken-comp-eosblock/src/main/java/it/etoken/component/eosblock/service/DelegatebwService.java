@@ -14,4 +14,6 @@ public interface DelegatebwService {
 	public void update(Delegatebw delegatebw)  throws  MLException;
 
 	public List<Delegatebw> findByCreateDate()  throws  MLException;
+
+	public List<Delegatebw> findAllDelegatebw() throws  MLException;
 }
