@@ -297,7 +297,14 @@ public class NewsController extends BaseController {
 		try {
 			MLResultList<SysNotification> result = sysNotificationFacadeAPI.findByTimeAndStatus();
 			if (result.isSuccess()) {
-				return this.success(result.getList().get(0));
+				if(result.getList().size()==0) {
+					return this.success(null);	
+				}
+				try {
+					return this.success(result.getList().get(0));
+				} catch (Exception e) {
+					return this.success(null);
+				}
 			} else {
 				return this.error(result.getErrorCode(), result.getErrorHint(), null);
 			}
