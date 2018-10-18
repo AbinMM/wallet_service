@@ -57,8 +57,8 @@ private final static Logger logger = LoggerFactory.getLogger(SysNotificationServ
 		try {
 			SysNotificationExample example=new SysNotificationExample();
 			Criteria criteria=example.createCriteria();
-			criteria.andStarttimeGreaterThanOrEqualTo(new Date());
-			criteria.andEndtimeLessThanOrEqualTo(new Date());
+			criteria.andStarttimeLessThanOrEqualTo(new Date());
+			criteria.andEndtimeGreaterThanOrEqualTo(new Date());
 			criteria.andStatusEqualTo(0L);
 			
 			Criteria criteria1=example.createCriteria();
