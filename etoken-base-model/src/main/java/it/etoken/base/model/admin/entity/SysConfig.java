@@ -9,7 +9,7 @@ public class SysConfig  extends BaseEntity {
 	private static final long serialVersionUID = 1L;
 	private String name;
 	private String value;
-	private String desc;
+	private String description;
 	
 	
 	
@@ -34,10 +34,10 @@ public class SysConfig  extends BaseEntity {
 	public void setValue(String value) {
 		this.value = value;
 	}
-	public String getDesc() {
-		return desc;
+	public String getDescription() {
+		return description;
 	}
-	public void setDesc(String desc) {
-		this.desc = desc;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }

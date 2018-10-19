@@ -39,7 +39,7 @@ public class SysNotificationController extends BaseController {
 
 	@ResponseBody
 	@RequestMapping(value = "/list")
-	public Object list(@RequestParam Map<String, String> requestMap, HttpServletRequest request) {
+	public Object list(@RequestBody Map<String, String> requestMap, HttpServletRequest request) {
 		logger.info("/list request map : " + requestMap);
 		try {
 			String page = requestMap.get("page");

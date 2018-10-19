@@ -10,3 +10,4 @@
 /etoken-comp-market/conf/*.properties
 /etoken-comp-news/conf/*.properties
 /etoken-comp-user/conf/*.properties
+target
