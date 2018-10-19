@@ -59,12 +59,12 @@ private final static Logger logger = LoggerFactory.getLogger(SysNotificationServ
 			Criteria criteria=example.createCriteria();
 			criteria.andStarttimeLessThanOrEqualTo(new Date());
 			criteria.andEndtimeGreaterThanOrEqualTo(new Date());
-			criteria.andStatusEqualTo(1L);
+			criteria.andStatusEqualTo("1");
 			
 			Criteria criteria1=example.createCriteria();
 			criteria1.andStarttimeIsNull();
 			criteria1.andEndtimeIsNull();
-			criteria1.andStatusEqualTo(1L);
+			criteria1.andStatusEqualTo("1");
 	
 			example.or(criteria1);
 			example.setOrderByClause("modifydate desc");
