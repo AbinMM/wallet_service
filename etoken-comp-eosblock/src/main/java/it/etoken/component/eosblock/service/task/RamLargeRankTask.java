@@ -34,4 +34,30 @@ public class RamLargeRankTask {
 		}
 
 	}
+	
+	
+	@Scheduled(cron = "0 */1 * * * ?")
+	public void getNewLargeRank() {
+		try {
+			System.out.println("计算半个小时内是否有大单产生开始---------------------");
+			ramLargeRankService.getNewLargeRank();
+			System.out.println("计算半个小时内是否有大单产生结束---------------------");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
+	
+	@Scheduled(cron = "0 */1 * * * ?")
+	public void updateLargeRank() {
+		try {
+			System.out.println("修改半个小时内交易过的大户的内存开始---------------------");
+			ramLargeRankService.updateLargeRank();
+			System.out.println("修改半个小时内交易过的大户的内结束---------------------");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MLException(MLCommonException.system_err);
+		}
+	}
+	
 }
