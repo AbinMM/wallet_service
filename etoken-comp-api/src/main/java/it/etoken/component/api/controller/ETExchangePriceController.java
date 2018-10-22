@@ -492,10 +492,10 @@ public class ETExchangePriceController extends BaseController {
 		jsonObject.put("code", "etbexchanger");
 		jsonObject.put("scope", "etbexchanger");
 		jsonObject.put("table", "markets"); //markets
-		jsonObject.put("key-type", "i128");
-		jsonObject.put("limit", "1");
-		jsonObject.put("index", "2");
-		jsonObject.put("lower", boundKey);
+		jsonObject.put("key_type", "i128");
+		jsonObject.put("limit", 1);
+		jsonObject.put("index_position", "2");
+		jsonObject.put("lower_bound", boundKey);
 
 		EosResult resp = null;
 		try {
