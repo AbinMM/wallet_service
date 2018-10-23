@@ -33,7 +33,7 @@ public class CoinsFacadeAPIImpl implements CoinsFacadeAPI {
 	@Override
 	public MLResultList<Coins> findAll(int page) {
 		try {
-			Page<Coins> result = coinsService.findAll();
+			Page<Coins> result = coinsService.findAll(page);
 			return new MLResultList<Coins>(result.getResult());
 		} catch (MLException e) {
 			logger.error(e.toString());

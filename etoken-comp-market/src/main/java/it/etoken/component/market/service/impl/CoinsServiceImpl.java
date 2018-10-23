@@ -81,9 +81,9 @@ public class CoinsServiceImpl implements CoinsService {
 
 	@Override
 	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
-	public Page<Coins> findAll() throws MLException {
+	public Page<Coins> findAll(int page) throws MLException {
 		try{
-			Page<Coins> result = PageHelper.startPage(1,100);  
+			Page<Coins> result = PageHelper.startPage(page,1000);  
 			CoinsExample example = new CoinsExample();
 			coinsMapper.selectByExampleWithBLOBs(example);
 			return result;

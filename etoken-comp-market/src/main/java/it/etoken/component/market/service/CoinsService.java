@@ -28,7 +28,7 @@ public interface CoinsService {
 	 * @param userId
 	 * @return
 	 */
-	public Page<Coins> findAll()throws MLException;
+	public Page<Coins> findAll(int page)throws MLException;
 	
 	/**
 	 * 查詢币
