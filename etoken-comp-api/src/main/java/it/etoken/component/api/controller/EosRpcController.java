@@ -186,24 +186,6 @@ public class EosRpcController extends BaseController {
 
 		JSONObject jsonObject = new JSONObject();
 		try {
-			String uid = request.getHeader("uid");
-			MLResultObject<UserEosAccount> result=userEosAccountFacadeAPI.findbyUidAndAccount(uid, requestMap.get("account"));
-			if(result.isSuccess()) {
-				if(result.getResult()!=null) {
-					UserEosAccount uea=result.getResult();
-					uea.setUpdateDate(new Date());
-					userEosAccountFacadeAPI.update(uea);
-				}else {
-					UserEosAccount userEosAccount=new UserEosAccount();
-					if(null!=uid) {
-						userEosAccount.setUid(Long.parseLong(uid));	
-					}
-					userEosAccount.setEosAccount(requestMap.get("account"));
-					userEosAccount.setCreateDate(new Date());
-					userEosAccount.setUpdateDate(new Date());
-					userEosAccountFacadeAPI.save(userEosAccount);
-				}
-			}
 			jsonObject.put("code", requestMap.get("contract"));
 			jsonObject.put("account", requestMap.get("account"));
 			jsonObject.put("symbol", requestMap.get("symbol"));
@@ -215,6 +197,24 @@ public class EosRpcController extends BaseController {
 		try {
 			resp = new GetBalance().run(eosNodeUtils.getNodeUrls().get("url_chain"), eosNodeUtils.getNodeUrls().get("url_chain_backup"), jsonObject.toString());
 			if (resp.isSuccess()) {
+				String uid = request.getHeader("uid");
+				MLResultObject<UserEosAccount> result=userEosAccountFacadeAPI.findbyUidAndAccount(uid, requestMap.get("account"));
+				if(result.isSuccess()) {
+					if(result.getResult()!=null) {
+						UserEosAccount uea=result.getResult();
+						uea.setUpdateDate(new Date());
+						userEosAccountFacadeAPI.update(uea);
+					}else {
+						UserEosAccount userEosAccount=new UserEosAccount();
+						if(null!=uid) {
+							userEosAccount.setUid(Long.parseLong(uid));	
+						}
+						userEosAccount.setEosAccount(requestMap.get("account"));
+						userEosAccount.setCreateDate(new Date());
+						userEosAccount.setUpdateDate(new Date());
+						userEosAccountFacadeAPI.save(userEosAccount);
+					}
+				}
 				return this.success(resp.getData());
 			}else {
 				System.out.println(this.error(resp.getStatus(), resp.getData()).toString());
