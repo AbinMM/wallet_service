@@ -83,7 +83,7 @@ public class CoinsServiceImpl implements CoinsService {
 	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
 	public Page<Coins> findAll(int page) throws MLException {
 		try{
-			Page<Coins> result = PageHelper.startPage(1,200);//因为不清楚后台管理系统为什么开始这边没有传page那边可以分页所以暂时吧pagesize修改为200
+			Page<Coins> result = PageHelper.startPage(1,1000);//因为不清楚后台管理系统为什么开始这边没有传page那边可以分页所以暂时吧pagesize修改为1000
 			CoinsExample example = new CoinsExample();
 			coinsMapper.selectByExampleWithBLOBs(example);
 			return result;
@@ -114,7 +114,7 @@ public class CoinsServiceImpl implements CoinsService {
 	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
 	public Page<Coins> findAllByPage(int page, String code) throws MLException {
 		try{
-			Page<Coins> result = PageHelper.startPage(page,100);  
+			Page<Coins> result = PageHelper.startPage(page,1000);  //因为前台没有分页为快速满足需求将pagesize设置大一点1000
 			CoinsExample example = new CoinsExample();
 			CoinsExample.Criteria criteria = example.createCriteria();
 			if(null != code && !code.isEmpty()) {
