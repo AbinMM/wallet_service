@@ -93,9 +93,9 @@ public class CoinsFacadeAPIImpl implements CoinsFacadeAPI {
 	}
 	
 	@Override
-	public MLResultObject<Coins> findByName(String name) {
+	public MLResultObject<Coins> findByName(String name,String contract_account) {
 		try {
-			Coins coins = coinsService.findByName(name);
+			Coins coins = coinsService.findByName(name,contract_account);
 			return new MLResultObject<Coins>(coins);
 		} catch (MLException e) {
 			logger.error(e.toString());

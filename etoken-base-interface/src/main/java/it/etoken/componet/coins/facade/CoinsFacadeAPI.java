@@ -17,7 +17,7 @@ public interface CoinsFacadeAPI {
 	
 	public MLResultList<JSONObject> findAllByPage(int page, String code);
 	
-	public MLResultObject<Coins> findByName(String name);
+	public MLResultObject<Coins> findByName(String name,String contract_account);
 	
 	//查询所有的coins不分页
 	public MLResultList<Coins> findAllCoins();

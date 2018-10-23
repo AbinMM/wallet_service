@@ -51,7 +51,7 @@ public interface CoinsService {
 	 * @return
 	 * @throws MLException
 	 */
-	public Coins findByName(String name) throws MLException;
+	public Coins findByName(String name,String contract_account) throws MLException;
 	
 	/**
 	 * 获取所有支持行情的coin

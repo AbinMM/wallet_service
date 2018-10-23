@@ -417,7 +417,7 @@ public class ETExchangePriceController extends BaseController {
 		String[] codes = code.split("_");
 		String base_contract = requestMap.get("base_contract");
 
-		MLResultObject<Coins> result = coinsFacadeAPI.findByName(codes[0]);
+		MLResultObject<Coins> result = coinsFacadeAPI.findByName(codes[0],base_contract);
 		if(!result.isSuccess()) {
 			return this.error(result.getErrorCode(), result.getErrorHint(), result.getResult());
 		}
@@ -479,7 +479,7 @@ public class ETExchangePriceController extends BaseController {
 		String[] codes = code.split("_");
 		String base_contract = requestMap.get("base_contract");
 
-		MLResultObject<Coins> result = coinsFacadeAPI.findByName(codes[0]);
+		MLResultObject<Coins> result = coinsFacadeAPI.findByName(codes[0],base_contract);
 		if(!result.isSuccess()) {
 			return this.error(result.getErrorCode(), result.getErrorHint(), result.getResult());
 		}

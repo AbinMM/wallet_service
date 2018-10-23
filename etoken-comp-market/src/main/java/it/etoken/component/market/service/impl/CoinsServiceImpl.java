@@ -135,12 +135,12 @@ public class CoinsServiceImpl implements CoinsService {
 	
 	@Override
 	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
-	public Coins findByName(String name) throws MLException {
+	public Coins findByName(String name,String contract_account) throws MLException {
 		try{
 			CoinsExample example = new CoinsExample();
 			Criteria criteria = example.createCriteria();
 			criteria.andNameEqualTo(name);
-			
+			criteria.andContractAccountEqualTo(contract_account);
 			List<Coins> coins =  coinsMapper.selectByExample(example);
 			if(coins.isEmpty()) {
 				return null;

@@ -306,7 +306,7 @@ public class CoinsController extends BaseController{
 			}
 		
 			//确定是否已经存在合约
-			MLResultObject<Coins> coinsResultObject = coinsFacadeAPI.findByName(name);
+			MLResultObject<Coins> coinsResultObject = coinsFacadeAPI.findByName(name,contract_account);
 			if(!coinsResultObject.isSuccess()) {
 				return this.error(coinsResultObject.getErrorCode(), coinsResultObject.getErrorHint(), coinsResultObject.getResult());
 			}
@@ -476,7 +476,12 @@ public class CoinsController extends BaseController{
 			if(null == name || name.isEmpty()) {
 				return this.error(MLApiException.PARAM_ERROR,null);
 			}
-			MLResultObject<Coins> result = coinsFacadeAPI.findByName(name);
+			String contract_account = requestMap.get("contract_account");
+			if (StringUtils.isEmpty(contract_account) || StringUtils.isEmpty(contract_account.trim())) {
+				return this.error(MLApiException.PARAM_ERROR, "合约帐号不能为空");
+			}
+			
+			MLResultObject<Coins> result = coinsFacadeAPI.findByName(name,contract_account);
 			if(!result.isSuccess()) {
 				return this.error(result.getErrorCode(), result.getErrorHint(), result.getResult());
 			}
