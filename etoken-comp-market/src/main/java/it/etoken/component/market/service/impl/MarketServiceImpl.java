@@ -54,7 +54,7 @@ public class MarketServiceImpl implements MarketService{
 
 	@Override
 	public void ticker(Coins coins) throws MLException {
-		Coins coin=coinsService.findByName(coins.getName());
+		Coins coin=coinsService.findByName(coins.getName(),coins.getContractAccount());
 		if(coin.getExchange().equals(gateExchange)) {
 			  gateioService.ticker(coins);
 		}else if(coin.getExchange().equals(eosTokenExchange)) {
@@ -96,8 +96,8 @@ public class MarketServiceImpl implements MarketService{
 	}
 
 	@Override
-	public Map getLine(String coin, String type) throws MLException {
-		Coins coins=coinsService.findByName(coin.toUpperCase());
+	public Map getLine(String coin,String contract_account,String type) throws MLException {
+		Coins coins=coinsService.findByName(coin.toUpperCase(),contract_account);
 		if(coins.getExchange().equals(gateExchange)) {
 			  Map date=	gateioService.getLine(coin, type);
 			  return date;

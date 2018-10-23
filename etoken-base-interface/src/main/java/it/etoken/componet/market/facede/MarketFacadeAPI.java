@@ -33,5 +33,5 @@ public interface MarketFacadeAPI {
 	 * @param type
 	 * @return
 	 */
-	public MLResultObject<Map> getLine(String coins,String type);
+	public MLResultObject<Map> getLine(String coins,String contract_account,String type);
 }

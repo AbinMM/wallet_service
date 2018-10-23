@@ -49,9 +49,9 @@ public class MarketFacadeAPIImpl implements MarketFacadeAPI {
 	}
 
 	@Override
-	public MLResultObject<Map> getLine(String coins,String type) {
+	public MLResultObject<Map> getLine(String coins,String contract_account,String type) {
 		try{
-			return new MLResultObject<Map>(marketService.getLine(coins, type));
+			return new MLResultObject<Map>(marketService.getLine(coins,contract_account, type));
 		}catch (MLException e) {
 			logger.error(e.toString());
 			return new MLResultObject<Map>(e);
