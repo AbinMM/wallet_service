@@ -181,6 +181,7 @@ public class RamLargeRankServiceImpl implements RamLargeRankService{
 			    	  bdo.put("totalEosEarn",cacheService.get("totalEosEarn", BigDecimal.class));
 			    	  bdo.put("totalRamSelled",cacheService.get("sellEos", BigDecimal.class));
 			    	  mongoTemplate.insert(bdo, "ram_large_user_rank");
+			    	  System.out.println("**********************************新增大户*********************************"+actor);
 			    }
 			}catch (Exception e) {
 				e.printStackTrace();
@@ -210,6 +211,7 @@ public class RamLargeRankServiceImpl implements RamLargeRankService{
 					ram_bytes = ram_bytes.divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_UP);
 					Query query = new Query(Criteria.where("account").in(actor));
 					mongoTemplate.updateFirst(query, Update.update("ramQuota", ram_bytes), BasicDBObject.class, "ram_large_user_rank");
+					 System.out.println("**********************************修改大户内存*********************************"+actor);
 				}catch (Exception e) {
 					e.printStackTrace();
 				}
