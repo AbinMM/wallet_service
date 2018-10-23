@@ -83,7 +83,7 @@ public class CoinsServiceImpl implements CoinsService {
 	@Cacheable(value="coinsCache",keyGenerator="wiselyKeyGenerator") 
 	public Page<Coins> findAll(int page) throws MLException {
 		try{
-			Page<Coins> result = PageHelper.startPage(page,1000);  
+			Page<Coins> result = PageHelper.startPage(1,200);//因为不清楚后台管理系统为什么开始这边没有传page那边可以分页所以暂时吧pagesize修改为200
 			CoinsExample example = new CoinsExample();
 			coinsMapper.selectByExampleWithBLOBs(example);
 			return result;
