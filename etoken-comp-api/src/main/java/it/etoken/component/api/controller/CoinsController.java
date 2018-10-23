@@ -494,23 +494,33 @@ public class CoinsController extends BaseController{
 			String code = info.getName() + "_EOS_" + info.getContractAccount();
 			BasicDBObject priceInfo = cacheService.get("et_price_info_"+code, BasicDBObject.class);
 			BigDecimal price_rmb = BigDecimal.ZERO;
+			BigDecimal price_usd = BigDecimal.ZERO;
 			if(null != priceInfo) {
-				
 				price_rmb = new BigDecimal(priceInfo.getString("price_rmb"));
+				price_usd=cacheService.get("CNY_USDT",BigDecimal.class);
 			}
 			
 			JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info));
 			
-			long total = info.getTotal();
+			long total = info.getTotal(); 
 			long totalYi = total/100000000;
+			
 			BigDecimal marketValue = BigDecimal.valueOf(total).multiply(price_rmb).setScale(0, BigDecimal.ROUND_DOWN);
 			
 			BigDecimal marketValueYi = marketValue.divide(BigDecimal.valueOf(100000000), 0, BigDecimal.ROUND_DOWN);
 			
+	        BigDecimal totalUSD = BigDecimal.valueOf(total).divide(price_usd, 0, BigDecimal.ROUND_DOWN);
+			
+			BigDecimal totalYiUSD = BigDecimal.valueOf(totalYi).divide(price_usd, 0, BigDecimal.ROUND_DOWN);
+			
 			String total_desc = "￥" + total + "(" + totalYi + "亿)";
+			String totalUSD_desc = "￥" + totalUSD + "(" + totalYiUSD + "亿)";
 			String marketValueDesc = marketValue + "(" + marketValueYi + "亿) "+info.getName();
+			String marketValueUSDDesc = marketValue.divide(price_usd, 0, BigDecimal.ROUND_DOWN) + "(" + marketValueYi.divide(price_usd, 0, BigDecimal.ROUND_DOWN) + "亿) "+info.getName();
 			resultData.put("totalDesc", total_desc);
+			resultData.put("totalUSDDesc", totalUSD_desc);
 			resultData.put("marketValueDesc", marketValueDesc);
+			resultData.put("marketValueUSDDesc", marketValueUSDDesc);
 			
 			return this.success(resultData);
 		} catch (Exception e) {
