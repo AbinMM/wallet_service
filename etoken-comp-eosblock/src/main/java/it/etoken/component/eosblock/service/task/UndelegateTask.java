@@ -21,7 +21,7 @@ import it.etoken.component.eosblock.eosrpc.GetUndelegatebw;
 import it.etoken.component.eosblock.service.DelegatebwService;
 import it.etoken.component.eosblock.service.impl.DelegatebwServiceImpl;
 
-@Component
+//@Component
 public class UndelegateTask {
 	
 	private final static Logger logger = LoggerFactory.getLogger(UndelegateTask.class);
@@ -32,7 +32,7 @@ public class UndelegateTask {
 	@Value("${eos.server.api}")
 	String EOS_SERVER_API;
 
-	@Scheduled(cron = "0 0 0 */3 * ?")
+	//@Scheduled(cron = "0 0 0 */4 * ?") 先暂停执行赎回任务，然后将时间改为4天一执行
 	public void getLargeRank() {
 		try {
 			List<Delegatebw> list=delegatebwService.findByCreateDate();
