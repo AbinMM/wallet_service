@@ -265,7 +265,7 @@ public class NewsFlashTask {
         	//将数据添加到数据库中
         	for (News news : listWait) {
         		try {
-        			if (news.getTitle().contains("推广")) {
+        			if (news.getTitle().contains("推广")||news.getContent().equals("微信号")) {
         				continue;
 					}
         			this.processOne(news);;

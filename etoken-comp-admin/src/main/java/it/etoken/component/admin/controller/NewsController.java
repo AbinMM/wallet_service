@@ -94,7 +94,7 @@ public class NewsController extends BaseController {
 					MLResultObject<HtmlTemplate> ml=htmlTemplateFacadeAPI.findTemplate();
 					String template=ml.getResult().getTemplate();
 					Double eosprice=findEosPrice();
-					String tempurl= HtmlUtils.gemHtmlforAlerts(params.getContent(),params.getTitle(),eosprice.toString(), HtmlSave,template);
+					String tempurl= HtmlUtils.gemHtmlforAlerts(params.getHtml(),params.getTitle(),eosprice.toString(), HtmlSave,template);
 					params.setUrl(HtmlServer+tempurl);
 				}else {
 					String url = HtmlUtils.gemHtml(params.getHtml(), HtmlSave);
@@ -133,7 +133,7 @@ public class NewsController extends BaseController {
 					String a=url_new[4];
 					String b=url_new[5];
 					String filename=a + "/" + b;
-				    HtmlUtils.gemHtmlforAlertsUpdate(params.getContent(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
+				    HtmlUtils.gemHtmlforAlertsUpdate(params.getHtml(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
 					params.setUrl(HtmlServer+filename);
 				}else {
 					String url=params.getUrl();
@@ -197,7 +197,7 @@ public class NewsController extends BaseController {
 					String a=url_new[4];
 					String b=url_new[5];
 					String filename=a + "/" + b;
-				    HtmlUtils.gemHtmlforAlertsUpdate(params.getContent(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
+				    HtmlUtils.gemHtmlforAlertsUpdate(params.getHtml(),params.getTitle(),eosprice.toString(), HtmlSave,filename,template);
 					params.setUrl(HtmlServer+filename);
 				}else {
 					String url=params.getUrl();
