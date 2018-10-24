@@ -185,10 +185,12 @@ public class CoinsController extends BaseController{
 		logger.info("/line/"+coin+" request map : " + requestMap);
 		try {
 			String type = requestMap.get("type");
-			String contract_account = requestMap.get("contract_account");
-			if (StringUtils.isEmpty(contract_account) || StringUtils.isEmpty(contract_account.trim())) {
-				return this.error(MLApiException.PARAM_ERROR, "合约帐号不能为空");
+			String contract_account = "";
+			if (!StringUtils.isEmpty(contract_account) || !StringUtils.isEmpty(contract_account.trim())) {
+				//return this.error(MLApiException.PARAM_ERROR, "合约帐号不能为空");
+				contract_account = requestMap.get("contract_account");
 			}
+			
 			if(!StringUtils.isEmpty(coin) && !StringUtils.isEmpty(type)){
 				MLResultObject<Map> result = marketFacadeAPI.getLine(coin,contract_account, type);
 				if(result.isSuccess()){
@@ -480,9 +482,10 @@ public class CoinsController extends BaseController{
 			if(null == name || name.isEmpty()) {
 				return this.error(MLApiException.PARAM_ERROR,null);
 			}
-			String contract_account = requestMap.get("contract_account");
+			String contract_account ="";
 			if (StringUtils.isEmpty(contract_account) || StringUtils.isEmpty(contract_account.trim())) {
-				return this.error(MLApiException.PARAM_ERROR, "合约帐号不能为空");
+				//return this.error(MLApiException.PARAM_ERROR, "合约帐号不能为空");
+				contract_account = requestMap.get("contract_account");
 			}
 			
 			MLResultObject<Coins> result = coinsFacadeAPI.findByName(name,contract_account);

@@ -140,7 +140,9 @@ public class CoinsServiceImpl implements CoinsService {
 			CoinsExample example = new CoinsExample();
 			Criteria criteria = example.createCriteria();
 			criteria.andNameEqualTo(name);
-			criteria.andContractAccountEqualTo(contract_account);
+			if(!"".equals(contract_account)&&!contract_account.isEmpty()) {
+				criteria.andContractAccountEqualTo(contract_account);
+			}
 			List<Coins> coins =  coinsMapper.selectByExample(example);
 			if(coins.isEmpty()) {
 				return null;
