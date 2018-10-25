@@ -125,9 +125,17 @@ public class RamLargeRankServiceImpl implements RamLargeRankService{
 		    RamLargeRankList = mongoTemplate.find(querylarge, BasicDBObject.class, "ram_large_user_rank");
 		}
 	    List<String> listLarger=new ArrayList<>();
+	    Double ramQuotas=0.0;
+	    int number=RamLargeRankList.size()-1;
+	    int k=0;
 		for (Object  object : RamLargeRankList) {
 			BasicDBObject thisBasicDBObject = (BasicDBObject) com.mongodb.util.JSON.parse(object.toString());
 			listLarger.add(thisBasicDBObject.getString("account"));
+			if(number==k){
+				//获取最后一名大户的内存数量
+				ramQuotas=thisBasicDBObject.getDouble("ramQuota");
+			}
+			k++;
 		}
 		List<String> listOrderActor=new ArrayList<>();
 		List<String> listOrderLarger=new ArrayList<>();
@@ -146,8 +154,8 @@ public class RamLargeRankServiceImpl implements RamLargeRankService{
 		}
 		//查询大单用户当前内存量先查询是不是在大户排行里面
 		//在就忽略不在就查询内存量跟大户排行的最后一名的内存数量比较如果大于就插入
-		BasicDBObject thisBasicDBObject = (BasicDBObject) com.mongodb.util.JSON.parse(RamLargeRankList.get(RamLargeRankList.size()-1).toString());
-		Double ramQuotas=thisBasicDBObject.getDouble("ramQuota");
+		//BasicDBObject thisBasicDBObject = (BasicDBObject) com.mongodb.util.JSON.parse(RamLargeRankList.get(RamLargeRankList.size()-1).toString());
+//		Double ramQuotas=thisBasicDBObject.getDouble("ramQuota");
 		BigDecimal  ramQuota=new BigDecimal(ramQuotas).divide(BigDecimal.valueOf(1024), 2, BigDecimal.ROUND_HALF_UP);
 		for (String actor : listOrderActor) {
 			JSONObject jsonObject = new JSONObject();
