@@ -19,7 +19,6 @@ import it.etoken.base.common.result.MLResultList;
 import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.DappCategory;
 import it.etoken.base.model.eosblock.entity.DappInfo;
-import it.etoken.component.admin.exception.MLAdminException;
 import it.etoken.component.api.exception.MLApiException;
 import it.etoken.componet.eosblock.facade.DappCategoryFacadeAPI;
 import it.etoken.componet.eosblock.facade.DappInfoFacadeAPI;
