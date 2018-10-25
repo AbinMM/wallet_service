@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.dubbo.config.annotation.Reference;
 
 import it.etoken.base.common.result.MLResultList;
+import it.etoken.base.common.result.MLResultObject;
 import it.etoken.base.model.eosblock.entity.DappCategory;
 import it.etoken.base.model.eosblock.entity.DappInfo;
+import it.etoken.component.admin.exception.MLAdminException;
 import it.etoken.component.api.exception.MLApiException;
 import it.etoken.componet.eosblock.facade.DappCategoryFacadeAPI;
 import it.etoken.componet.eosblock.facade.DappInfoFacadeAPI;
@@ -139,6 +142,27 @@ public class DappController extends BaseController{
 				return this.success(result.getList());
 			}else {
 				return this.error(MLApiException.SYS_ERROR, null);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return this.error(MLApiException.SYS_ERROR, null);
+		}
+	}
+    //添加dapp白名单
+    @ResponseBody
+	@RequestMapping(value = "/saveUpdate")
+	public Object add(@RequestBody DappInfo dappInfo, HttpServletRequest request) {
+		logger.info("/saveUpdate request map : " + dappInfo);
+		try {
+			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
+					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
+				return this.error(MLApiException.PARAM_ERROR, null);
+			}
+			MLResultObject<DappInfo> r = dappInfoFacadeAPI.saveUpdate(dappInfo);
+			if (r.isSuccess()) {
+				return this.success(null);
+			} else {
+				return this.error(r.getErrorCode(), r.getErrorHint(), null);
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
