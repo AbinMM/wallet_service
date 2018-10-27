@@ -693,7 +693,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BasicDBObject actionTraces = (BasicDBObject)object;
 						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
 						Object[] thisInlineTraces = inline_traces.toArray();
-						if(null == thisInlineTraces || thisInlineTraces.length==0) {
+						if(null == thisInlineTraces || thisInlineTraces.length<1) {
 							continue;
 						}
 						BasicDBObject inlineTraces1= (BasicDBObject)thisInlineTraces[1];

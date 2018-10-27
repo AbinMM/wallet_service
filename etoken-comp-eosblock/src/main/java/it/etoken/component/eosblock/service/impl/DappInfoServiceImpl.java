@@ -81,6 +81,7 @@ public class DappInfoServiceImpl implements DappInfoService{
 			DappInfoExample example=new DappInfoExample();
 			Criteria criteria=example.createCriteria();
 			criteria.andIsRecommendEqualTo("y");
+			example.setOrderByClause("seq desc");
 			List<DappInfo> result= dappInfoMapper.selectByExample(example);
 		    
 		    return result;
