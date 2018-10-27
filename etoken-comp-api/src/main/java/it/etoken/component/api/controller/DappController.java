@@ -147,25 +147,25 @@ public class DappController extends BaseController{
 			return this.error(MLApiException.SYS_ERROR, null);
 		}
 	}
-    //添加dapp白名单
-    @ResponseBody
-	@RequestMapping(value = "/saveUpdate")
-	public Object add(@RequestBody DappInfo dappInfo, HttpServletRequest request) {
-		logger.info("/saveUpdate request map : " + dappInfo);
-		try {
-			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
-					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
-				return this.error(MLApiException.PARAM_ERROR, null);
-			}
-			MLResultObject<DappInfo> r = dappInfoFacadeAPI.saveUpdate(dappInfo);
-			if (r.isSuccess()) {
-				return this.success(null);
-			} else {
-				return this.error(r.getErrorCode(), r.getErrorHint(), null);
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return this.error(MLApiException.SYS_ERROR, null);
-		}
-	}
+//    //添加dapp白名单
+//    @ResponseBody
+//	@RequestMapping(value = "/saveUpdate")
+//	public Object add(@RequestBody DappInfo dappInfo, HttpServletRequest request) {
+//		logger.info("/saveUpdate request map : " + dappInfo);
+//		try {
+//			if (StringUtils.isEmpty(dappInfo.getName()) || StringUtils.isEmpty(dappInfo.getCategoryId())
+//					|| StringUtils.isEmpty(dappInfo.getUrl()) || StringUtils.isEmpty(dappInfo.getIcon())) {
+//				return this.error(MLApiException.PARAM_ERROR, null);
+//			}
+//			MLResultObject<DappInfo> r = dappInfoFacadeAPI.saveUpdate(dappInfo);
+//			if (r.isSuccess()) {
+//				return this.success(null);
+//			} else {
+//				return this.error(r.getErrorCode(), r.getErrorHint(), null);
+//			}
+//		} catch (Exception e) {
+//			logger.error(e.getMessage(), e);
+//			return this.error(MLApiException.SYS_ERROR, null);
+//		}
+//	}
 }
