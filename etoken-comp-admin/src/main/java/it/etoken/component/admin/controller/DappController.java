@@ -55,7 +55,7 @@ public class DappController extends BaseController {
 				page = "1";
 			}
 			String name = requestMap.get("name");
-			MLResultObject<MLPage<DappInfo>> result = dappInfoFacadeAPI.findAllByPage(Integer.valueOf(page), 100, name);
+			MLResultObject<MLPage<DappInfo>> result = dappInfoFacadeAPI.findAllByPage(Integer.valueOf(page), 10, name);
 			if (result.isSuccess()) {
 				return this.success(result.getResult());
 			} else {
