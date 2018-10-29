@@ -493,8 +493,9 @@ public class CoinsController extends BaseController{
 			}
 			Coins info = result.getResult();
 			
-			String code = info.getName() + "_EOS_" + info.getContractAccount();
-			BasicDBObject priceInfo = cacheService.get("et_price_info_"+code, BasicDBObject.class);
+			//String code = info.getName() + "_EOS_" + info.getContractAccount();
+			//BasicDBObject priceInfo = cacheService.get("ticker_"+info.getName(), BasicDBObject.class);
+			JSONObject priceInfo = cacheService.get("ticker_" + info.getCode(), JSONObject.class);
 			if(null==priceInfo) {
 				JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info,SerializerFeature.WriteMapNullValue));
 				resultData.put("totalDesc", 0);
@@ -506,8 +507,8 @@ public class CoinsController extends BaseController{
 			BigDecimal price_rmb = BigDecimal.ZERO;
 			BigDecimal price_usd = BigDecimal.ZERO;
 			if(null != priceInfo) {
-				price_rmb = new BigDecimal(priceInfo.getString("price_rmb"));
-				price_usd=cacheService.get("CNY_USDT",BigDecimal.class);
+				price_rmb = new BigDecimal(priceInfo.getString("last_rmb"));
+				price_usd= new BigDecimal(priceInfo.getString("last"));
 			}
 			
 			JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info));
