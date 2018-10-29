@@ -708,7 +708,14 @@ public class TransactionsServiceImpl implements TransactionsService{
 						}
 						BasicDBObject inlineTraces1= (BasicDBObject)thisInlineTraces[1];
 						BasicDBObject act1=(BasicDBObject) inlineTraces1.get("act");
-						BasicDBObject data1=(BasicDBObject)act1.get("data");
+						
+						BasicDBObject data1 = null;
+						try {
+							data1=(BasicDBObject)act1.get("data");
+						}catch(Exception e) {
+							continue;
+						}
+						
 						String quantity=(String)data1.get("quantity");//如果是sell就是eos的数量的数量如果是buy就是币的数量
 						quantMap.put(id,quantity);
 					}
