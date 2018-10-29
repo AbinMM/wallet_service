@@ -395,8 +395,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 				continue;
 			}
 			//String blockNum=thisBasicDBObject.getString("block_num");
-			String accepted=thisBasicDBObject.getString("accepted");
-			if(accepted==null || accepted.isEmpty()) {
+			Boolean accepted=thisBasicDBObject.getBoolean("accepted");
+			/*if(accepted==null || accepted.isEmpty()) {
 				Date time=thisBasicDBObject.getDate("createdAt");
 				Date newDate=new Date();
 				if(newDate.getTime()-time.getTime()>10*60*1000) {
@@ -410,7 +410,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 				if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
 					thisBasicDBObject=existTransactionsList.get(0);
 				}
-			}
+			}*/
 			for (Object thisAction : thisActions) {
 				BasicDBObject action = (BasicDBObject) thisAction;
 				String actionName = action.getString("name");
@@ -531,8 +531,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					continue;
 				}
 				//String blockNum=thisBasicDBObject.getString("block_num");
-				String accepted=thisBasicDBObject.getString("accepted");
-				if(accepted==null || accepted.isEmpty()) {
+				Boolean accepted=thisBasicDBObject.getBoolean("accepted");
+				/*if(accepted==null || accepted.isEmpty()) {
 					Date time=thisBasicDBObject.getDate("createdAt");
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
@@ -546,7 +546,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 					if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
 						thisBasicDBObject=existTransactionsList.get(0);
 					}
-				}
+				}*/
 				for (Object thisAction : thisActions) {
 					BasicDBObject action = (BasicDBObject) thisAction;
 					String actionName = action.getString("name");
@@ -760,28 +760,28 @@ public class RamPriceServiceImpl implements RamPriceService {
 					continue;
 				}
 				//String blockNum=thisBasicDBObject.getString("block_num");
-				String accepted=thisBasicDBObject.getString("accepted");
-				if(accepted==null || accepted.isEmpty()) {
-					Date time=null;
-					if(null!=thisBasicDBObject.getString("expiration")) {
-					   time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
-					}else {
-						JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
-						time=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
-					}
-					Date newDate=new Date();
-					if(newDate.getTime()-time.getTime()>10*60*1000) {
-						continue;
-					}
-					Query queryBlockNum = new Query(Criteria.where("trx_id").is(trx_id));
-					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
-					queryBlockNum = queryBlockNum.with(new Sort(new Order(Direction.DESC, "updatedAt")));
-					queryBlockNum = queryBlockNum.limit(1);
-					List<BasicDBObject> existTransactionsList = mongoTemplate.find(queryBlockNum, BasicDBObject.class, "transactions");
-					if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
-						thisBasicDBObject=existTransactionsList.get(0);
-					}
-				}
+				Boolean accepted=thisBasicDBObject.getBoolean("accepted");
+//				if(accepted==null || accepted.isEmpty()) {
+//					Date time=null;
+//					if(null!=thisBasicDBObject.getString("expiration")) {
+//					   time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
+//					}else {
+//						JSONObject bj=JSONObject.parseObject(transactionsList.get(transactionsList.size() - 1).get("transaction_header").toString());
+//						time=new Date(DateUtils.formateDate(bj.getString("expiration")).getTime()-30*1000);
+//					}
+//					Date newDate=new Date();
+//					if(newDate.getTime()-time.getTime()>10*60*1000) {
+//						continue;
+//					}
+//					Query queryBlockNum = new Query(Criteria.where("trx_id").is(trx_id));
+//					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
+//					queryBlockNum = queryBlockNum.with(new Sort(new Order(Direction.DESC, "updatedAt")));
+//					queryBlockNum = queryBlockNum.limit(1);
+//					List<BasicDBObject> existTransactionsList = mongoTemplate.find(queryBlockNum, BasicDBObject.class, "transactions");
+//					if (null != existTransactionsList && !existTransactionsList.isEmpty()) {
+//						thisBasicDBObject=existTransactionsList.get(0);
+//					}
+//				}
 				Object[] thisActions = actions.toArray();
 				for (Object thisAction : thisActions) {
 					BasicDBObject action = (BasicDBObject) thisAction;

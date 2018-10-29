@@ -949,7 +949,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					e.printStackTrace();
 				}
 				price = this.getRamPriceByTimes(times);
-				String accepted = thisBasicDBObject.getString("accepted");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
 				Object[] thisActions = actions.toArray();
 				for(Object thisAction : thisActions) {
@@ -1099,9 +1099,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 				
-				String blockNum = thisBasicDBObject.getString("block_num");
-				String accepted = thisBasicDBObject.getString("accepted");
-				if (accepted == null || accepted.isEmpty()) {
+				//String blockNum = thisBasicDBObject.getString("block_num");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
+				/*if (null==accepted) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1121,7 +1121,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						//blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}
+				}*/
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1266,9 +1266,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				String blockNum = thisBasicDBObject.getString("block_num");
-				String accepted = thisBasicDBObject.getString("accepted");
-				if (accepted == null || accepted.isEmpty()) {
+				//String blockNum = thisBasicDBObject.getString("block_num");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
+				/*if (accepted == null || accepted.isEmpty()) {
 					// Date time=thisBasicDBObject.getDate("createdAt");
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
@@ -1289,7 +1289,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}
+				}*/
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1451,9 +1451,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				String blockNum = thisBasicDBObject.getString("block_num");
-				String accepted = thisBasicDBObject.getString("accepted");
-				if (accepted == null || accepted.isEmpty()) {
+				//String blockNum = thisBasicDBObject.getString("block_num");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
+				/*if (accepted == null || accepted.isEmpty()) {
 					// Date time=thisBasicDBObject.getDate("createdAt");
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
@@ -1474,7 +1474,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}
+				}*/
 
 				String type = "";
 				String to = "";
@@ -1676,9 +1676,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				String blockNum = thisBasicDBObject.getString("block_num");
-				String accepted = thisBasicDBObject.getString("accepted");
-				if (accepted == null || accepted.isEmpty()) {
+				//String blockNum = thisBasicDBObject.getString("block_num");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
+			/*	if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1700,7 +1700,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactions) {
 						blockNum = existTransactions.getString("block_num");
 					}
-				}
+				}*/
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1903,9 +1903,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				String blockNum = thisBasicDBObject.getString("block_num");
-				String accepted = thisBasicDBObject.getString("accepted");
-				if (accepted == null || accepted.isEmpty()) {
+				//String blockNum = thisBasicDBObject.getString("block_num");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
+				/*if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1927,7 +1927,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactions) {
 						blockNum = existTransactions.getString("block_num");
 					}
-				}
+				}*/
 				String type = "";
 				String to = "";
 				String from = "";
@@ -2107,9 +2107,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 
-				String blockNum = thisBasicDBObject.getString("block_num");
-				String accepted = thisBasicDBObject.getString("accepted");
-				if (accepted == null || accepted.isEmpty()) {
+				//String blockNum = thisBasicDBObject.getString("block_num");
+				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
+				/*if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -2129,7 +2129,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}
+				}*/
 
 				String type = "";
 				String to = "";
