@@ -23,7 +23,7 @@ public class RamTradeLog implements Serializable{
 	private String ram_qty;
 	private BigDecimal eos_qty_nounit;
 	private BigDecimal ram_qty_nounit;
-	private String accepted ;
+	private Boolean accepted ;
 	
 	
 	public String get_id() {
@@ -104,10 +104,10 @@ public class RamTradeLog implements Serializable{
 	public void setRam_qty_nounit(BigDecimal ram_qty_nounit) {
 		this.ram_qty_nounit = ram_qty_nounit;
 	}
-	public String getAccepted() {
+	public Boolean getAccepted() {
 		return accepted;
 	}
-	public void setAccepted(String accepted) {
+	public void setAccepted(Boolean accepted) {
 		this.accepted = accepted;
 	}
 }
