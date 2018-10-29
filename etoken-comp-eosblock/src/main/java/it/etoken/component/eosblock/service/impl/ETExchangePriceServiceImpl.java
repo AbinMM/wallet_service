@@ -669,6 +669,9 @@ public class ETExchangePriceServiceImpl implements ETExchangePriceService {
 			eTTradeLog.setPrice(price);
 		}
 		existMap.clear();
+		
+		
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: " + JSONObject.toJSONString(result));
 		cacheService.set("et_new_trade_orders_" + code, result);
 
 		return result;
