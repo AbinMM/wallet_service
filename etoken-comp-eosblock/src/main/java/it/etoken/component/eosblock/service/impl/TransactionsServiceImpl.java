@@ -550,7 +550,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 							jsonObjects.put("description", description);
 							jsonObjects.put("memo",memo);
 							jsonObjects.put("from", from);
-							jsonObjects.put("blockNum", blockNum);
+							jsonObjects.put("blockNum", "");
 							jsonObjects.put("blockTime", sdf.format(blockTime));
 							jsonObjects.put("to", to);
 							jsonObjects.put("type", type);
@@ -567,12 +567,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 								if(null!=objs) {
 									Map<String, String> quateMap=findbuyETExchangeExactQuant(objs);
 								    for (JSONObject jsonObject : list) {
+								    	if(null==quateMap||quateMap.size()<=0) {
+								    		break;
+								    	}
 								    	String transactionId1=jsonObject.getString("transactionId");
-								    	String quantity1=quateMap.get(transactionId1);
-								    	if(null==quantity1) {
-											continue;
-										}
-								    	jsonObject.put("quantity", quantity1);
+								    	if(null!=quateMap.get(transactionId1)) {
+								    		String quantity1=quateMap.get(transactionId1);
+									    	if(null==quantity1) {
+												continue;
+											}
+									    	jsonObject.put("quantity", quantity1);
+								    	}
 									}
 								}
 								existMap.clear();
@@ -584,12 +589,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 		if(null!=objs) {
 			Map<String, String> quateMap=findbuyETExchangeExactQuant(objs);
 		    for (JSONObject jsonObject : list) {
+		    	if(null==quateMap||quateMap.size()<=0) {
+		    		break;
+		    	}
 		    	String transactionId=jsonObject.getString("transactionId");
-		    	String quantity=quateMap.get(transactionId);
-		    	if(null==quantity) {
-					continue;
-				}
-		    	jsonObject.put("quantity", quantity);
+		    	if(null!=quateMap.get(transactionId)) {
+		    		String quantity=quateMap.get(transactionId);
+			    	if(null==quantity) {
+						continue;
+					}
+			    	jsonObject.put("quantity", quantity);
+		    	}
 			}
 		}
 		existMap.clear();
@@ -693,7 +703,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 						BasicDBObject actionTraces = (BasicDBObject)object;
 						BasicDBList inline_traces = (BasicDBList) actionTraces.get("inline_traces");;
 						Object[] thisInlineTraces = inline_traces.toArray();
-						if(null == thisInlineTraces || thisInlineTraces.length<1) {
+						if(null == thisInlineTraces || thisInlineTraces.length<=0||null==thisInlineTraces[1]) {
 							continue;
 						}
 						BasicDBObject inlineTraces1= (BasicDBObject)thisInlineTraces[1];
@@ -921,7 +931,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		 List<JSONObject> list=new ArrayList<JSONObject>();
 		 for (BasicDBObject thisBasicDBObject :transactionsList) {
 				String transactionId=thisBasicDBObject.getString("trx_id");
-				String blockNum=thisBasicDBObject.getString("block_num");
+//				String blockNum=thisBasicDBObject.getString("block_num");
 				Date  blockTime=null;
 				if(null!=thisBasicDBObject.getString("expiration")) {
 				    blockTime=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
@@ -939,6 +949,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					e.printStackTrace();
 				}
 				price = this.getRamPriceByTimes(times);
+				String accepted = thisBasicDBObject.getString("accepted");
 				BasicDBList actions = (BasicDBList) thisBasicDBObject.get("actions");
 				Object[] thisActions = actions.toArray();
 				for(Object thisAction : thisActions) {
@@ -975,7 +986,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 				    jsonObjects.put("quantity", quantity);//code_new是单位如EOS,MSP	
 					jsonObjects.put("memo",memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("timestamp", sdf.format(blockTime));	
 					jsonObjects.put("transactionId", transactionId);
 					jsonObjects.put("account", account1);
@@ -985,6 +996,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("symbol",symbol);	
 					jsonObjects.put("ram_price", price);	
 					jsonObjects.put("bytes", bytes);	
+					jsonObjects.put("accepted", accepted);
 			        list.add(jsonObjects);       
 				}	
 			}
@@ -1086,9 +1098,10 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-
+				
 				String blockNum = thisBasicDBObject.getString("block_num");
-				if (blockNum == null || blockNum.isEmpty()) {
+				String accepted = thisBasicDBObject.getString("accepted");
+				if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1106,10 +1119,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 					BasicDBObject existTransactionsWithBlock = mongoTemplate.findOne(queryBlockNum, BasicDBObject.class,
 							"transactions");
 					if (null != existTransactionsWithBlock) {
-						blockNum = existTransactionsWithBlock.getString("block_num");
+						//blockNum = existTransactionsWithBlock.getString("block_num");
 					}
 				}
-
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1118,6 +1130,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 				String description = "";
 				String code_new = "";
 				String _id = thisBasicDBObject.getString("_id");
+				
 				Date blockTime = null;
 				if (null != thisBasicDBObject.getString("expiration")) {
 					blockTime = new Date(
@@ -1157,12 +1170,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
 					jsonObjects.put("transactionId", transactionId);
-
+					jsonObjects.put("accepted", accepted);
 					existMap.put(transactionId, transactionId);
 					list.add(jsonObjects);
 					countN++;
@@ -1254,7 +1267,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 				String blockNum = thisBasicDBObject.getString("block_num");
-				if (blockNum == null || blockNum.isEmpty()) {
+				String accepted = thisBasicDBObject.getString("accepted");
+				if (accepted == null || accepted.isEmpty()) {
 					// Date time=thisBasicDBObject.getDate("createdAt");
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
@@ -1341,11 +1355,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
 					jsonObjects.put("transactionId", transactionId);
+					jsonObjects.put("accepted", accepted);
 					existMap.put(transactionId, transactionId);
 					list.add(jsonObjects);
 					countN++;
@@ -1391,7 +1406,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 
 		Criteria myCriteria = new Criteria();
 		myCriteria.andOperator(actorCriteria, Criteria.where("actions.account").is("eosio"),
-				Criteria.where("actions.name").is("sellram"), actorCriteria);
+				actionsNameCriteria, actorCriteria);
 
 		Map<String, String> existMap = new HashMap<String, String>();
 		List<JSONObject> list = new ArrayList<JSONObject>();
@@ -1437,7 +1452,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 				String blockNum = thisBasicDBObject.getString("block_num");
-				if (blockNum == null || blockNum.isEmpty()) {
+				String accepted = thisBasicDBObject.getString("accepted");
+				if (accepted == null || accepted.isEmpty()) {
 					// Date time=thisBasicDBObject.getDate("createdAt");
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
@@ -1529,12 +1545,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
 					jsonObjects.put("transactionId", transactionId);
 					jsonObjects.put("code", code_new);
+					jsonObjects.put("accepted", accepted);
 					existMap.put(transactionId, transactionId);
 					list.add(jsonObjects);
 					countN++;
@@ -1561,6 +1578,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 		if (null != trsationIds && trsationIds.size() > 0) {
 			Map<String, Map<String, String>> quateMap = findSellRamExactPrice2(trsationIds);
 			for (JSONObject jsonObject : list) {
+				if(null==quateMap||quateMap.size()<=0) {
+					break;
+				}
 				String transactionId1 = jsonObject.getString("transactionId");
 				if (null != quateMap.get(transactionId1)) {
 					String quantity1 = quateMap.get(transactionId1).get("eos_qty");
@@ -1657,7 +1677,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 				String blockNum = thisBasicDBObject.getString("block_num");
-				if (blockNum == null || blockNum.isEmpty()) {
+				String accepted = thisBasicDBObject.getString("accepted");
+				if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1744,12 +1765,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
 					jsonObjects.put("transactionId", transactionId);
-
+					jsonObjects.put("accepted", accepted);
 					existMap.put(transactionId, transactionId);
 					list.add(jsonObjects);
 					countN++;
@@ -1757,12 +1778,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 						if (null != objs) {
 							Map<String, String> quateMap = findbuyETExchangeExactQuant(objs);
 							for (JSONObject jsonObject : list) {
-								String transactionId1 = jsonObject.getString("transactionId");
-								String quantity1 = quateMap.get(transactionId1);
-								if (null == quantity1) {
-									continue;
+								if(null==quateMap||quateMap.size()<=0) {
+									break;
 								}
-								jsonObject.put("quantity", quantity1);
+								String transactionId1 = jsonObject.getString("transactionId");
+								if (null != quateMap.get(transactionId1)) {
+									String quantity1 = quateMap.get(transactionId1);
+									if (null == quantity1) {
+										continue;
+									}
+									jsonObject.put("quantity", quantity1);
+								}
 							}
 						}
 						existMap.clear();
@@ -1774,12 +1800,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 		if (null != objs) {
 			Map<String, String> quateMap = findbuyETExchangeExactQuant(objs);
 			for (JSONObject jsonObject : list) {
-				String transactionId = jsonObject.getString("transactionId");
-				String quantity = quateMap.get(transactionId);
-				if (null == quantity) {
-					continue;
+				if(null==quateMap||quateMap.size()<=0) {
+					break;
 				}
-				jsonObject.put("quantity", quantity);
+				String transactionId = jsonObject.getString("transactionId");
+				if (null != quateMap.get(transactionId)) {
+					String quantity = quateMap.get(transactionId);
+					if (null == quantity) {
+						continue;
+					}
+					jsonObject.put("quantity", quantity);
+				}
 			}
 		}
 		existMap.clear();
@@ -1873,7 +1904,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 				String blockNum = thisBasicDBObject.getString("block_num");
-				if (blockNum == null || blockNum.isEmpty()) {
+				String accepted = thisBasicDBObject.getString("accepted");
+				if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1946,13 +1978,13 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
 					jsonObjects.put("transactionId", transactionId);
 					jsonObjects.put("code", code);
-
+					jsonObjects.put("accepted", accepted);
 					existMap.put(transactionId, transactionId);
 					list.add(jsonObjects);
 					countN++;
@@ -1960,12 +1992,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 						if (null != objs) {
 							Map<String, String> quateMap = findbuyETExchangeExactQuant(objs);
 							for (JSONObject jsonObject : list) {
-								String transactionId1 = jsonObject.getString("transactionId");
-								String quantity1 = quateMap.get(transactionId1);
-								if (null == quantity1) {
-									continue;
+								if(null==quateMap||quateMap.size()<=0) {
+									break;
 								}
-								jsonObject.put("quantity", quantity1);
+								String transactionId1 = jsonObject.getString("transactionId");
+								if (null != quateMap.get(transactionId1)) {
+									String quantity1 = quateMap.get(transactionId1);
+									if (null == quantity1) {
+										continue;
+									}
+									jsonObject.put("quantity", quantity1);
+								}
 							}
 						}
 						existMap.clear();
@@ -1977,12 +2014,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 		if (null != objs) {
 			Map<String, String> quateMap = findbuyETExchangeExactQuant(objs);
 			for (JSONObject jsonObject : list) {
-				String transactionId = jsonObject.getString("transactionId");
-				String quantity = quateMap.get(transactionId);
-				if (null == quantity) {
-					continue;
+				if(null==quateMap||quateMap.size()<=0) {
+					break;
 				}
-				jsonObject.put("quantity", quantity);
+				String transactionId = jsonObject.getString("transactionId");
+				if (null != quateMap.get(transactionId)) {
+					String quantity = quateMap.get(transactionId);
+					if (null == quantity) {
+						continue;
+					}
+					jsonObject.put("quantity", quantity);
+				}
 			}
 		}
 		existMap.clear();
@@ -2066,7 +2108,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 				}
 
 				String blockNum = thisBasicDBObject.getString("block_num");
-				if (blockNum == null || blockNum.isEmpty()) {
+				String accepted = thisBasicDBObject.getString("accepted");
+				if (accepted == null || accepted.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -2135,12 +2178,12 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", blockNum);
+					jsonObjects.put("blockNum", "");
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
 					jsonObjects.put("transactionId", transactionId);
-
+					jsonObjects.put("accepted", accepted);
 					existMap.put(transactionId, transactionId);
 					list.add(jsonObjects);
 					countN++;

@@ -394,8 +394,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 			if(existMap.containsKey(trx_id)) {
 				continue;
 			}
-			String blockNum=thisBasicDBObject.getString("block_num");
-			if(blockNum==null || blockNum.isEmpty()) {
+			//String blockNum=thisBasicDBObject.getString("block_num");
+			String accepted=thisBasicDBObject.getString("accepted");
+			if(accepted==null || accepted.isEmpty()) {
 				Date time=thisBasicDBObject.getDate("createdAt");
 				Date newDate=new Date();
 				if(newDate.getTime()-time.getTime()>10*60*1000) {
@@ -435,8 +436,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 				RamTradeLog ramTradeLog = new RamTradeLog();
 				ramTradeLog.set_id(thisBasicDBObject.getString("_id"));
 				ramTradeLog.setTrx_id(trx_id);
-				ramTradeLog.setBlock_id(thisBasicDBObject.getString("block_id"));
-				ramTradeLog.setBlock_num(thisBasicDBObject.getString("block_num"));
+				ramTradeLog.setBlock_id("");
+				ramTradeLog.setBlock_num("");
 				
 				ramTradeLog.setRecord_date(sdf2.format(createdAt));
 				ramTradeLog.setAction_name(actionName);
@@ -467,6 +468,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 					ramTradeLog.setEos_qty(eos_qty + " EOS");
 					ramTradeLog.setRam_qty(bytesK + " KB");
 				}
+				ramTradeLog.setAccepted(accepted);
 				existMap.put(trx_id, trx_id);
 				result.add(ramTradeLog);
 				
@@ -528,8 +530,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 				if (existMap.containsKey(trx_id)) {
 					continue;
 				}
-				String blockNum=thisBasicDBObject.getString("block_num");
-				if(blockNum==null || blockNum.isEmpty()) {
+				//String blockNum=thisBasicDBObject.getString("block_num");
+				String accepted=thisBasicDBObject.getString("accepted");
+				if(accepted==null || accepted.isEmpty()) {
 					Date time=thisBasicDBObject.getDate("createdAt");
 					Date newDate=new Date();
 					if(newDate.getTime()-time.getTime()>10*60*1000) {
@@ -578,8 +581,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 
 					ramTradeLog.set_id(thisBasicDBObject.getString("_id"));
 					ramTradeLog.setTrx_id(trx_id);
-					ramTradeLog.setBlock_id(thisBasicDBObject.getString("block_id"));
-					ramTradeLog.setBlock_num(thisBasicDBObject.getString("block_num"));
+					ramTradeLog.setBlock_id("");
+					ramTradeLog.setBlock_num("");
 
 					ramTradeLog.setRecord_date(sdf2.format(createdAt));
 					ramTradeLog.setAction_name(actionName);
@@ -621,6 +624,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 							continue;
 						}
 					}
+					ramTradeLog.setAccepted(accepted);
 					existMap.put(trx_id, trx_id);
  					result.add(ramTradeLog);
 				}
@@ -755,8 +759,9 @@ public class RamPriceServiceImpl implements RamPriceService {
 				if(existMap.containsKey(trx_id)) {
 					continue;
 				}
-				String blockNum=thisBasicDBObject.getString("block_num");
-				if(blockNum==null || blockNum.isEmpty()) {
+				//String blockNum=thisBasicDBObject.getString("block_num");
+				String accepted=thisBasicDBObject.getString("accepted");
+				if(accepted==null || accepted.isEmpty()) {
 					Date time=null;
 					if(null!=thisBasicDBObject.getString("expiration")) {
 					   time=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
@@ -808,8 +813,8 @@ public class RamPriceServiceImpl implements RamPriceService {
 					RamTradeLog ramTradeLog = new RamTradeLog();
 					ramTradeLog.set_id(thisBasicDBObject.getString("_id"));
 					ramTradeLog.setTrx_id(trx_id);
-					ramTradeLog.setBlock_id(thisBasicDBObject.getString("block_id"));
-					ramTradeLog.setBlock_num(thisBasicDBObject.getString("block_num"));
+					ramTradeLog.setBlock_id("");
+					ramTradeLog.setBlock_num("");
 
 					ramTradeLog.setRecord_date(sdf2.format(createdAt));
 					ramTradeLog.setAction_name(actionName);
@@ -840,6 +845,7 @@ public class RamPriceServiceImpl implements RamPriceService {
 						ramTradeLog.setEos_qty(eos_qty + " EOS");
 						ramTradeLog.setRam_qty(bytesK + " KB");
 					}
+					ramTradeLog.setAccepted(accepted);
 					result.add(ramTradeLog);
 					countN++;
 					existMap.put(trx_id, trx_id);
