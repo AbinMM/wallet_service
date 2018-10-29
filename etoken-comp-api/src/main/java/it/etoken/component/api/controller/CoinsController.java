@@ -493,6 +493,14 @@ public class CoinsController extends BaseController{
 			
 			String code = info.getName() + "_EOS_" + info.getContractAccount();
 			BasicDBObject priceInfo = cacheService.get("et_price_info_"+code, BasicDBObject.class);
+			if(null==priceInfo) {
+				JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info));
+				resultData.put("totalDesc", 0);
+				resultData.put("totalUSDDesc", 0);
+				resultData.put("marketValueDesc", 0);
+				resultData.put("marketValueUSDDesc", 0);
+				return this.success(resultData);
+			}
 			BigDecimal price_rmb = BigDecimal.ZERO;
 			BigDecimal price_usd = BigDecimal.ZERO;
 			if(null != priceInfo) {
