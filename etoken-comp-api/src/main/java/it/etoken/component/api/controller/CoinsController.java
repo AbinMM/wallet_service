@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.result.MLResult;
@@ -494,7 +496,7 @@ public class CoinsController extends BaseController{
 			String code = info.getName() + "_EOS_" + info.getContractAccount();
 			BasicDBObject priceInfo = cacheService.get("et_price_info_"+code, BasicDBObject.class);
 			if(null==priceInfo) {
-				JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info));
+				JSONObject resultData = JSONObject.parseObject(JSONObject.toJSONString(info,SerializerFeature.WriteMapNullValue));
 				resultData.put("totalDesc", 0);
 				resultData.put("totalUSDDesc", 0);
 				resultData.put("marketValueDesc", 0);
