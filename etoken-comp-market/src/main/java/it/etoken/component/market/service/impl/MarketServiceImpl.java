@@ -76,13 +76,13 @@ public class MarketServiceImpl implements MarketService{
 	@Override
 	public List<CoinTicker> getTicker() throws MLException {
 		List<CoinTicker> ticker=new ArrayList<CoinTicker>();
-		List<CoinTicker> eostokenList=eosTokenService.getTicker();
-		if(null!=eostokenList) {
-			ticker.addAll(eostokenList);
-		}
 		List<CoinTicker> gateioList=gateioService.getTicker();
 		if(null!=gateioList) {
 			ticker.addAll(gateioList);
+		}
+		List<CoinTicker> eostokenList=eosTokenService.getTicker();
+		if(null!=eostokenList) {
+			ticker.addAll(eostokenList);
 		}
 		List<CoinTicker> bigOneList=bigOneService.getTicker();
 		if(null!=bigOneList) {
