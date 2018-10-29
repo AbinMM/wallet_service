@@ -143,7 +143,7 @@ public class CoinsServiceImpl implements CoinsService {
 			if(!"".equals(contract_account)&&!contract_account.isEmpty()) {
 				criteria.andContractAccountEqualTo(contract_account);
 			}
-			List<Coins> coins =  coinsMapper.selectByExample(example);
+			List<Coins> coins =  coinsMapper.selectByExampleWithBLOBs(example);
 			if(coins.isEmpty()) {
 				return null;
 			}
@@ -167,7 +167,7 @@ public class CoinsServiceImpl implements CoinsService {
 			
 			Page<Coins> result = PageHelper.startPage(1,1000); 
 			
-			coinsMapper.selectByExample(example);
+			coinsMapper.selectByExampleWithBLOBs(example);
 			return result;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
@@ -189,7 +189,7 @@ public class CoinsServiceImpl implements CoinsService {
 			
 			Page<Coins> result = PageHelper.startPage(1,1000); 
 			
-			coinsMapper.selectByExample(example);
+			coinsMapper.selectByExampleWithBLOBs(example);
 			return result;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
@@ -204,7 +204,7 @@ public class CoinsServiceImpl implements CoinsService {
 	public List<Coins> findAllCoins() {
 		try{
 			CoinsExample example = new CoinsExample();
-			List<Coins> list=coinsMapper.selectByExample(example);
+			List<Coins> list=coinsMapper.selectByExampleWithBLOBs(example);
 			return list;
 		}catch (MLException ex) {
 			logger.error(ex.toString());
