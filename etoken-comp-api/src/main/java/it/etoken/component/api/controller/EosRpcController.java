@@ -158,9 +158,9 @@ public class EosRpcController extends BaseController {
 		try {
 			Map<String, String> extr = new HashMap<>();
 			extr.put("url", "transfer://");
-			if(null==to||null==amount||null==from) {
-				return this.error(MLApiException.PARAM_ERROR,null);
-			}
+//			if(null==to||null==amount||null==from) {
+//				return this.error(MLApiException.PARAM_ERROR,null);
+//			}
 			if(transactionData.equalsIgnoreCase("push")) {
 				pushService.pushByTag(to, to + "收到一笔  " + amount  + " 转账." + "来自：" + from + ". 备注：" + memo, extr);
 				return this.success(true);
@@ -174,7 +174,7 @@ public class EosRpcController extends BaseController {
 				return this.error(resp.getStatus(), resp.getData());
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			//logger.error(e.getMessage());
 		}
 		return this.error(MLApiException.EOSRPC_FAIL, null);
 	}

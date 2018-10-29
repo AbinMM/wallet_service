@@ -53,7 +53,7 @@ public class PushService {
 				.setMessage(Message.content(content)).setNotification(Notification.android(content, null, extras)).build();
 			jpushClient.sendPush(p);
 		}catch(Exception e) {
-			logger.error("",e);
+			//logger.error("",e);
 		}
 	}
 
