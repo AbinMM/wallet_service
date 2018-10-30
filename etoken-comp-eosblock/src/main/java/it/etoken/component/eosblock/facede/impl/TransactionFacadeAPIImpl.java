@@ -12,6 +12,7 @@ import com.mongodb.BasicDBObject;
 
 import it.etoken.base.common.exception.MLException;
 import it.etoken.base.common.result.MLResultList;
+import it.etoken.base.common.result.MLResultObject;
 import it.etoken.component.eosblock.service.TransactionsService;
 import it.etoken.componet.eosblock.facade.TransactionsFacadeAPI;
 
@@ -45,13 +46,13 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 	}
 
 	@Override
-	public MLResultList<BasicDBObject> findAccountCoins(String account, String actor) {
+	public MLResultObject<Boolean> findAccountCoins(String account,String coinName, String actor) {
 		try {
-			List<BasicDBObject> result= transactionsService.findAccountCoins(account,actor);
-			return new MLResultList<BasicDBObject>(result);
+			Boolean  bool= transactionsService.findAccountCoins(account,coinName,actor);
+			return new MLResultObject<Boolean>(bool);
 		} catch (MLException e) {
 			logger.error(e.toString());
-			return new MLResultList<BasicDBObject>(e);
+			return new MLResultObject<Boolean>(e);
 		}
 	}
 

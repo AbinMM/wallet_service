@@ -606,31 +606,31 @@ public class TransactionsServiceImpl implements TransactionsService{
 		return list;
 	}
 
-	@Override
-	public List<BasicDBObject> findAccountCoins(String account, String actor) {
-		try {
-			Criteria[]  accountCriterias =  new Criteria[2];
-			accountCriterias[0]=Criteria.where("actions.account").is(actor);//合约账号
-			accountCriterias[1]=Criteria.where("actions.data.token_contract").is(actor);//合约账号
-			Criteria[] actorCriterias = new Criteria[3];
-			actorCriterias[0] = Criteria.where("actions.authorization.actor").is(account);
-			actorCriterias[1] = Criteria.where("actions.data.receiver").is(account);
-			actorCriterias[2] = Criteria.where("actions.data.to").is(account);
-			Criteria actorCriteria = new Criteria();
-			actorCriteria.orOperator(actorCriterias);
-			Criteria accountCriteria = new Criteria();
-			accountCriteria.orOperator(accountCriterias);
-			Criteria criteria = new Criteria();
-			criteria.andOperator(accountCriteria,actorCriteria);
-			Query query = new Query(criteria);
-		    query = query.limit(1);
-		    List<BasicDBObject> transactionsList = mongoTemplate.find(query, BasicDBObject.class, "transactions");
-		    return transactionsList;
-		} catch (Exception e) {
-			e.printStackTrace();
-			 return null;
-		}
-	}
+	 @Override
+	  public Boolean findAccountCoins(String account,String coinName, String actor) {
+	    try {
+	      Criteria[]  accountCriterias =  new Criteria[2];
+	      accountCriterias[0]=Criteria.where("actions.account").is(actor);//合约账号
+	      accountCriterias[1]=Criteria.where("actions.data.token_contract").is(actor);//合约账号
+	      Criteria[] actorCriterias = new Criteria[3];
+	      actorCriterias[0] = Criteria.where("actions.authorization.actor").is(account);
+	      actorCriterias[1] = Criteria.where("actions.data.receiver").is(account);
+	      actorCriterias[2] = Criteria.where("actions.data.to").is(account);
+	      Criteria actorCriteria = new Criteria();
+	      actorCriteria.orOperator(actorCriterias);
+	      Criteria accountCriteria = new Criteria();
+	      accountCriteria.orOperator(accountCriterias);
+	      Criteria criteria = new Criteria();
+	      criteria.andOperator(accountCriteria,actorCriteria,Criteria.where("actions.data.quantity").regex("^.*" + coinName));
+	      Query query = new Query(criteria);
+	        query = query.limit(1);
+	        Boolean bool = mongoTemplate.exists(query, BasicDBObject.class, "transactions");
+	        return bool;
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	       return false;
+	    }
+	  }
 	
 	@Override
 	public  Map<String, String> findETExchangeExactPrice(Object[] trsationId) {

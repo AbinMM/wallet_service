@@ -11,7 +11,7 @@ public interface TransactionsService {
 	
 	public List<JSONObject> findByAccountAndActorNew(String last_id, int pageSize,String account,String actor,String code);
 	
-	public List<BasicDBObject> findAccountCoins(String account,String actor);
+	public Boolean findAccountCoins(String account,String coinName,String actor);
 	
 	public List<JSONObject> findByAccountAndActor(int page, int pageSize,String account,String actor,String code);
 

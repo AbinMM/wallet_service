@@ -375,11 +375,12 @@ public class CoinsController extends BaseController{
 			List<String> listCoin=new ArrayList<String>();
 			for (Coins coins : list) {
 		      String contract=coins.getContractAccount();//合约账号
+		      String coinName=coins.getName();//合约账号
 		      if(contract==null||contract.isEmpty()) {
 		    	  continue;
 		      }
-		      MLResultList<BasicDBObject> result=transactionsFacadeAPI.findAccountCoins(account, contract);
-		      if(result.getList().size()>0) {
+              MLResultObject<Boolean> result=transactionsFacadeAPI.findAccountCoins(account, coinName,contract);
+		      if(result.getResult()) {
 		    	  listCoin.add(coins.getName());
 		      }
 			}
