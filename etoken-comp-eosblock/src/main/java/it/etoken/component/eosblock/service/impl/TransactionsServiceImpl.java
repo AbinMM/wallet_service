@@ -938,7 +938,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 		 List<JSONObject> list=new ArrayList<JSONObject>();
 		 for (BasicDBObject thisBasicDBObject :transactionsList) {
 				String transactionId=thisBasicDBObject.getString("trx_id");
-//				String blockNum=thisBasicDBObject.getString("block_num");
+				String blockNum=thisBasicDBObject.getString("block_num");
 				Date  blockTime=null;
 				if(null!=thisBasicDBObject.getString("expiration")) {
 				    blockTime=new Date(DateUtils.formateDate(thisBasicDBObject.getString("expiration")).getTime()-30*1000);
@@ -993,7 +993,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 				    jsonObjects.put("quantity", quantity);//code_new是单位如EOS,MSP	
 					jsonObjects.put("memo",memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum", blockNum);
 					jsonObjects.put("timestamp", sdf.format(blockTime));	
 					jsonObjects.put("transactionId", transactionId);
 					jsonObjects.put("account", account1);
@@ -1106,9 +1106,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 				
-				//String blockNum = thisBasicDBObject.getString("block_num");
+				String blockNum = thisBasicDBObject.getString("block_num");
 				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
-				/*if (null==accepted) {
+				if (blockNum == null || blockNum.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1118,17 +1118,17 @@ public class TransactionsServiceImpl implements TransactionsService{
 						time = new Date(DateUtils.formateDate(obj.getString("expiration")).getTime() - 30 * 1000);
 					}
 					Date newDate = new Date();
-					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
-						continue;
-					}
+//					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
+//						continue;
+//					}
 					Query queryBlockNum = new Query(Criteria.where("trx_id").is(transactionId));
 					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
 					BasicDBObject existTransactionsWithBlock = mongoTemplate.findOne(queryBlockNum, BasicDBObject.class,
 							"transactions");
 					if (null != existTransactionsWithBlock) {
-						//blockNum = existTransactionsWithBlock.getString("block_num");
+						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}*/
+				}
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1177,7 +1177,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum", blockNum);
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
@@ -1273,9 +1273,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				//String blockNum = thisBasicDBObject.getString("block_num");
+				String blockNum = thisBasicDBObject.getString("block_num");
 				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
-				/*if (accepted == null || accepted.isEmpty()) {
+				if (blockNum == null || blockNum.isEmpty()) {
 					// Date time=thisBasicDBObject.getDate("createdAt");
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
@@ -1286,9 +1286,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						time = new Date(DateUtils.formateDate(obj.getString("expiration")).getTime() - 30 * 1000);
 					}
 					Date newDate = new Date();
-					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
-						continue;
-					}
+//					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
+//						continue;
+//					}
 					Query queryBlockNum = new Query(Criteria.where("trx_id").is(transactionId));
 					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
 					BasicDBObject existTransactionsWithBlock = mongoTemplate.findOne(queryBlockNum, BasicDBObject.class,
@@ -1296,7 +1296,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}*/
+				}
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1362,7 +1362,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum",blockNum);
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
@@ -1458,9 +1458,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				//String blockNum = thisBasicDBObject.getString("block_num");
+				String blockNum = thisBasicDBObject.getString("block_num");
 				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
-				/*if (accepted == null || accepted.isEmpty()) {
+				if (blockNum == null || blockNum.isEmpty()) {
 					// Date time=thisBasicDBObject.getDate("createdAt");
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
@@ -1471,9 +1471,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						time = new Date(DateUtils.formateDate(obj.getString("expiration")).getTime() - 30 * 1000);
 					}
 					Date newDate = new Date();
-					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
-						continue;
-					}
+//					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
+//						continue;
+//					}
 					Query queryBlockNum = new Query(Criteria.where("trx_id").is(transactionId));
 					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
 					BasicDBObject existTransactionsWithBlock = mongoTemplate.findOne(queryBlockNum, BasicDBObject.class,
@@ -1481,7 +1481,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}*/
+				}
 
 				String type = "";
 				String to = "";
@@ -1552,7 +1552,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum", blockNum);
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
@@ -1683,9 +1683,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				//String blockNum = thisBasicDBObject.getString("block_num");
+				String blockNum = thisBasicDBObject.getString("block_num");
 				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
-			/*	if (accepted == null || accepted.isEmpty()) {
+				if (blockNum == null || blockNum.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1695,9 +1695,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						time = new Date(DateUtils.formateDate(obj.getString("expiration")).getTime() - 30 * 1000);
 					}
 					Date newDate = new Date();
-					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
-						continue;
-					}
+//					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
+//						continue;
+//					}
 					Query queryBlockNum = new Query(Criteria.where("trx_id").is(transactionId));
 					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
 					queryBlockNum = queryBlockNum.with(new Sort(new Order(Direction.DESC, "updatedAt")));
@@ -1707,7 +1707,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactions) {
 						blockNum = existTransactions.getString("block_num");
 					}
-				}*/
+				}
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1772,7 +1772,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum",blockNum);
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
@@ -1910,9 +1910,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 				if (existMap.containsKey(transactionId)) {
 					continue;
 				}
-				//String blockNum = thisBasicDBObject.getString("block_num");
+				String blockNum = thisBasicDBObject.getString("block_num");
 				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
-				/*if (accepted == null || accepted.isEmpty()) {
+				if (blockNum == null || blockNum.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -1922,9 +1922,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						time = new Date(DateUtils.formateDate(obj.getString("expiration")).getTime() - 30 * 1000);
 					}
 					Date newDate = new Date();
-					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
-						continue;
-					}
+//					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
+//						continue;
+//					}
 					Query queryBlockNum = new Query(Criteria.where("trx_id").is(transactionId));
 					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
 					queryBlockNum = queryBlockNum.with(new Sort(new Order(Direction.DESC, "updatedAt")));
@@ -1934,7 +1934,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactions) {
 						blockNum = existTransactions.getString("block_num");
 					}
-				}*/
+				}
 				String type = "";
 				String to = "";
 				String from = "";
@@ -1985,7 +1985,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum", blockNum);
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
@@ -2114,9 +2114,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 					continue;
 				}
 
-				//String blockNum = thisBasicDBObject.getString("block_num");
+				String blockNum = thisBasicDBObject.getString("block_num");
 				Boolean accepted = thisBasicDBObject.getBoolean("accepted");
-				/*if (accepted == null || accepted.isEmpty()) {
+				if (blockNum == null || blockNum.isEmpty()) {
 					Date time = null;
 					if (null != thisBasicDBObject.getString("expiration")) {
 						time = new Date(
@@ -2126,9 +2126,9 @@ public class TransactionsServiceImpl implements TransactionsService{
 						time = new Date(DateUtils.formateDate(obj.getString("expiration")).getTime() - 30 * 1000);
 					}
 					Date newDate = new Date();
-					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
-						continue;
-					}
+//					if (newDate.getTime() - time.getTime() > 10 * 60 * 1000) {
+//						continue;
+//					}
 					Query queryBlockNum = new Query(Criteria.where("trx_id").is(transactionId));
 					queryBlockNum = queryBlockNum.addCriteria(Criteria.where("block_id").exists(true));
 					BasicDBObject existTransactionsWithBlock = mongoTemplate.findOne(queryBlockNum, BasicDBObject.class,
@@ -2136,7 +2136,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					if (null != existTransactionsWithBlock) {
 						blockNum = existTransactionsWithBlock.getString("block_num");
 					}
-				}*/
+				}
 
 				String type = "";
 				String to = "";
@@ -2185,7 +2185,7 @@ public class TransactionsServiceImpl implements TransactionsService{
 					jsonObjects.put("description", description);
 					jsonObjects.put("memo", memo);
 					jsonObjects.put("from", from);
-					jsonObjects.put("blockNum", "");
+					jsonObjects.put("blockNum", blockNum);
 					jsonObjects.put("blockTime", sdf.format(blockTime));
 					jsonObjects.put("to", to);
 					jsonObjects.put("type", type);
