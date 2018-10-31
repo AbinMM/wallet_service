@@ -46,9 +46,9 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 	}
 
 	@Override
-	public MLResultObject<Boolean> findAccountCoins(String account,String coinName, String actor) {
+	public MLResultObject<Boolean> findAccountCoinsNew(String account,String coinName, String actor) {
 		try {
-			Boolean  bool= transactionsService.findAccountCoins(account,coinName,actor);
+			Boolean  bool= transactionsService.findAccountCoinsNew(account,coinName,actor);
 			return new MLResultObject<Boolean>(bool);
 		} catch (MLException e) {
 			logger.error(e.toString());
@@ -90,4 +90,7 @@ public class TransactionFacadeAPIImpl implements TransactionsFacadeAPI{
 			return new MLResultList<JSONObject>(e);
 		}
 	}
+
+
+
 }

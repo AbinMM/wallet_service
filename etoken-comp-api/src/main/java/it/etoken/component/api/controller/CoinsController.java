@@ -379,7 +379,7 @@ public class CoinsController extends BaseController{
 		      if(contract==null||contract.isEmpty()) {
 		    	  continue;
 		      }
-              MLResultObject<Boolean> result=transactionsFacadeAPI.findAccountCoins(account, coinName,contract);
+              MLResultObject<Boolean> result=transactionsFacadeAPI.findAccountCoinsNew(account, coinName,contract);
 		      if(result.getResult()) {
 		    	  listCoin.add(coins.getName());
 		      }

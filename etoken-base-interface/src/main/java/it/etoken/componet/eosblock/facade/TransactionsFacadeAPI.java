@@ -11,7 +11,7 @@ public interface TransactionsFacadeAPI {
 
 	public MLResultList<JSONObject> findByAccountAndActorNew(String last_id, int pageSize,String account,String actor,String code);
 	
-	public MLResultObject<Boolean>  findAccountCoins(String account,String coinName,String actor);
+	public MLResultObject<Boolean>  findAccountCoinsNew(String account,String coinName,String actor);
 	
 	public MLResultList<JSONObject> findByAccountAndActor(int page, int pageSize,String account,String actor,String code);
 

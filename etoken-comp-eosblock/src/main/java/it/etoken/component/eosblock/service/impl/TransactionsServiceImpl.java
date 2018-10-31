@@ -606,8 +606,8 @@ public class TransactionsServiceImpl implements TransactionsService{
 		return list;
 	}
 
-	 @Override
-	  public Boolean findAccountCoins(String account,String coinName, String actor) {
+	  @Override
+	  public Boolean findAccountCoinsNew(String account,String coinName, String actor) {
 	    try {
 	      Criteria[]  accountCriterias =  new Criteria[2];
 	      accountCriterias[0]=Criteria.where("actions.account").is(actor);//合约账号
